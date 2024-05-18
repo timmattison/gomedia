@@ -66,7 +66,7 @@ type SPS struct {
 	Frame_crop_top_offset                uint64
 	Frame_crop_bottom_offset             uint64
 	Vui_parameters_present_flag          uint8
-	Vui                                  VUI_Parameters
+	VuiParameters                        H264VuiParameters
 }
 
 func (sps *SPS) Decode(bs *BitStream) {
@@ -131,6 +131,10 @@ func (sps *SPS) Decode(bs *BitStream) {
 		sps.Frame_crop_bottom_offset = bs.ReadUE() //frame_crop_bottom_offset
 	}
 	sps.Vui_parameters_present_flag = bs.GetBit()
+
+	if sps.Vui_parameters_present_flag == 1 {
+		sps.VuiParameters.Decode(bs)
+	}
 }
 
 type PPS struct {
@@ -424,8 +428,8 @@ type H264VuiParameters struct {
 	TransferCharacteristics        uint8  // u(8)
 	MatrixCoefficients             uint8  // u(8)
 	ChromaLocInfoPresentFlag       uint8  // u(1)
-	ChromaSampleLocTypeTopField    uint8  // ue(v)
-	ChromaSampleLocTypeBottomField uint8  // ue(v)
+	ChromaSampleLocTypeTopField    uint64 // ue(v)
+	ChromaSampleLocTypeBottomField uint64 // ue(v)
 	TimingInfoPresentFlag          uint8  // u(1)
 	NumUnitsInTick                 uint32 // u(32)
 	TimeScale                      uint32 // u(32)
@@ -433,20 +437,21 @@ type H264VuiParameters struct {
 	NalHrdParametersPresentFlag    uint8  // u(1)
 	NalHrdParameters               H264HrdParameters
 	VclHrdParametersPresentFlag    uint8 // u(1)
-	LowDelayHrdFlag                uint8 // u(1)
-	PicStructPresentFlag           uint8 // u(1)
-	BitstreamRestrictionFlag       uint8 // u(1)
-	MotionVectorsOverPicBoundaries uint8 // u(1)
-	MaxBytesPerPicDenom            uint8 // ue(v)
-	MaxBitsPerMbDenom              uint8 // ue(v)
-	Log2MaxMvLengthHorizontal      uint8 // ue(v)
-	Log2MaxMvLengthVertical        uint8 // ue(v)
-	NumReorderFrames               uint8 // ue(v)
-	MaxDecFrameBuffering           uint8 // ue(v)
+	VclHrdParameters               H264HrdParameters
+	LowDelayHrdFlag                uint8  // u(1)
+	PicStructPresentFlag           uint8  // u(1)
+	BitstreamRestrictionFlag       uint8  // u(1)
+	MotionVectorsOverPicBoundaries uint8  // u(1)
+	MaxBytesPerPicDenom            uint64 // ue(v)
+	MaxBitsPerMbDenom              uint64 // ue(v)
+	Log2MaxMvLengthHorizontal      uint64 // ue(v)
+	Log2MaxMvLengthVertical        uint64 // ue(v)
+	NumReorderFrames               uint64 // ue(v)
+	MaxDecFrameBuffering           uint64 // ue(v)
 }
 
 type H264HrdParameters struct {
-	CpbCntMinus1                       uint8                       // ue(v)
+	CpbCntMinus1                       uint64                      // ue(v)
 	BitRateScale                       uint8                       // u(4)
 	CpbSizeScale                       uint8                       // u(4)
 	H264BitRateCpbSizeCbrFlag          []H264BitRateCpbSizeCbrFlag // 0..cpb_cnt_minus1
@@ -457,7 +462,105 @@ type H264HrdParameters struct {
 }
 
 type H264BitRateCpbSizeCbrFlag struct {
-	BitRateValueMinus1 uint8 // ue(v)
-	CpbSizeValueMinus1 uint8 // ue(v)
-	CbrFlag            uint8 // u(1)
+	BitRateValueMinus1 uint64 // ue(v)
+	CpbSizeValueMinus1 uint64 // ue(v)
+	CbrFlag            uint8  // u(1)
+}
+
+const ExtendedSar = 255
+
+func (h264Vui *H264VuiParameters) Decode(bs *BitStream) {
+	h264Vui.AspectRatioInfoPresentFlag = bs.Uint8(1)
+
+	if h264Vui.AspectRatioInfoPresentFlag == 1 {
+		h264Vui.AspectRatioIdc = bs.Uint8(8)
+
+		if h264Vui.AspectRatioIdc == ExtendedSar {
+			h264Vui.SarWidth = bs.Uint16(16)
+			h264Vui.SarWidth = bs.Uint16(16)
+		}
+	}
+
+	h264Vui.OverscanInfoPresentFlag = bs.Uint8(1)
+
+	if h264Vui.OverscanInfoPresentFlag == 1 {
+		h264Vui.OverscanAppropriateFlag = bs.Uint8(1)
+	}
+
+	h264Vui.VideoSignalTypePresentFlag = bs.Uint8(1)
+
+	if h264Vui.VideoSignalTypePresentFlag == 1 {
+		h264Vui.VideoFormat = bs.Uint8(3)
+		h264Vui.VideoFullRangeFlag = bs.Uint8(1)
+		h264Vui.ColourDescriptionPresentFlag = bs.Uint8(1)
+
+		if h264Vui.ColourDescriptionPresentFlag == 1 {
+			h264Vui.ColourPrimaries = bs.Uint8(8)
+			h264Vui.TransferCharacteristics = bs.Uint8(8)
+			h264Vui.MatrixCoefficients = bs.Uint8(8)
+		}
+	}
+
+	h264Vui.ChromaLocInfoPresentFlag = bs.Uint8(1)
+
+	if h264Vui.ChromaLocInfoPresentFlag == 1 {
+		h264Vui.ChromaSampleLocTypeTopField = bs.ReadUE()
+		h264Vui.ChromaSampleLocTypeBottomField = bs.ReadUE()
+	}
+
+	h264Vui.TimingInfoPresentFlag = bs.Uint8(1)
+
+	if h264Vui.TimingInfoPresentFlag == 1 {
+		h264Vui.NumUnitsInTick = bs.Uint32(32)
+		h264Vui.TimeScale = bs.Uint32(32)
+		h264Vui.FixedFrameRateFlag = bs.Uint8(1)
+	}
+
+	h264Vui.NalHrdParametersPresentFlag = bs.Uint8(1)
+
+	if h264Vui.NalHrdParametersPresentFlag == 1 {
+		h264Vui.NalHrdParameters.Decode(bs)
+	}
+
+	h264Vui.VclHrdParametersPresentFlag = bs.Uint8(1)
+
+	if h264Vui.VclHrdParametersPresentFlag == 1 {
+		h264Vui.VclHrdParameters.Decode(bs)
+	}
+
+	if h264Vui.NalHrdParametersPresentFlag == 1 || h264Vui.VclHrdParametersPresentFlag == 1 {
+		h264Vui.LowDelayHrdFlag = bs.Uint8(1)
+	}
+
+	h264Vui.PicStructPresentFlag = bs.Uint8(1)
+	h264Vui.BitstreamRestrictionFlag = bs.Uint8(1)
+
+	if h264Vui.BitstreamRestrictionFlag == 1 {
+		h264Vui.MotionVectorsOverPicBoundaries = bs.Uint8(1)
+		h264Vui.MaxBytesPerPicDenom = bs.ReadUE()
+		h264Vui.MaxBitsPerMbDenom = bs.ReadUE()
+		h264Vui.Log2MaxMvLengthHorizontal = bs.ReadUE()
+		h264Vui.Log2MaxMvLengthVertical = bs.ReadUE()
+		h264Vui.NumReorderFrames = bs.ReadUE()
+		h264Vui.MaxDecFrameBuffering = bs.ReadUE()
+	}
+}
+
+func (h264Hrd *H264HrdParameters) Decode(bs *BitStream) {
+	h264Hrd.CpbCntMinus1 = bs.ReadUE()
+	h264Hrd.BitRateScale = bs.Uint8(4)
+	h264Hrd.CpbSizeScale = bs.Uint8(4)
+
+	h264Hrd.H264BitRateCpbSizeCbrFlag = make([]H264BitRateCpbSizeCbrFlag, h264Hrd.CpbCntMinus1+1)
+
+	for i := 0; i < int(h264Hrd.CpbCntMinus1+1); i++ {
+		h264Hrd.H264BitRateCpbSizeCbrFlag[i].BitRateValueMinus1 = bs.ReadUE()
+		h264Hrd.H264BitRateCpbSizeCbrFlag[i].CpbSizeValueMinus1 = bs.ReadUE()
+		h264Hrd.H264BitRateCpbSizeCbrFlag[i].CbrFlag = bs.Uint8(1)
+	}
+
+	h264Hrd.InitialCpbRemovalDelayLengthMinus1 = bs.Uint8(5)
+	h264Hrd.CpbRemovalDelayLengthMinus1 = bs.Uint8(5)
+	h264Hrd.DpbOutputDelayLengthMinus1 = bs.Uint8(5)
+	h264Hrd.TimeOffsetLength = bs.Uint8(5)
 }
