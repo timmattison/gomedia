@@ -7,9 +7,9 @@ import (
 	"os"
 	"time"
 
-	"github.com/yapingcat/gomedia/go-codec"
-	"github.com/yapingcat/gomedia/go-mp4"
-	"github.com/yapingcat/gomedia/go-rtmp"
+	"github.com/timmattison/gomedia/go-codec"
+	"github.com/timmattison/gomedia/go-mp4"
+	"github.com/timmattison/gomedia/go-rtmp"
 )
 
 type TimestampAdjust struct {

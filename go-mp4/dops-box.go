@@ -4,7 +4,7 @@ import (
 	"encoding/binary"
 	"io"
 
-	"github.com/yapingcat/gomedia/go-codec"
+	"github.com/timmattison/gomedia/go-codec"
 )
 
 // class ChannelMappingTable (unsigned int(8) OutputChannelCount){

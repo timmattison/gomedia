@@ -6,7 +6,7 @@ import (
 	"os"
 	"testing"
 
-	"github.com/yapingcat/gomedia/go-codec"
+	"github.com/timmattison/gomedia/go-codec"
 )
 
 func TestFlvReader_Input(t *testing.T) {

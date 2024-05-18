@@ -6,15 +6,15 @@ import (
 	"net/http"
 	"os"
 
-	"github.com/yapingcat/gomedia/go-codec"
-	"github.com/yapingcat/gomedia/go-flv"
+	"github.com/timmattison/gomedia/go-codec"
+	"github.com/timmattison/gomedia/go-flv"
 )
 
 const (
 	HTTPOK = 200
 )
 
-//.example_http_flv_client -i url -o out.flv
+// .example_http_flv_client -i url -o out.flv
 func main() {
 	flvurl, flvfilename := parseFlag()
 	flvfile, err := os.Create(flvfilename)

@@ -8,7 +8,7 @@ import (
 	"os"
 	"time"
 
-	"github.com/yapingcat/gomedia/go-mpeg2"
+	"github.com/timmattison/gomedia/go-mpeg2"
 )
 
 const RTP_FIX_HEAD_LEN = 12
@@ -61,8 +61,8 @@ func (r *RtpReceiver) Read(p []byte) (n int, err error) {
 var videoFile = flag.String("videofile", "v.h264", "export raw video data to the videofile")
 var audioFile = flag.String("audiofile", "a.aac", "export raw audio data to the audiofile")
 
-//use ffmpeg commad to test this example
-//ffmpeg -re -i <media file> -vcodec copy -acodec copy -f rtp_mpegts rtp://127.0.0.1:19999
+// use ffmpeg commad to test this example
+// ffmpeg -re -i <media file> -vcodec copy -acodec copy -f rtp_mpegts rtp://127.0.0.1:19999
 func main() {
 	flag.Parse()
 
