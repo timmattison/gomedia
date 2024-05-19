@@ -95,7 +95,7 @@ func (cli *RtspRecordSession) HandleRecord(client *rtsp.RtspClient, res rtsp.Rts
 		defer flvfilereader.Close()
 		fr := flv.CreateFlvReader()
 		fr.OnFrame = func(ci codec.CodecID, b []byte, pts, dts uint32) {
-			if ci == codec.CODECID_VIDEO_H264 {
+			if ci == codec.CodecidVideoH264 {
 				err := videoTrack.WriteSample(rtsp.RtspSample{Sample: b, Timestamp: pts * 90})
 				if err != nil {
 					fmt.Println(err)
@@ -172,7 +172,7 @@ func main() {
 
 	sess := NewRtspRecordSession(c)
 	client, _ := rtsp.NewRtspClient(os.Args[1], sess, rtsp.WithEnableRecord())
-	videoTrack := rtsp.NewVideoTrack(rtsp.RtspCodec{Cid: rtsp.RTSP_CODEC_H264, PayloadType: 96, SampleRate: 90000})
+	videoTrack := rtsp.NewVideoTrack(rtsp.RtspCodec{Cid: rtsp.RtspCodecH264, PayloadType: 96, SampleRate: 90000})
 	client.AddTrack(videoTrack)
 	client.SetOutput(func(b []byte) error {
 		if sendError != nil {

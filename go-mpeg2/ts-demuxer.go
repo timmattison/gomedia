@@ -7,14 +7,14 @@ import (
 	"github.com/timmattison/gomedia/go-codec"
 )
 
-type pakcet_t struct {
+type pakcetT struct {
 	payload []byte
 	pts     uint64
 	dts     uint64
 }
 
-func newPacket_t(size uint32) *pakcet_t {
-	return &pakcet_t{
+func newpacketT(size uint32) *pakcetT {
+	return &pakcetT{
 		payload: make([]byte, 0, size),
 		pts:     0,
 		dts:     0,
@@ -22,10 +22,10 @@ func newPacket_t(size uint32) *pakcet_t {
 }
 
 type tsstream struct {
-	cid     TS_STREAM_TYPE
-	pes_sid PES_STREMA_ID
-	pes_pkg *PesPacket
-	pkg     *pakcet_t
+	cid    TsStreamType
+	pesSid PesStremaId
+	pesPkg *PesPacket
+	pkg    *pakcetT
 }
 
 type tsprogram struct {
@@ -35,7 +35,7 @@ type tsprogram struct {
 
 type TSDemuxer struct {
 	programs   map[uint16]*tsprogram
-	OnFrame    func(cid TS_STREAM_TYPE, frame []byte, pts uint64, dts uint64)
+	OnFrame    func(cid TsStreamType, frame []byte, pts uint64, dts uint64)
 	OnTSPacket func(pkg *TSPacket)
 }
 
@@ -51,8 +51,8 @@ func (demuxer *TSDemuxer) Input(r io.Reader) error {
 	var err error = nil
 	var buf []byte
 	for {
-		if len(buf) > TS_PAKCET_SIZE {
-			buf = buf[TS_PAKCET_SIZE:]
+		if len(buf) > TsPakcetSize {
+			buf = buf[TsPakcetSize:]
 		} else {
 			if err != nil {
 				if errors.Is(err, io.EOF) || errors.Is(err, io.ErrUnexpectedEOF) {
@@ -69,47 +69,47 @@ func (demuxer *TSDemuxer) Input(r io.Reader) error {
 			}
 		}
 
-		bs := codec.NewBitStream(buf[:TS_PAKCET_SIZE])
+		bs := codec.NewBitStream(buf[:TsPakcetSize])
 		var pkg TSPacket
 		if err := pkg.DecodeHeader(bs); err != nil {
 			return err
 		}
-		if pkg.PID == uint16(TS_PID_PAT) {
-			if pkg.Payload_unit_start_indicator == 1 {
+		if pkg.PID == uint16(TsPidPat) {
+			if pkg.PayloadUnitStartIndicator == 1 {
 				bs.SkipBits(8)
 			}
-			pkg.Payload, err = ReadSection(TS_TID_PAS, bs)
+			pkg.Payload, err = ReadSection(TsTidPas, bs)
 			if err != nil {
 				return err
 			}
 			pat := pkg.Payload.(*Pat)
 			for _, pmt := range pat.Pmts {
-				if pmt.Program_number != 0x0000 {
+				if pmt.ProgramNumber != 0x0000 {
 					if _, found := demuxer.programs[pmt.PID]; !found {
 						demuxer.programs[pmt.PID] = &tsprogram{pn: 0, streams: make(map[uint16]*tsstream)}
 					}
 				}
 			}
-		} else if pkg.PID == TS_PID_Nil {
+		} else if pkg.PID == TsPidNil {
 			continue
 		} else {
 			for p, s := range demuxer.programs {
 				if p == pkg.PID { // pmt table
-					if pkg.Payload_unit_start_indicator == 1 {
+					if pkg.PayloadUnitStartIndicator == 1 {
 						bs.SkipBits(8) //pointer filed
 					}
-					pkg.Payload, err = ReadSection(TS_TID_PMS, bs)
+					pkg.Payload, err = ReadSection(TsTidPms, bs)
 					if err != nil {
 						return err
 					}
 					pmt := pkg.Payload.(*Pmt)
-					s.pn = pmt.Program_number
+					s.pn = pmt.ProgramNumber
 					for _, ps := range pmt.Streams {
-						if _, found := s.streams[ps.Elementary_PID]; !found {
-							s.streams[ps.Elementary_PID] = &tsstream{
-								cid:     TS_STREAM_TYPE(ps.StreamType),
-								pes_sid: findPESIDByStreamType(TS_STREAM_TYPE(ps.StreamType)),
-								pes_pkg: NewPesPacket(),
+						if _, found := s.streams[ps.ElementaryPid]; !found {
+							s.streams[ps.ElementaryPid] = &tsstream{
+								cid:    TsStreamType(ps.StreamType),
+								pesSid: findPESIDByStreamType(TsStreamType(ps.StreamType)),
+								pesPkg: NewPesPacket(),
 							}
 						}
 					}
@@ -118,22 +118,22 @@ func (demuxer *TSDemuxer) Input(r io.Reader) error {
 						if sid != pkg.PID {
 							continue
 						}
-						if pkg.Payload_unit_start_indicator == 1 {
-							err := stream.pes_pkg.Decode(bs)
+						if pkg.PayloadUnitStartIndicator == 1 {
+							err := stream.pesPkg.Decode(bs)
 							// ignore error if it was a short payload read, next ts packet should append missing data
-							if err != nil && !(errors.Is(err, errNeedMore) && stream.pes_pkg.Pes_payload != nil) {
+							if err != nil && !(errors.Is(err, errNeedMore) && stream.pesPkg.PesPayload != nil) {
 								return err
 							}
-							pkg.Payload = stream.pes_pkg
+							pkg.Payload = stream.pesPkg
 						} else {
-							stream.pes_pkg.Pes_payload = bs.RemainData()
+							stream.pesPkg.PesPayload = bs.RemainData()
 							pkg.Payload = bs.RemainData()
 						}
 						stype := findPESIDByStreamType(stream.cid)
-						if stype == PES_STREAM_AUDIO {
-							demuxer.doAudioPesPacket(stream, pkg.Payload_unit_start_indicator)
-						} else if stype == PES_STREAM_VIDEO {
-							demuxer.doVideoPesPacket(stream, pkg.Payload_unit_start_indicator)
+						if stype == PesStreamAudio {
+							demuxer.doAudioPesPacket(stream, pkg.PayloadUnitStartIndicator)
+						} else if stype == PesStreamVideo {
+							demuxer.doVideoPesPacket(stream, pkg.PayloadUnitStartIndicator)
 						}
 					}
 				}
@@ -148,37 +148,37 @@ func (demuxer *TSDemuxer) Input(r io.Reader) error {
 }
 
 func (demuxer *TSDemuxer) probe(r io.Reader) ([]byte, error) {
-	buf := make([]byte, TS_PAKCET_SIZE, 2*TS_PAKCET_SIZE)
+	buf := make([]byte, TsPakcetSize, 2*TsPakcetSize)
 	if _, err := io.ReadFull(r, buf); err != nil {
 		return nil, err
 	}
 	if buf[0] == 0x47 {
 		return buf, nil
 	}
-	buf = buf[:2*TS_PAKCET_SIZE]
-	if _, err := io.ReadFull(r, buf[TS_PAKCET_SIZE:]); err != nil {
+	buf = buf[:2*TsPakcetSize]
+	if _, err := io.ReadFull(r, buf[TsPakcetSize:]); err != nil {
 		return nil, err
 	}
 LOOP:
 	i := 0
-	for ; i < TS_PAKCET_SIZE; i++ {
-		if buf[i] == 0x47 && buf[i+TS_PAKCET_SIZE] == 0x47 {
+	for ; i < TsPakcetSize; i++ {
+		if buf[i] == 0x47 && buf[i+TsPakcetSize] == 0x47 {
 			break
 		}
 	}
 	if i == 0 {
 		return buf, nil
-	} else if i < TS_PAKCET_SIZE {
+	} else if i < TsPakcetSize {
 		copy(buf, buf[i:])
-		if _, err := io.ReadFull(r, buf[2*TS_PAKCET_SIZE-i:]); err != nil {
-			return buf[:TS_PAKCET_SIZE], err
+		if _, err := io.ReadFull(r, buf[2*TsPakcetSize-i:]); err != nil {
+			return buf[:TsPakcetSize], err
 		} else {
 			return buf, nil
 		}
 	} else {
-		copy(buf, buf[TS_PAKCET_SIZE:])
-		if _, err := io.ReadFull(r, buf[TS_PAKCET_SIZE:]); err != nil {
-			return buf[:TS_PAKCET_SIZE], err
+		copy(buf, buf[TsPakcetSize:])
+		if _, err := io.ReadFull(r, buf[TsPakcetSize:]); err != nil {
+			return buf[:TsPakcetSize], err
 		}
 		goto LOOP
 	}
@@ -194,15 +194,15 @@ func (demuxer *TSDemuxer) flush() {
 			if demuxer.OnFrame == nil {
 				continue
 			}
-			if stream.cid == TS_STREAM_H264 || stream.cid == TS_STREAM_H265 {
+			if stream.cid == TsStreamH264 || stream.cid == TsStreamH265 {
 				audLen := 0
 				codec.SplitFrameWithStartCode(stream.pkg.payload, func(nalu []byte) bool {
-					if stream.cid == TS_STREAM_H264 {
-						if codec.H264NaluType(nalu) == codec.H264_NAL_AUD {
+					if stream.cid == TsStreamH264 {
+						if codec.H264NaluType(nalu) == codec.H264NalAud {
 							audLen += len(nalu)
 						}
 					} else {
-						if codec.H265NaluType(nalu) == codec.H265_NAL_AUD {
+						if codec.H265NaluType(nalu) == codec.H265NalAud {
 							audLen += len(nalu)
 						}
 					}
@@ -218,47 +218,47 @@ func (demuxer *TSDemuxer) flush() {
 }
 
 func (demuxer *TSDemuxer) doVideoPesPacket(stream *tsstream, start uint8) {
-	if stream.cid != TS_STREAM_H264 && stream.cid != TS_STREAM_H265 {
+	if stream.cid != TsStreamH264 && stream.cid != TsStreamH265 {
 		return
 	}
 	if stream.pkg == nil {
-		stream.pkg = newPacket_t(1024)
-		stream.pkg.pts = stream.pes_pkg.Pts
-		stream.pkg.dts = stream.pes_pkg.Dts
+		stream.pkg = newpacketT(1024)
+		stream.pkg.pts = stream.pesPkg.Pts
+		stream.pkg.dts = stream.pesPkg.Dts
 	}
-	stream.pkg.payload = append(stream.pkg.payload, stream.pes_pkg.Pes_payload...)
+	stream.pkg.payload = append(stream.pkg.payload, stream.pesPkg.PesPayload...)
 	update := false
-	if stream.cid == TS_STREAM_H264 {
+	if stream.cid == TsStreamH264 {
 		update = demuxer.splitH264Frame(stream)
 	} else {
 		update = demuxer.splitH265Frame(stream)
 	}
 	if update {
-		stream.pkg.pts = stream.pes_pkg.Pts
-		stream.pkg.dts = stream.pes_pkg.Dts
+		stream.pkg.pts = stream.pesPkg.Pts
+		stream.pkg.dts = stream.pesPkg.Dts
 	}
 }
 
 func (demuxer *TSDemuxer) doAudioPesPacket(stream *tsstream, start uint8) {
-	if stream.cid != TS_STREAM_AAC && stream.cid != TS_STREAM_AUDIO_MPEG1 && stream.cid != TS_STREAM_AUDIO_MPEG2 {
+	if stream.cid != TsStreamAac && stream.cid != TsStreamAudioMpeg1 && stream.cid != TsStreamAudioMpeg2 {
 		return
 	}
 
 	if stream.pkg == nil {
-		stream.pkg = newPacket_t(1024)
-		stream.pkg.pts = stream.pes_pkg.Pts
-		stream.pkg.dts = stream.pes_pkg.Dts
+		stream.pkg = newpacketT(1024)
+		stream.pkg.pts = stream.pesPkg.Pts
+		stream.pkg.dts = stream.pesPkg.Dts
 	}
 
-	if len(stream.pkg.payload) > 0 && (start == 1 || stream.pes_pkg.Pts != stream.pkg.pts) {
+	if len(stream.pkg.payload) > 0 && (start == 1 || stream.pesPkg.Pts != stream.pkg.pts) {
 		if demuxer.OnFrame != nil {
 			demuxer.OnFrame(stream.cid, stream.pkg.payload, stream.pkg.pts/90, stream.pkg.dts/90)
 		}
 		stream.pkg.payload = stream.pkg.payload[:0]
 	}
-	stream.pkg.payload = append(stream.pkg.payload, stream.pes_pkg.Pes_payload...)
-	stream.pkg.pts = stream.pes_pkg.Pts
-	stream.pkg.dts = stream.pes_pkg.Dts
+	stream.pkg.payload = append(stream.pkg.payload, stream.pesPkg.PesPayload...)
+	stream.pkg.pts = stream.pesPkg.Pts
+	stream.pkg.dts = stream.pesPkg.Dts
 }
 
 func (demuxer *TSDemuxer) splitH264Frame(stream *tsstream) bool {
@@ -279,13 +279,13 @@ func (demuxer *TSDemuxer) splitH264Frame(stream *tsstream) bool {
 
 		naluType := codec.H264NaluTypeWithoutStartCode(data[start+int(sct):])
 		switch naluType {
-		case codec.H264_NAL_AUD, codec.H264_NAL_SPS,
-			codec.H264_NAL_PPS, codec.H264_NAL_SEI:
+		case codec.H264NalAud, codec.H264NalSps,
+			codec.H264NalPps, codec.H264NalSei:
 			if vcl > 0 {
 				newAcessUnit = true
 			}
-		case codec.H264_NAL_I_SLICE, codec.H264_NAL_P_SLICE,
-			codec.H264_NAL_SLICE_A, codec.H264_NAL_SLICE_B, codec.H264_NAL_SLICE_C:
+		case codec.H264NalISlice, codec.H264NalPSlice,
+			codec.H264NalSliceA, codec.H264NalSliceB, codec.H264NalSliceC:
 			if vcl > 0 {
 				// bs := codec.NewBitStream(data[start+int(sct)+1:])
 				// sliceHdr := &codec.SliceHeader{}
@@ -302,7 +302,7 @@ func (demuxer *TSDemuxer) splitH264Frame(stream *tsstream) bool {
 			if demuxer.OnFrame != nil {
 				audLen := 0
 				codec.SplitFrameWithStartCode(data[frameBeg:start], func(nalu []byte) bool {
-					if codec.H264NaluType(nalu) == codec.H264_NAL_AUD {
+					if codec.H264NaluType(nalu) == codec.H264NalAud {
 						audLen += len(nalu)
 					}
 					return false
@@ -344,19 +344,19 @@ func (demuxer *TSDemuxer) splitH265Frame(stream *tsstream) bool {
 		}
 		naluType := codec.H265NaluTypeWithoutStartCode(data[start+int(sct):])
 		switch naluType {
-		case codec.H265_NAL_AUD, codec.H265_NAL_SPS,
-			codec.H265_NAL_PPS, codec.H265_NAL_VPS, codec.H265_NAL_SEI:
+		case codec.H265NalAud, codec.H265NalSps,
+			codec.H265NalPps, codec.H265NalVps, codec.H265NalSei:
 			if vcl > 0 {
 				newAcessUnit = true
 			}
-		case codec.H265_NAL_Slice_TRAIL_N, codec.H265_NAL_LICE_TRAIL_R,
-			codec.H265_NAL_SLICE_TSA_N, codec.H265_NAL_SLICE_TSA_R,
-			codec.H265_NAL_SLICE_STSA_N, codec.H265_NAL_SLICE_STSA_R,
-			codec.H265_NAL_SLICE_RADL_N, codec.H265_NAL_SLICE_RADL_R,
-			codec.H265_NAL_SLICE_RASL_N, codec.H265_NAL_SLICE_RASL_R,
-			codec.H265_NAL_SLICE_BLA_W_LP, codec.H265_NAL_SLICE_BLA_W_RADL,
-			codec.H265_NAL_SLICE_BLA_N_LP, codec.H265_NAL_SLICE_IDR_W_RADL,
-			codec.H265_NAL_SLICE_IDR_N_LP, codec.H265_NAL_SLICE_CRA:
+		case codec.H265NalSliceTrailN, codec.H265NalLiceTrailR,
+			codec.H265NalSliceTsaN, codec.H265NalSliceTsaR,
+			codec.H265NalSliceStsaN, codec.H265NalSliceStsaR,
+			codec.H265NalSliceRadlN, codec.H265NalSliceRadlR,
+			codec.H265NalSliceRaslN, codec.H265NalSliceRaslR,
+			codec.H265NalSliceBlaWLp, codec.H265NalSliceBlaWRadl,
+			codec.H265NalSliceBlaNLp, codec.H265NalSliceIdrWRadl,
+			codec.H265NalSliceIdrNLp, codec.H265NalSliceCra:
 			if vcl > 0 {
 				// bs := codec.NewBitStream(data[start+int(sct)+2:])
 				// sliceHdr := &codec.SliceHeader{}
@@ -376,7 +376,7 @@ func (demuxer *TSDemuxer) splitH265Frame(stream *tsstream) bool {
 			if demuxer.OnFrame != nil {
 				audLen := 0
 				codec.SplitFrameWithStartCode(data[frameBeg:start], func(nalu []byte) bool {
-					if codec.H265NaluType(nalu) == codec.H265_NAL_AUD {
+					if codec.H265NaluType(nalu) == codec.H265NalAud {
 						audLen = len(nalu)
 					}
 					return false

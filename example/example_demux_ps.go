@@ -36,8 +36,8 @@ func main() {
 	defer fd3.Close()
 
 	demuxer := mpeg2.NewPSDemuxer()
-	demuxer.OnFrame = func(frame []byte, cid mpeg2.PS_STREAM_TYPE, pts uint64, dts uint64) {
-		if cid == mpeg2.PS_STREAM_H264 {
+	demuxer.OnFrame = func(frame []byte, cid mpeg2.PsStreamType, pts uint64, dts uint64) {
+		if cid == mpeg2.PsStreamH264 {
 			if codec.H264NaluType(frame) == 9 {
 				return
 			}
@@ -46,7 +46,7 @@ func main() {
 			if err != nil || n != len(frame) {
 				fmt.Println(err)
 			}
-		} else if cid == mpeg2.PS_STREAM_AAC {
+		} else if cid == mpeg2.PsStreamAac {
 			n, err := fd2.Write(frame)
 			if err != nil || n != len(frame) {
 				fmt.Println(err)
@@ -63,14 +63,14 @@ func main() {
 			} else {
 				fd3.WriteString(fmt.Sprintf("Decode Ps Packet Failed %s\n", decodeResult.Error()))
 			}
-		case *mpeg2.System_header:
+		case *mpeg2.SystemHeader:
 			fd3.WriteString("--------------System Header--------------\n")
 			if decodeResult == nil {
 				value.PrettyPrint(fd3)
 			} else {
 				fd3.WriteString(fmt.Sprintf("Decode Ps Packet Failed %s\n", decodeResult.Error()))
 			}
-		case *mpeg2.Program_stream_map:
+		case *mpeg2.ProgramStreamMap:
 			fd3.WriteString("--------------------PSM-------------------\n")
 			if decodeResult == nil {
 				value.PrettyPrint(fd3)

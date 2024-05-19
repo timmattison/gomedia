@@ -5,25 +5,25 @@ import (
 	"fmt"
 )
 
-type START_CODE_TYPE int
+type StartCodeType int
 
 const (
-	START_CODE_3 START_CODE_TYPE = 3
-	START_CODE_4 START_CODE_TYPE = 4
+	StartCode3 StartCodeType = 3
+	StartCode4 StartCodeType = 4
 )
 
-func FindStartCode(nalu []byte, offset int) (int, START_CODE_TYPE) {
+func FindStartCode(nalu []byte, offset int) (int, StartCodeType) {
 	idx := bytes.Index(nalu[offset:], []byte{0x00, 0x00, 0x01})
 	switch {
 	case idx > 0:
 		if nalu[offset+idx-1] == 0x00 {
-			return offset + idx - 1, START_CODE_4
+			return offset + idx - 1, StartCode4
 		}
 		fallthrough
 	case idx == 0:
-		return offset + idx, START_CODE_3
+		return offset + idx, StartCode3
 	}
-	return -1, START_CODE_3
+	return -1, StartCode3
 }
 
 func FindSyncword(aac []byte, offset int) int {
@@ -72,31 +72,31 @@ func SplitFrameWithStartCode(frames []byte, onFrame func(nalu []byte) bool) {
 }
 
 func SplitAACFrame(frames []byte, onFrame func(aac []byte)) {
-	var adts ADTS_Frame_Header
+	var adts AdtsFrameHeader
 	start := FindSyncword(frames, 0)
 	for start >= 0 {
 		adts.Decode(frames[start:])
-		onFrame(frames[start : start+int(adts.Variable_Header.Frame_length)])
-		start = FindSyncword(frames, start+int(adts.Variable_Header.Frame_length))
+		onFrame(frames[start : start+int(adts.VariableHeader.FrameLength)])
+		start = FindSyncword(frames, start+int(adts.VariableHeader.FrameLength))
 	}
 }
 
-func H264NaluType(h264 []byte) H264_NAL_TYPE {
+func H264NaluType(h264 []byte) H264NalType {
 	loc, sc := FindStartCode(h264, 0)
-	return H264_NAL_TYPE(h264[loc+int(sc)] & 0x1F)
+	return H264NalType(h264[loc+int(sc)] & 0x1F)
 }
 
-func H264NaluTypeWithoutStartCode(h264 []byte) H264_NAL_TYPE {
-	return H264_NAL_TYPE(h264[0] & 0x1F)
+func H264NaluTypeWithoutStartCode(h264 []byte) H264NalType {
+	return H264NalType(h264[0] & 0x1F)
 }
 
-func H265NaluType(h265 []byte) H265_NAL_TYPE {
+func H265NaluType(h265 []byte) H265NalType {
 	loc, sc := FindStartCode(h265, 0)
-	return H265_NAL_TYPE((h265[loc+int(sc)] >> 1) & 0x3F)
+	return H265NalType((h265[loc+int(sc)] >> 1) & 0x3F)
 }
 
-func H265NaluTypeWithoutStartCode(h265 []byte) H265_NAL_TYPE {
-	return H265_NAL_TYPE((h265[0] >> 1) & 0x3F)
+func H265NaluTypeWithoutStartCode(h265 []byte) H265NalType {
+	return H265NalType((h265[0] >> 1) & 0x3F)
 }
 
 func GetH264FirstMbInSlice(nalu []byte) uint64 {
@@ -104,7 +104,7 @@ func GetH264FirstMbInSlice(nalu []byte) uint64 {
 	bs := NewBitStream(nalu[start+int(sc)+1:])
 	sliceHdr := &SliceHeader{}
 	sliceHdr.Decode(bs)
-	return sliceHdr.First_mb_in_slice
+	return sliceHdr.FirstMbInSlice
 }
 
 func GetH265FirstMbInSlice(nalu []byte) uint64 {
@@ -112,17 +112,17 @@ func GetH265FirstMbInSlice(nalu []byte) uint64 {
 	bs := NewBitStream(nalu[start+int(sc)+2:])
 	sliceHdr := &SliceHeader{}
 	sliceHdr.Decode(bs)
-	return sliceHdr.First_mb_in_slice
+	return sliceHdr.FirstMbInSlice
 }
 
 func IsH264IDRFrame(h264 []byte) bool {
 
 	ret := false
 	onnalu := func(nalu []byte) bool {
-		nal_type := H264NaluTypeWithoutStartCode(nalu)
-		if nal_type < 5 {
+		nalType := H264NaluTypeWithoutStartCode(nalu)
+		if nalType < 5 {
 			return false
-		} else if nal_type == 5 {
+		} else if nalType == 5 {
 			ret = true
 			return false
 		} else {
@@ -133,16 +133,16 @@ func IsH264IDRFrame(h264 []byte) bool {
 	return ret
 }
 
-func IsH264VCLNaluType(nal_type H264_NAL_TYPE) bool {
-	if nal_type <= H264_NAL_I_SLICE && nal_type > H264_NAL_RESERVED {
+func IsH264VCLNaluType(nalType H264NalType) bool {
+	if nalType <= H264NalISlice && nalType > H264NalReserved {
 		return true
 	}
 	return false
 }
 
-func IsH265VCLNaluType(nal_type H265_NAL_TYPE) bool {
-	if (nal_type <= H265_NAL_SLICE_CRA && nal_type >= H265_NAL_SLICE_BLA_W_LP) ||
-		(nal_type <= H265_NAL_SLICE_RASL_R && nal_type >= H265_NAL_Slice_TRAIL_N) {
+func IsH265VCLNaluType(nalType H265NalType) bool {
+	if (nalType <= H265NalSliceCra && nalType >= H265NalSliceBlaWLp) ||
+		(nalType <= H265NalSliceRaslR && nalType >= H265NalSliceTrailN) {
 		return true
 	}
 	return false
@@ -151,10 +151,10 @@ func IsH265VCLNaluType(nal_type H265_NAL_TYPE) bool {
 func IsH265IDRFrame(h265 []byte) bool {
 	ret := false
 	onnalu := func(nalu []byte) bool {
-		nal_type := H265NaluTypeWithoutStartCode(nalu)
-		if nal_type <= 9 && nal_type >= 0 {
+		nalType := H265NaluTypeWithoutStartCode(nalu)
+		if nalType <= 9 && nalType >= 0 {
 			return false
-		} else if nal_type >= 16 && nal_type <= 21 {
+		} else if nalType >= 16 && nalType <= 21 {
 			ret = true
 			return false
 		} else {

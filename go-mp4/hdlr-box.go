@@ -38,16 +38,16 @@ func (ht HandlerType) equal(other HandlerType) bool {
 }
 
 type HandlerBox struct {
-	Box          *FullBox
-	Handler_type HandlerType
-	Name         string
+	Box         *FullBox
+	HandlerType HandlerType
+	Name        string
 }
 
 func NewHandlerBox(handlerType HandlerType, name string) *HandlerBox {
 	return &HandlerBox{
-		Box:          NewFullBox([4]byte{'h', 'd', 'l', 'r'}, 0),
-		Handler_type: handlerType,
-		Name:         name,
+		Box:         NewFullBox([4]byte{'h', 'd', 'l', 'r'}, 0),
+		HandlerType: handlerType,
+		Name:        name,
 	}
 }
 
@@ -64,10 +64,10 @@ func (hdlr *HandlerBox) Decode(r io.Reader, size uint64) (offset int, err error)
 		return 0, err
 	}
 	offset = 0
-	hdlr.Handler_type[0] = buf[offset]
-	hdlr.Handler_type[1] = buf[offset+1]
-	hdlr.Handler_type[2] = buf[offset+2]
-	hdlr.Handler_type[3] = buf[offset+3]
+	hdlr.HandlerType[0] = buf[offset]
+	hdlr.HandlerType[1] = buf[offset+1]
+	hdlr.HandlerType[2] = buf[offset+2]
+	hdlr.HandlerType[3] = buf[offset+3]
 	offset += 4
 	hdlr.Name = string(buf[offset : size-FullBoxLen])
 	offset = int(size - FullBoxLen)
@@ -78,21 +78,21 @@ func (hdlr *HandlerBox) Encode() (int, []byte) {
 	hdlr.Box.Box.Size = hdlr.Size()
 	offset, buf := hdlr.Box.Encode()
 	offset += 4
-	buf[offset] = hdlr.Handler_type[0]
-	buf[offset+1] = hdlr.Handler_type[1]
-	buf[offset+2] = hdlr.Handler_type[2]
-	buf[offset+3] = hdlr.Handler_type[3]
+	buf[offset] = hdlr.HandlerType[0]
+	buf[offset+1] = hdlr.HandlerType[1]
+	buf[offset+2] = hdlr.HandlerType[2]
+	buf[offset+3] = hdlr.HandlerType[3]
 	offset += 16
 	copy(buf[offset:], []byte(hdlr.Name))
 	return offset + len(hdlr.Name), buf
 }
 
-func getHandlerType(cid MP4_CODEC_TYPE) HandlerType {
+func getHandlerType(cid Mp4CodecType) HandlerType {
 	switch cid {
-	case MP4_CODEC_H264, MP4_CODEC_H265:
+	case Mp4CodecH264, Mp4CodecH265:
 		return vide
-	case MP4_CODEC_AAC, MP4_CODEC_G711A, MP4_CODEC_G711U,
-		MP4_CODEC_MP2, MP4_CODEC_MP3, MP4_CODEC_OPUS:
+	case Mp4CodecAac, Mp4CodecG711a, Mp4CodecG711u,
+		Mp4CodecMp2, Mp4CodecMp3, Mp4CodecOpus:
 		return soun
 	default:
 		panic("unsupport codec id")

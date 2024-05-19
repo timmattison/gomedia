@@ -11,7 +11,7 @@ import (
 	"github.com/timmattison/gomedia/go-mp4"
 )
 
-func mov_tag(tag [4]byte) uint32 {
+func movTag(tag [4]byte) uint32 {
 	return binary.LittleEndian.Uint32(tag[:])
 }
 
@@ -45,11 +45,11 @@ Loop:
 			break
 		}
 		fmt.Println(string(basebox.Type[:]))
-		tagName := mov_tag(basebox.Type)
+		tagName := movTag(basebox.Type)
 		switch tagName {
-		case mov_tag([4]byte{'m', 'o', 'o', 'v'}):
+		case movTag([4]byte{'m', 'o', 'o', 'v'}):
 			fmt.Println("Got moov box")
-		case mov_tag([4]byte{'m', 'v', 'h', 'd'}):
+		case movTag([4]byte{'m', 'v', 'h', 'd'}):
 			fmt.Println("Got mvhd box")
 			offset, _ := mp4Fd.Seek(0, io.SeekCurrent)
 			mvhd := mp4.MovieHeaderBox{Box: new(mp4.FullBox)}
@@ -69,11 +69,11 @@ Loop:
 				mp4Fd.Write(timeBuf) //modify time
 			}
 			mp4Fd.Seek(offset2, io.SeekStart)
-		case mov_tag([4]byte{'t', 'r', 'a', 'k'}):
+		case movTag([4]byte{'t', 'r', 'a', 'k'}):
 			fmt.Println("Got trak box")
-		case mov_tag([4]byte{'m', 'd', 'i', 'a'}):
+		case movTag([4]byte{'m', 'd', 'i', 'a'}):
 			fmt.Println("Got mdia box")
-		case mov_tag([4]byte{'m', 'd', 'h', 'd'}):
+		case movTag([4]byte{'m', 'd', 'h', 'd'}):
 			fmt.Println("Got mdhd box")
 			offset, _ := mp4Fd.Seek(0, io.SeekCurrent)
 			mdhd := mp4.MediaHeaderBox{Box: new(mp4.FullBox)}
@@ -93,7 +93,7 @@ Loop:
 				mp4Fd.Write(timeBuf) //modify time
 			}
 			mp4Fd.Seek(offset2, io.SeekStart)
-		case mov_tag([4]byte{'t', 'k', 'h', 'd'}):
+		case movTag([4]byte{'t', 'k', 'h', 'd'}):
 			fmt.Println("Got tkhd box")
 			offset, _ := mp4Fd.Seek(0, io.SeekCurrent)
 			tkhd := mp4.TrackHeaderBox{Box: new(mp4.FullBox)}

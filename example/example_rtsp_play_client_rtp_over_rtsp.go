@@ -62,7 +62,7 @@ func (cli *RtspPlaySession) HandleDescribe(client *rtsp.RtspClient, res rtsp.Rts
 			continue
 		}
 		fmt.Println("Got ", k, " track")
-		if t.Codec.Cid == rtsp.RTSP_CODEC_H264 {
+		if t.Codec.Cid == rtsp.RtspCodecH264 {
 			if cli.videoFile == nil {
 				cli.videoFile, _ = os.OpenFile("video.h264", os.O_CREATE|os.O_RDWR, 0666)
 			}
@@ -70,7 +70,7 @@ func (cli *RtspPlaySession) HandleDescribe(client *rtsp.RtspClient, res rtsp.Rts
 				//fmt.Println("Got H264 Frame size:", len(sample.Sample), " timestamp:", sample.Timestamp)
 				cli.videoFile.Write(sample.Sample)
 			})
-		} else if t.Codec.Cid == rtsp.RTSP_CODEC_AAC {
+		} else if t.Codec.Cid == rtsp.RtspCodecAac {
 			if cli.audioFile == nil {
 				cli.audioFile, _ = os.OpenFile("audio.aac", os.O_CREATE|os.O_RDWR, 0666)
 			}
@@ -78,7 +78,7 @@ func (cli *RtspPlaySession) HandleDescribe(client *rtsp.RtspClient, res rtsp.Rts
 				//fmt.Println("Got AAC Frame size:", len(sample.Sample), " timestamp:", sample.Timestamp)
 				cli.audioFile.Write(sample.Sample)
 			})
-		} else if t.Codec.Cid == rtsp.RTSP_CODEC_TS {
+		} else if t.Codec.Cid == rtsp.RtspCodecTs {
 			if cli.tsFile == nil {
 				cli.tsFile, _ = os.OpenFile("mp2t.ts", os.O_CREATE|os.O_RDWR, 0666)
 			}

@@ -18,25 +18,25 @@ func main() {
 	}
 	defer mp4file.Close()
 
-	muxer, err := mp4.CreateMp4Muxer(mp4file, mp4.WithMp4Flag(mp4.MP4_FLAG_FRAGMENT))
+	muxer, err := mp4.CreateMp4Muxer(mp4file, mp4.WithMp4Flag(mp4.Mp4FlagFragment))
 	if err != nil {
 		fmt.Println(err)
 		return
 	}
-	vtid := muxer.AddVideoTrack(mp4.MP4_CODEC_H264)
-	atid := muxer.AddAudioTrack(mp4.MP4_CODEC_AAC)
+	vtid := muxer.AddVideoTrack(mp4.Mp4CodecH264)
+	atid := muxer.AddAudioTrack(mp4.Mp4CodecAac)
 
 	flvfilereader, _ := os.Open(os.Args[1])
 	defer flvfilereader.Close()
 	fr := flv.CreateFlvReader()
 
 	fr.OnFrame = func(ci codec.CodecID, b []byte, pts, dts uint32) {
-		if ci == codec.CODECID_AUDIO_AAC {
+		if ci == codec.CodecidAudioAac {
 			err := muxer.Write(atid, b, uint64(pts), uint64(dts))
 			if err != nil {
 				fmt.Println(err)
 			}
-		} else if ci == codec.CODECID_VIDEO_H264 {
+		} else if ci == codec.CodecidVideoH264 {
 			err := muxer.Write(vtid, b, uint64(pts), uint64(dts))
 			if err != nil {
 				fmt.Println(err)

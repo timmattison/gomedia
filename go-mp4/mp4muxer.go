@@ -5,26 +5,26 @@ import (
 	"io"
 )
 
-type MP4_FLAG uint32
+type Mp4Flag uint32
 
 // ffmpeg movenc.h
 const (
-	MP4_FLAG_FRAGMENT MP4_FLAG = 1 << 1
-	MP4_FLAG_KEYFRAME MP4_FLAG = 1 << 3
-	MP4_FLAG_CUSTOM   MP4_FLAG = 1 << 5
-	MP4_FLAG_DASH     MP4_FLAG = 1 << 11
+	Mp4FlagFragment Mp4Flag = 1 << 1
+	Mp4FlagKeyframe Mp4Flag = 1 << 3
+	Mp4FlagCustom   Mp4Flag = 1 << 5
+	Mp4FlagDash     Mp4Flag = 1 << 11
 )
 
-func (f MP4_FLAG) has(ff MP4_FLAG) bool {
+func (f Mp4Flag) has(ff Mp4Flag) bool {
 	return (f & ff) != 0
 }
 
-func (f MP4_FLAG) isFragment() bool {
-	return (f & MP4_FLAG_FRAGMENT) != 0
+func (f Mp4Flag) isFragment() bool {
+	return (f & Mp4FlagFragment) != 0
 }
 
-func (f MP4_FLAG) isDash() bool {
-	return (f & MP4_FLAG_DASH) != 0
+func (f Mp4Flag) isDash() bool {
+	return (f & Mp4FlagDash) != 0
 }
 
 type OnFragment func(duration uint32, firstPts, firstDts uint64)
@@ -34,14 +34,14 @@ type Movmuxer struct {
 	nextFragmentId uint32
 	mdatOffset     uint32
 	tracks         map[uint32]*mp4track
-	movFlag        MP4_FLAG
+	movFlag        Mp4Flag
 	onNewFragment  OnFragment
 	fragDuration   uint32
 }
 
 type MuxerOption func(muxer *Movmuxer)
 
-func WithMp4Flag(f MP4_FLAG) MuxerOption {
+func WithMp4Flag(f Mp4Flag) MuxerOption {
 	return func(muxer *Movmuxer) {
 		muxer.movFlag |= f
 	}
@@ -53,7 +53,7 @@ func CreateMp4Muxer(w io.WriteSeeker, options ...MuxerOption) (*Movmuxer, error)
 		nextTrackId:    1,
 		nextFragmentId: 1,
 		tracks:         make(map[uint32]*mp4track),
-		movFlag:        MP4_FLAG_KEYFRAME,
+		movFlag:        Mp4FlagKeyframe,
 	}
 
 	for _, opt := range options {
@@ -62,13 +62,13 @@ func CreateMp4Muxer(w io.WriteSeeker, options ...MuxerOption) (*Movmuxer, error)
 
 	if !muxer.movFlag.isFragment() && !muxer.movFlag.isDash() {
 		ftyp := NewFileTypeBox()
-		ftyp.Major_brand = mov_tag(isom)
-		ftyp.Minor_version = 0x200
-		ftyp.Compatible_brands = make([]uint32, 4)
-		ftyp.Compatible_brands[0] = mov_tag(isom)
-		ftyp.Compatible_brands[1] = mov_tag(iso2)
-		ftyp.Compatible_brands[2] = mov_tag(avc1)
-		ftyp.Compatible_brands[3] = mov_tag(mp41)
+		ftyp.MajorBrand = movTag(isom)
+		ftyp.MinorVersion = 0x200
+		ftyp.CompatibleBrands = make([]uint32, 4)
+		ftyp.CompatibleBrands[0] = movTag(isom)
+		ftyp.CompatibleBrands[1] = movTag(iso2)
+		ftyp.CompatibleBrands[2] = movTag(avc1)
+		ftyp.CompatibleBrands[3] = movTag(mp41)
 		length, boxdata := ftyp.Encode()
 		_, err := muxer.writer.Write(boxdata[0:length])
 		if err != nil {
@@ -135,15 +135,15 @@ func WithExtraData(extraData []byte) TrackOption {
 	}
 }
 
-func (muxer *Movmuxer) AddAudioTrack(cid MP4_CODEC_TYPE, options ...TrackOption) uint32 {
+func (muxer *Movmuxer) AddAudioTrack(cid Mp4CodecType, options ...TrackOption) uint32 {
 	return muxer.addTrack(cid, options...)
 }
 
-func (muxer *Movmuxer) AddVideoTrack(cid MP4_CODEC_TYPE, options ...TrackOption) uint32 {
+func (muxer *Movmuxer) AddVideoTrack(cid Mp4CodecType, options ...TrackOption) uint32 {
 	return muxer.addTrack(cid, options...)
 }
 
-func (muxer *Movmuxer) addTrack(cid MP4_CODEC_TYPE, options ...TrackOption) uint32 {
+func (muxer *Movmuxer) addTrack(cid Mp4CodecType, options ...TrackOption) uint32 {
 	var track *mp4track
 	if muxer.movFlag.isDash() || muxer.movFlag.isFragment() {
 		track = newmp4track(cid, newFmp4WriterSeeker(1024*1024))
@@ -177,7 +177,7 @@ func (muxer *Movmuxer) Write(track uint32, data []byte, pts uint64, dts uint64) 
 	}
 
 	// isCustion := muxer.movFlag.has(MP4_FLAG_CUSTOM)
-	isKeyFrag := muxer.movFlag.has(MP4_FLAG_KEYFRAME)
+	isKeyFrag := muxer.movFlag.has(Mp4FlagKeyframe)
 	if isKeyFrag {
 		if mp4track.lastSample.isKey && mp4track.duration > 0 {
 			err = muxer.flushFragment()
@@ -235,7 +235,7 @@ func (muxer *Movmuxer) OnNewFragment(onFragment OnFragment) {
 }
 
 func (muxer *Movmuxer) WriteInitSegment(w io.Writer) error {
-	ftypBox := makeFtypBox(mov_tag(iso5), 0x200, []uint32{mov_tag(iso5), mov_tag(iso6), mov_tag(mp41)})
+	ftypBox := makeFtypBox(movTag(iso5), 0x200, []uint32{movTag(iso5), movTag(iso6), movTag(mp41)})
 	_, err := w.Write(ftypBox)
 	if err != nil {
 		return err
@@ -347,7 +347,7 @@ func (muxer *Movmuxer) flushFragment() (err error) {
 
 	if muxer.movFlag.isFragment() {
 		if muxer.nextFragmentId == 1 { //first fragment ,write moov
-			ftypBox := makeFtypBox(mov_tag(iso5), 0x200, []uint32{mov_tag(iso5), mov_tag(iso6), mov_tag(mp41)})
+			ftypBox := makeFtypBox(movTag(iso5), 0x200, []uint32{movTag(iso5), movTag(iso6), movTag(mp41)})
 			_, err := muxer.writer.Write(ftypBox)
 			if err != nil {
 				return err
@@ -408,7 +408,7 @@ func (muxer *Movmuxer) flushFragment() (err error) {
 	_, mdatBox := mdat.Encode()
 
 	if muxer.movFlag.isDash() {
-		stypBox := makeStypBox(mov_tag(msdh), 0, []uint32{mov_tag(msdh), mov_tag(msix)})
+		stypBox := makeStypBox(movTag(msdh), 0, []uint32{movTag(msdh), movTag(msix)})
 		_, err := muxer.writer.Write(stypBox)
 		if err != nil {
 			return err

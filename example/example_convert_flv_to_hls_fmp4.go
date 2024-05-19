@@ -62,7 +62,7 @@ func generateM3U8(flvFile string) {
 		fmt.Println(err)
 		return
 	}
-	muxer, err = mp4.CreateMp4Muxer(mp4file, mp4.WithMp4Flag(mp4.MP4_FLAG_DASH))
+	muxer, err = mp4.CreateMp4Muxer(mp4file, mp4.WithMp4Flag(mp4.Mp4FlagDash))
 	if err != nil {
 		fmt.Println(err)
 		return
@@ -91,20 +91,20 @@ func generateM3U8(flvFile string) {
 		}
 		muxer.ReBindWriter(mp4file)
 	})
-	vtid = muxer.AddVideoTrack(mp4.MP4_CODEC_H264)
-	atid = muxer.AddAudioTrack(mp4.MP4_CODEC_AAC)
+	vtid = muxer.AddVideoTrack(mp4.Mp4CodecH264)
+	atid = muxer.AddAudioTrack(mp4.Mp4CodecAac)
 
 	flvfilereader, _ := os.Open(flvFile)
 	defer flvfilereader.Close()
 	fr := flv.CreateFlvReader()
 
 	fr.OnFrame = func(ci codec.CodecID, b []byte, pts, dts uint32) {
-		if ci == codec.CODECID_AUDIO_AAC {
+		if ci == codec.CodecidAudioAac {
 			err := muxer.Write(atid, b, uint64(pts), uint64(dts))
 			if err != nil {
 				fmt.Println(err)
 			}
-		} else if ci == codec.CODECID_VIDEO_H264 {
+		} else if ci == codec.CodecidVideoH264 {
 			err := muxer.Write(vtid, b, uint64(pts), uint64(dts))
 			if err != nil {
 				fmt.Println(err)

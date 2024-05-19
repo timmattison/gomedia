@@ -48,11 +48,11 @@ func main() {
 			break
 		}
 		fmt.Printf("track:%d,cid:%+v,pts:%d dts:%d\n", pkg.TrackId, pkg.Cid, pkg.Pts, pkg.Dts)
-		if pkg.Cid == mp4.MP4_CODEC_H264 {
+		if pkg.Cid == mp4.Mp4CodecH264 {
 			vfile.Write(pkg.Data)
-		} else if pkg.Cid == mp4.MP4_CODEC_AAC {
+		} else if pkg.Cid == mp4.Mp4CodecAac {
 			afile.Write(pkg.Data)
-		} else if pkg.Cid == mp4.MP4_CODEC_MP3 {
+		} else if pkg.Cid == mp4.Mp4CodecMp3 {
 			afile.Write(pkg.Data)
 		}
 	}

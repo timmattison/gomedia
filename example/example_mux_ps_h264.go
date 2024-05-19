@@ -34,11 +34,11 @@ func main() {
 	FileName := strings.ToUpper(os.Args[1])
 	if strings.HasSuffix(FileName, "H264") ||
 		strings.HasSuffix(FileName, "264") {
-		pid = muxer.AddStream(mpeg2.PS_STREAM_H264)
+		pid = muxer.AddStream(mpeg2.PsStreamH264)
 	} else if strings.HasSuffix(FileName, "H265") ||
 		strings.HasSuffix(FileName, "265") ||
 		strings.HasSuffix(FileName, "HEVC") {
-		pid = muxer.AddStream(mpeg2.PS_STREAM_H265)
+		pid = muxer.AddStream(mpeg2.PsStreamH265)
 	}
 
 	buf, _ := ioutil.ReadAll(f)
@@ -46,7 +46,7 @@ func main() {
 	dts := uint64(0)
 	codec.SplitFrameWithStartCode(buf, func(nalu []byte) bool {
 		muxer.Write(pid, nalu, pts, dts)
-		if codec.H264NaluType(nalu) <= codec.H264_NAL_I_SLICE {
+		if codec.H264NaluType(nalu) <= codec.H264NalISlice {
 			pts += 40
 			dts += 40
 		}

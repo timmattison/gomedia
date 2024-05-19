@@ -8,14 +8,14 @@ import (
 )
 
 const (
-	RTSP_1_0 = 1
-	RTSP_2_0 = 2
+	Rtsp10 = 1
+	Rtsp20 = 2
 )
 
 // method            direction        object     requirement
 // DESCRIBE          C->S             P,S        recommended
 // ANNOUNCE          C->S, S->C       P,S        optional
-// GET_PARAMETER     C->S, S->C       P,S        optional
+// GetParameter     C->S, S->C       P,S        optional
 // OPTIONS           C->S, S->C       P,S        required
 //
 //	(S->C: optional)
@@ -32,7 +32,7 @@ const (
 	DESCRIBE      = "DESCRIBE"
 	SETUP         = "SETUP"
 	PLAY          = "PLAY"
-	GET_PARAMETER = "GET_PARAMETER"
+	GetParameter  = "GET_PARAMETER"
 	SET_PARAMETER = "SET_PARAMETER"
 	ANNOUNCE      = "ANNOUNCE"
 	PAUSE         = "PAUSE"
@@ -127,17 +127,17 @@ const (
 )
 
 const (
-	OK                    = 200
-	MOVED_Permanently     = 300
-	MOVED_Temporarily     = 301
-	BAD_REQUEST           = 400
-	Unauthorized          = 401
-	Not_Found             = 404
-	Session_Not_Found     = 454
-	Unsupported_Transport = 461
-	Internal_Server_Error = 500
-	Not_Implemented       = 501
-	Version_Not_Supported = 505
+	OK                   = 200
+	MovedPermanently     = 300
+	MovedTemporarily     = 301
+	BadRequest           = 400
+	Unauthorized         = 401
+	NotFound             = 404
+	SessionNotFound      = 454
+	UnsupportedTransport = 461
+	InternalServerError  = 500
+	NotImplemented       = 501
+	VersionNotSupported  = 505
 )
 
 var errNeedMore = errors.New("need more")
@@ -189,8 +189,8 @@ func (req *RtspRequest) parse(data string) (int, error) {
 		req.Fileds[k] = v
 	}
 
-	if content_length, found := req.Fileds["Content-Length"]; found {
-		length, _ := strconv.Atoi(content_length)
+	if contentLength, found := req.Fileds["Content-Length"]; found {
+		length, _ := strconv.Atoi(contentLength)
 		if length > len(body) {
 			return 0, errNeedMore
 		}
@@ -207,9 +207,9 @@ func (req *RtspRequest) parseFirstLine(firstLine string) error {
 	req.Method = sets[0]
 	req.Uri = sets[1]
 	if sets[2] == "RTSP/1.0" {
-		req.Version = RTSP_1_0
+		req.Version = Rtsp10
 	} else if sets[2] == "RTSP/2.0" {
-		req.Version = RTSP_2_0
+		req.Version = Rtsp20
 	} else {
 		return errors.New("rtsp parse request failed,unsupport rtsp version")
 	}
@@ -219,9 +219,9 @@ func (req *RtspRequest) parseFirstLine(firstLine string) error {
 func (req *RtspRequest) Encode() string {
 	request := req.Method
 	request += " " + req.Uri
-	if req.Version == RTSP_1_0 {
+	if req.Version == Rtsp10 {
 		request += " " + "RTSP/1.0\r\n"
-	} else if req.Version == RTSP_2_0 {
+	} else if req.Version == Rtsp20 {
 		request += " " + "RTSP/2.0\r\n"
 	}
 	if len(req.Body) > 0 {
@@ -244,7 +244,7 @@ func makeSetParameter(uri string, cseq int32) RtspRequest {
 }
 
 func makeGetParameter(uri string, cseq int32) RtspRequest {
-	return makeCommonReq(GET_PARAMETER, uri, cseq)
+	return makeCommonReq(GetParameter, uri, cseq)
 }
 
 func makeDescribe(uri string, cseq int32) RtspRequest {
@@ -282,7 +282,7 @@ func makeRedirect(uri string, cseq int32) RtspRequest {
 func makeCommonReq(method string, uri string, cseq int32) RtspRequest {
 	req := RtspRequest{Method: method, Uri: uri, Fileds: make(HeadFiled)}
 	req.Fileds.Add(CSeq, cseq)
-	req.Version = RTSP_1_0
+	req.Version = Rtsp10
 	req.Fileds.Add(ContentLength, 0)
 	req.Fileds[Date] = time.Now().UTC().Format("02 Jan 06 15:04:05 GMT")
 	return req
@@ -292,25 +292,25 @@ func getReasonByStatusCode(code int) string {
 	switch code {
 	case OK:
 		return "OK"
-	case MOVED_Permanently:
+	case MovedPermanently:
 		return "Moved Permanently"
-	case MOVED_Temporarily:
+	case MovedTemporarily:
 		return "Moved Temporarily"
-	case BAD_REQUEST:
+	case BadRequest:
 		return "Bad Request"
 	case Unauthorized:
 		return "Unauthorized"
-	case Not_Found:
+	case NotFound:
 		return "Not Found"
-	case Session_Not_Found:
+	case SessionNotFound:
 		return "Session Not Found"
-	case Unsupported_Transport:
+	case UnsupportedTransport:
 		return "Unsupported transport"
-	case Internal_Server_Error:
+	case InternalServerError:
 		return "Internal Server Error"
-	case Not_Implemented:
+	case NotImplemented:
 		return "Not Implemented"
-	case Version_Not_Supported:
+	case VersionNotSupported:
 		return "RTSP Version not supported"
 	}
 	return "Unsupport StatusCode"
@@ -350,8 +350,8 @@ func (res *RtspResponse) parse(data string) (int, error) {
 		res.Fileds[k] = v
 	}
 
-	if content_length, found := res.Fileds[ContentLength]; found {
-		length, _ := strconv.Atoi(content_length)
+	if contentLength, found := res.Fileds[ContentLength]; found {
+		length, _ := strconv.Atoi(contentLength)
 		if length > len(body) {
 			return 0, errNeedMore
 		}
@@ -368,9 +368,9 @@ func (res *RtspResponse) parseFirstLine(firstLine string) error {
 	}
 
 	if sets[0] == "RTSP/1.0" {
-		res.Version = RTSP_1_0
+		res.Version = Rtsp10
 	} else if sets[0] == "RTSP/2.0" {
-		res.Version = RTSP_2_0
+		res.Version = Rtsp20
 	} else {
 		return errors.New("rtsp parse response failed,unsupport rtsp version")
 	}
@@ -381,9 +381,9 @@ func (res *RtspResponse) parseFirstLine(firstLine string) error {
 
 func (res *RtspResponse) Encode() string {
 	var response = ""
-	if res.Version == RTSP_1_0 {
+	if res.Version == Rtsp10 {
 		response += "RTSP/1.0 "
-	} else if res.Version == RTSP_2_0 {
+	} else if res.Version == Rtsp20 {
 		response += "RTSP/2.0 "
 	} else {
 		response += "RTSP/1.0 "

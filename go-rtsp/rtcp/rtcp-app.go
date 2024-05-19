@@ -27,7 +27,7 @@ type App struct {
 
 func NewApp() *App {
 	return &App{
-		Comm: Comm{PT: RTCP_APP},
+		Comm: Comm{PT: RtcpApp},
 	}
 }
 

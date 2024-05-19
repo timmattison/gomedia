@@ -17,9 +17,9 @@ func TestFlvReader_Input(t *testing.T) {
 		defer audioFile.Close()
 		f := CreateFlvReader()
 		f.OnFrame = func(cid codec.CodecID, frame []byte, pts, dts uint32) {
-			if cid == codec.CODECID_VIDEO_H264 {
+			if cid == codec.CodecidVideoH264 {
 				videoFile.Write(frame)
-			} else if cid == codec.CODECID_AUDIO_AAC {
+			} else if cid == codec.CodecidAudioAac {
 				audioFile.Write(frame)
 			}
 		}
@@ -51,11 +51,11 @@ func TestFlvWriter_Write(t *testing.T) {
 		wf.WriteFlvHeader()
 		rf := CreateFlvReader()
 		rf.OnFrame = func(cid codec.CodecID, frame []byte, pts, dts uint32) {
-			if cid == codec.CODECID_VIDEO_H264 {
+			if cid == codec.CodecidVideoH264 {
 				if err := wf.WriteH264(frame, pts, dts); err != nil {
 					fmt.Println(err)
 				}
-			} else if cid == codec.CODECID_AUDIO_AAC {
+			} else if cid == codec.CodecidAudioAac {
 				if err := wf.WriteAAC(frame, pts, dts); err != nil {
 					fmt.Println(err)
 				}
@@ -106,7 +106,7 @@ func TestFlvReadH265(t *testing.T) {
 		defer videoFile.Close()
 		f := CreateFlvReader()
 		f.OnFrame = func(cid codec.CodecID, frame []byte, pts, dts uint32) {
-			if cid == codec.CODECID_VIDEO_H265 {
+			if cid == codec.CodecidVideoH265 {
 				videoFile.Write(frame)
 			}
 		}

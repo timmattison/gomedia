@@ -14,8 +14,8 @@ type RtmpConnectCmd int
 const (
 	CONNECT RtmpConnectCmd = iota
 	CLOSE
-	CREATE_STREAM
-	GET_STREAM_LENGTH
+	CreateStream
+	GetStreamLength
 )
 
 type RtmpClient struct {
@@ -53,13 +53,13 @@ type RtmpClient struct {
 func NewRtmpClient(options ...func(*RtmpClient)) *RtmpClient {
 	cli := &RtmpClient{
 		hs:             newClientHandShake(),
-		cmdChan:        newChunkStreamWriter(CHUNK_CHANNEL_CMD),
-		userCtrlChan:   newChunkStreamWriter(CHUNK_CHANNEL_USE_CTRL),
-		sourceChan:     newChunkStreamWriter(CHUNK_CHANNEL_NET_STREAM),
-		reader:         newChunkStreamReader(FIX_CHUNK_SIZE),
+		cmdChan:        newChunkStreamWriter(ChunkChannelCmd),
+		userCtrlChan:   newChunkStreamWriter(ChunkChannelUseCtrl),
+		sourceChan:     newChunkStreamWriter(ChunkChannelNetStream),
+		reader:         newChunkStreamReader(FixChunkSize),
 		tid:            4,
-		wndAckSize:     DEFAULT_ACK_SIZE,
-		writeChunkSize: DEFAULT_CHUNK_SIZE,
+		wndAckSize:     DefaultAckSize,
+		writeChunkSize: DefaultChunkSize,
 		isPublish:      false,
 	}
 
@@ -161,15 +161,15 @@ func (cli *RtmpClient) Input(data []byte) error {
 
 	switch cli.state {
 	case HandShake:
-		cli.changeState(STATE_HANDSHAKEING)
+		cli.changeState(StateHandshakeing)
 		cli.hs.input(data)
-		if cli.hs.getState() != HANDSHAKE_DONE {
+		if cli.hs.getState() != HandshakeDone {
 			return nil
 		} else {
-			cli.changeState(STATE_RTMP_CONNECTING)
+			cli.changeState(StateRtmpConnecting)
 			cli.state = ReadChunk
 			cmd := makeConnect(cli.app, cli.tcurl)
-			bufs := cli.cmdChan.writeData(cmd, Command_AMF0, 0, 0)
+			bufs := cli.cmdChan.writeData(cmd, CommandAmf0, 0, 0)
 			if err := cli.output(bufs); err != nil {
 				return err
 			}
@@ -193,9 +193,9 @@ func (cli *RtmpClient) Input(data []byte) error {
 }
 
 func (cli *RtmpClient) WriteFrame(cid codec.CodecID, frame []byte, pts, dts uint32) error {
-	if cid == codec.CODECID_AUDIO_AAC || cid == codec.CODECID_AUDIO_G711A || cid == codec.CODECID_AUDIO_G711U {
+	if cid == codec.CodecidAudioAac || cid == codec.CodecidAudioG711a || cid == codec.CodecidAudioG711u {
 		return cli.WriteAudio(cid, frame, pts, dts)
-	} else if cid == codec.CODECID_VIDEO_H264 || cid == codec.CODECID_VIDEO_H265 {
+	} else if cid == codec.CodecidVideoH264 || cid == codec.CodecidVideoH265 {
 		return cli.WriteVideo(cid, frame, pts, dts)
 	} else {
 		return errors.New("unsupport codec id")
@@ -207,7 +207,7 @@ func (cli *RtmpClient) WriteAudio(cid codec.CodecID, frame []byte, pts, dts uint
 		cli.audioMuxer = flv.CreateAudioMuxer(flv.CovertCodecId2SoundFromat(cid))
 	}
 	if cli.audioChan == nil {
-		cli.audioChan = newChunkStreamWriter(CHUNK_CHANNEL_AUDIO)
+		cli.audioChan = newChunkStreamWriter(ChunkChannelAudio)
 		cli.audioChan.chunkSize = cli.writeChunkSize
 	}
 	tags := cli.audioMuxer.Write(frame, pts, dts)
@@ -227,7 +227,7 @@ func (cli *RtmpClient) WriteVideo(cid codec.CodecID, frame []byte, pts, dts uint
 		cli.videoMuxer = flv.CreateVideoMuxer(flv.CovertCodecId2FlvVideoCodecId(cid))
 	}
 	if cli.videoChan == nil {
-		cli.videoChan = newChunkStreamWriter(CHUNK_CHANNEL_VIDEO)
+		cli.videoChan = newChunkStreamWriter(ChunkChannelVideo)
 		cli.videoChan.chunkSize = cli.writeChunkSize
 	}
 	tags := cli.videoMuxer.Write(frame, pts, dts)
@@ -253,36 +253,36 @@ func (cli *RtmpClient) changeState(newState RtmpState) {
 
 func (cli *RtmpClient) handleMessage(msg *rtmpMessage) error {
 	switch msg.msgtype {
-	case SET_CHUNK_SIZE:
+	case SetChunkSize:
 		if len(msg.msg) < 4 {
 			return errors.New("bytes of \"set chunk size\"  < 4")
 		}
 		size := binary.BigEndian.Uint32(msg.msg)
 		cli.reader.chunkSize = size
-	case ABORT_MESSAGE:
+	case AbortMessage:
 		//TODO
 	case ACKNOWLEDGEMENT:
 		if len(msg.msg) < 4 {
 			return errors.New("bytes of \"window acknowledgement size\"  < 4")
 		}
 		cli.wndAckSize = binary.BigEndian.Uint32(msg.msg)
-	case USER_CONTROL:
+	case UserControl:
 		return cli.handleUserEvent(msg.msg)
-	case WND_ACK_SIZE:
+	case WndAckSize:
 		//TODO
-	case SET_PEER_BW:
+	case SetPeerBw:
 		//TODO
 	case AUDIO:
 		return cli.handleAudioMessage(msg)
 	case VIDEO:
 		return cli.handleVideoMessage(msg)
-	case Command_AMF0:
+	case CommandAmf0:
 		return cli.handleCommandRes(msg.msg)
-	case Command_AMF3:
-	case Metadata_AMF0:
-	case Metadata_AMF3:
-	case SharedObject_AMF0:
-	case SharedObject_AMF3:
+	case CommandAmf3:
+	case MetadataAmf0:
+	case MetadataAmf3:
+	case SharedobjectAmf0:
+	case SharedobjectAmf3:
 	case Aggregate:
 	default:
 		return errors.New("unkow message type")
@@ -337,7 +337,7 @@ func (cli *RtmpClient) handleVideoMessage(msg *rtmpMessage) error {
 
 func (cli *RtmpClient) handleAudioMessage(msg *rtmpMessage) error {
 	if cli.audioDemuxer == nil {
-		cli.audioDemuxer = flv.CreateAudioTagDemuxer(flv.FLV_SOUND_FORMAT((msg.msg[0] >> 4) & 0x0F))
+		cli.audioDemuxer = flv.CreateAudioTagDemuxer(flv.FlvSoundFormat((msg.msg[0] >> 4) & 0x0F))
 		cli.audioDemuxer.OnFrame(func(codecid codec.CodecID, frame []byte) {
 			dts := cli.timestamp
 			pts := dts
@@ -352,9 +352,9 @@ func (cli *RtmpClient) handleResult(data []byte) error {
 
 	case CONNECT:
 		return cli.handleConnectResponse(data)
-	case CREATE_STREAM:
+	case CreateStream:
 		return cli.handleCreateStreamResponse(data)
-	case GET_STREAM_LENGTH:
+	case GetStreamLength:
 		//TODO
 	}
 	return nil
@@ -371,26 +371,26 @@ func (cli *RtmpClient) handleConnectResponse(data []byte) error {
 		}
 	}
 
-	cli.lastMethod = CREATE_STREAM
+	cli.lastMethod = CreateStream
 	cli.lastMethodTid = 2
 	if !cli.isPublish {
 		ack := makeAcknowledgementSize(cli.wndAckSize)
-		bufs := cli.userCtrlChan.writeData(ack, WND_ACK_SIZE, 0, 0)
+		bufs := cli.userCtrlChan.writeData(ack, WndAckSize, 0, 0)
 		cmd := makeCreateStream(cli.streamName, 2)
-		bufs = append(bufs, cli.cmdChan.writeData(cmd, Command_AMF0, 0, 0)...)
+		bufs = append(bufs, cli.cmdChan.writeData(cmd, CommandAmf0, 0, 0)...)
 		return cli.output(bufs)
 	} else {
 		buf := makeSetChunkSize(cli.writeChunkSize)
-		bufs := cli.userCtrlChan.writeData(buf, SET_CHUNK_SIZE, 0, 0)
+		bufs := cli.userCtrlChan.writeData(buf, SetChunkSize, 0, 0)
 		cli.cmdChan.chunkSize = cli.writeChunkSize
 		cli.userCtrlChan.chunkSize = cli.writeChunkSize
 		cli.sourceChan.chunkSize = cli.writeChunkSize
 		buf = makeReleaseStream(cli.streamName)
-		bufs = append(bufs, cli.cmdChan.writeData(buf, Command_AMF0, 0, 0)...)
+		bufs = append(bufs, cli.cmdChan.writeData(buf, CommandAmf0, 0, 0)...)
 		buf = makeFcPublish(cli.streamName)
-		bufs = append(bufs, cli.cmdChan.writeData(buf, Command_AMF0, 0, 0)...)
+		bufs = append(bufs, cli.cmdChan.writeData(buf, CommandAmf0, 0, 0)...)
 		buf = makeCreateStream(cli.streamName, 2)
-		bufs = append(bufs, cli.cmdChan.writeData(buf, Command_AMF0, 0, 0)...)
+		bufs = append(bufs, cli.cmdChan.writeData(buf, CommandAmf0, 0, 0)...)
 		return cli.output(bufs)
 	}
 }
@@ -410,16 +410,16 @@ func (cli *RtmpClient) handleCreateStreamResponse(data []byte) error {
 	}
 
 	if !cli.isPublish {
-		cli.lastMethod = GET_STREAM_LENGTH
+		cli.lastMethod = GetStreamLength
 		cli.lastMethodTid = 3
 		cmd := makeGetStreamLength(3, cli.streamName)
-		bufs := cli.cmdChan.writeData(cmd, Command_AMF0, cli.streamId, 0)
+		bufs := cli.cmdChan.writeData(cmd, CommandAmf0, cli.streamId, 0)
 		req := makePlay(int(cli.tid), cli.streamName, -1, -1, true)
-		bufs = append(bufs, cli.sourceChan.writeData(req, Command_AMF0, cli.streamId, 0)...)
+		bufs = append(bufs, cli.sourceChan.writeData(req, CommandAmf0, cli.streamId, 0)...)
 		return cli.output(bufs)
 	} else {
-		data := makePublish(cli.streamName, PUBLISHING_LIVE)
-		bufs := cli.cmdChan.writeData(data, Command_AMF0, cli.streamId, 0)
+		data := makePublish(cli.streamName, PublishingLive)
+		bufs := cli.cmdChan.writeData(data, CommandAmf0, cli.streamId, 0)
 		return cli.output(bufs)
 	}
 }
@@ -441,9 +441,9 @@ func (cli *RtmpClient) handleError(data []byte) error {
 		}
 	}
 	if cli.isPublish {
-		cli.changeState(STATE_RTMP_PUBLISH_FAILED)
+		cli.changeState(StateRtmpPublishFailed)
 	} else {
-		cli.changeState(STATE_RTMP_PLAY_FAILED)
+		cli.changeState(StateRtmpPlayFailed)
 	}
 	return nil
 }
@@ -472,15 +472,15 @@ func (cli *RtmpClient) handleStatus(data []byte) error {
 		cli.onstatus(code, level, describe)
 	}
 
-	if code == string(NETSTREAM_PUBLISH_START) {
-		cli.changeState(STATE_RTMP_PUBLISH_START)
-	} else if code == string(NETSTREAM_PLAY_START) {
-		cli.changeState(STATE_RTMP_PLAY_START)
-	} else if level == string(LEVEL_ERROR) {
+	if code == string(NetstreamPublishStart) {
+		cli.changeState(StateRtmpPublishStart)
+	} else if code == string(NetstreamPlayStart) {
+		cli.changeState(StateRtmpPlayStart)
+	} else if level == string(LevelError) {
 		if cli.isPublish {
-			cli.changeState(STATE_RTMP_PUBLISH_FAILED)
+			cli.changeState(StateRtmpPublishFailed)
 		} else {
-			cli.changeState(STATE_RTMP_PLAY_FAILED)
+			cli.changeState(StateRtmpPlayFailed)
 		}
 	}
 	return nil

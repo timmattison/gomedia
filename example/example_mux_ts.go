@@ -34,13 +34,13 @@ func main() {
 		//os.Stdin.Read(make([]byte, 1))
 	}
 
-	pid := muxer.AddStream(mpeg2.TS_STREAM_H264)
+	pid := muxer.AddStream(mpeg2.TsStreamH264)
 	h264, _ := ioutil.ReadAll(f)
 	var pts uint64 = 0
 	var dts uint64 = 0
 	codec.SplitFrameWithStartCode(h264, func(nalu []byte) bool {
 		//fmt.Println("wtite nalu")
-		if codec.H264NaluType(nalu) <= codec.H264_NAL_I_SLICE {
+		if codec.H264NaluType(nalu) <= codec.H264NalISlice {
 			pts += 40
 			dts += 40
 			fmt.Println(dts)

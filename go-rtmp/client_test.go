@@ -19,7 +19,7 @@ func TestRtmpClient_Play(t *testing.T) {
 		}
 
 		cli := NewRtmpClient(WithComplexHandshake(),
-			WithComplexHandshakeSchema(HANDSHAKE_COMPLEX_SCHEMA1))
+			WithComplexHandshakeSchema(HandshakeComplexSchema1))
 
 		cli.OnError(func(code, describe string) {
 			fmt.Printf("rtmp error code:%s,describe:%s\n", code, describe)
@@ -43,7 +43,7 @@ func TestRtmpClient_Play(t *testing.T) {
 		}()
 
 		cli.OnFrame(func(cid codec.CodecID, pts, dts uint32, frame []byte) {
-			if cid == codec.CODECID_VIDEO_H264 {
+			if cid == codec.CodecidVideoH264 {
 				if firstVideo {
 					fd, _ = os.OpenFile("v.h264", os.O_CREATE|os.O_RDWR, 0666)
 					firstVideo = false
@@ -88,7 +88,7 @@ func TestRtmpClient_Pub(t *testing.T) {
 		}
 
 		cli := NewRtmpClient(WithComplexHandshake(),
-			WithComplexHandshakeSchema(HANDSHAKE_COMPLEX_SCHEMA1),
+			WithComplexHandshakeSchema(HandshakeComplexSchema1),
 			WithEnablePublish())
 
 		cli.OnError(func(code, describe string) {
@@ -101,7 +101,7 @@ func TestRtmpClient_Pub(t *testing.T) {
 		})
 
 		cli.OnStateChange(func(newState RtmpState) {
-			if newState == STATE_RTMP_PUBLISH_START {
+			if newState == StateRtmpPublishStart {
 				fmt.Println("ready for publish")
 				close(isReady)
 			}
@@ -112,11 +112,11 @@ func TestRtmpClient_Pub(t *testing.T) {
 			fmt.Println("start to read flv")
 			f := flv.CreateFlvReader()
 			f.OnFrame = func(cid codec.CodecID, frame []byte, pts, dts uint32) {
-				if cid == codec.CODECID_VIDEO_H264 {
+				if cid == codec.CodecidVideoH264 {
 					fmt.Println("write video frame", pts, dts)
 					cli.WriteVideo(cid, frame, pts, dts)
 					time.Sleep(time.Millisecond * 33)
-				} else if cid == codec.CODECID_AUDIO_AAC {
+				} else if cid == codec.CodecidAudioAac {
 					cli.WriteAudio(cid, frame, pts, dts)
 				}
 			}

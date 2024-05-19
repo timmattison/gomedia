@@ -20,13 +20,13 @@ func publish(fileName string, cli *rtmp.RtmpClient) {
 	fmt.Println(fileName)
 	f := flv.CreateFlvReader()
 	f.OnFrame = func(cid codec.CodecID, frame []byte, pts, dts uint32) {
-		if cid == codec.CODECID_VIDEO_H264 {
+		if cid == codec.CodecidVideoH264 {
 			cli.WriteVideo(cid, frame, pts, dts)
 			time.Sleep(time.Millisecond * 20)
-		} else if cid == codec.CODECID_VIDEO_H265 {
+		} else if cid == codec.CodecidVideoH265 {
 			cli.WriteVideo(cid, frame, pts, dts)
 			time.Sleep(time.Millisecond * 20)
-		} else if cid == codec.CODECID_AUDIO_AAC {
+		} else if cid == codec.CodecidAudioAac {
 			cli.WriteAudio(cid, frame, pts, dts)
 		}
 	}
@@ -67,7 +67,7 @@ func main() {
 
 	//监听状态变化,STATE_RTMP_PUBLISH_START 状态通知推流
 	cli.OnStateChange(func(newState rtmp.RtmpState) {
-		if newState == rtmp.STATE_RTMP_PUBLISH_START {
+		if newState == rtmp.StateRtmpPublishStart {
 			fmt.Println("ready for publish")
 			close(isReady)
 		}

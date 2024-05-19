@@ -16,7 +16,7 @@ func init() {
 }
 
 type RtspSample struct {
-	Cid       RTSP_CODEC_ID
+	Cid       RtspCodecId
 	Sample    []byte
 	Timestamp uint32 //in milliseconds
 	Completed bool
@@ -128,15 +128,15 @@ func (track *RtspTrack) OnSample(onsample OnSampleCallBack) {
 			Timestamp: timestamp, //uint32(uint64() * 1000 / uint64(track.Codec.SampleRate)),
 			Completed: !lost,
 		}
-		if sample.Cid == RTSP_CODEC_H264 {
-			nalu_type := codec.H264NaluType(frame)
-			switch nalu_type {
-			case codec.H264_NAL_SPS:
+		if sample.Cid == RtspCodecH264 {
+			naluType := codec.H264NaluType(frame)
+			switch naluType {
+			case codec.H264NalSps:
 				hasSps = true
-			case codec.H264_NAL_PPS:
+			case codec.H264NalPps:
 				hasPps = true
 			}
-			if nalu_type == codec.H264_NAL_I_SLICE && (!hasPps || !hasSps) {
+			if naluType == codec.H264NalISlice && (!hasPps || !hasSps) {
 				if h264Param, ok := track.paramHandler.(*sdp.H264FmtpParam); ok {
 					sps, pps := h264Param.GetSpsPps()
 					if len(sps) > 0 && len(pps) > 0 {
@@ -152,17 +152,17 @@ func (track *RtspTrack) OnSample(onsample OnSampleCallBack) {
 					}
 				}
 			}
-		} else if sample.Cid == RTSP_CODEC_H265 {
-			nalu_type := codec.H265NaluType(frame)
-			switch nalu_type {
-			case codec.H265_NAL_PPS:
+		} else if sample.Cid == RtspCodecH265 {
+			naluType := codec.H265NaluType(frame)
+			switch naluType {
+			case codec.H265NalPps:
 				hasPps = true
-			case codec.H265_NAL_SPS:
+			case codec.H265NalSps:
 				hasSps = true
-			case codec.H265_NAL_VPS:
+			case codec.H265NalVps:
 				hasVps = true
 			}
-			if nalu_type >= 16 && nalu_type <= 21 && (!hasPps || !hasSps || !hasVps) {
+			if naluType >= 16 && naluType <= 21 && (!hasPps || !hasSps || !hasVps) {
 				if h265Param, ok := track.paramHandler.(*sdp.H265FmtpParam); ok {
 					vps, sps, pps := h265Param.GetVpsSpsPps()
 					if len(vps) > 0 && len(sps) > 0 && len(pps) > 0 {
@@ -255,7 +255,7 @@ func (track *RtspTrack) inputRtcp(data []byte) error {
 	pkt := rtcp.Comm{}
 	pkt.Decode(data)
 	switch pkt.PT {
-	case rtcp.RTCP_SR:
+	case rtcp.RtcpSr:
 		sr := rtcp.NewSenderReport()
 		sr.Decode(data)
 		if track.recvCtx != nil {
@@ -271,19 +271,19 @@ func (track *RtspTrack) inputRtcp(data []byte) error {
 func (track *RtspTrack) createUnpacker() rtp.UnPacker {
 
 	switch track.Codec.Cid {
-	case RTSP_CODEC_H264:
+	case RtspCodecH264:
 		return rtp.NewH264UnPacker()
-	case RTSP_CODEC_H265:
+	case RtspCodecH265:
 		return rtp.NewH265UnPacker()
-	case RTSP_CODEC_AAC:
+	case RtspCodecAac:
 		if aacFmtp, ok := track.paramHandler.(*sdp.AACFmtpParam); ok {
 			return rtp.NewAACUnPacker(aacFmtp.SizeLength(), aacFmtp.IndexLength(), aacFmtp.AudioSpecificConfig())
 		} else {
 			return rtp.NewAACUnPacker(13, 3, nil)
 		}
-	case RTSP_CODEC_G711A, RTSP_CODEC_G711U:
+	case RtspCodecG711a, RtspCodecG711u:
 		return rtp.NewG711UnPacker()
-	case RTSP_CODEC_TS:
+	case RtspCodecTs:
 		return rtp.NewTsUnPacker()
 	}
 	return nil
@@ -291,17 +291,17 @@ func (track *RtspTrack) createUnpacker() rtp.UnPacker {
 
 func (track *RtspTrack) createPacker() rtp.Packer {
 	switch track.Codec.Cid {
-	case RTSP_CODEC_AAC:
+	case RtspCodecAac:
 		return rtp.NewAACPacker(track.Codec.PayloadType, track.ssrc, track.initSequence, 1400)
-	case RTSP_CODEC_H264:
+	case RtspCodecH264:
 		return rtp.NewH264Packer(track.Codec.PayloadType, track.ssrc, track.initSequence, 1400)
-	case RTSP_CODEC_H265:
+	case RtspCodecH265:
 		return rtp.NewH265Packer(track.Codec.PayloadType, track.ssrc, track.initSequence, 1400)
-	case RTSP_CODEC_G711U, RTSP_CODEC_G711A:
+	case RtspCodecG711u, RtspCodecG711a:
 		return rtp.NewG711Packer(track.Codec.PayloadType, track.ssrc, track.initSequence, 1400)
-	case RTSP_CODEC_PS:
+	case RtspCodecPs:
 		return nil
-	case RTSP_CODEC_TS:
+	case RtspCodecTs:
 		return rtp.NewTsPacker(track.Codec.PayloadType, track.ssrc, track.initSequence, 1400)
 	default:
 		return nil

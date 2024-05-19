@@ -33,9 +33,9 @@ func main() {
 			break
 		}
 		fmt.Println(pkg.Cid, pkg.Pts, pkg.Dts, len(pkg.Data))
-		if pkg.Cid == mp4.MP4_CODEC_H264 {
+		if pkg.Cid == mp4.Mp4CodecH264 {
 			videof.Write(pkg.Data)
-		} else if pkg.Cid == mp4.MP4_CODEC_AAC {
+		} else if pkg.Cid == mp4.Mp4CodecAac {
 			audiof.Write(pkg.Data)
 		}
 	}

@@ -19,7 +19,7 @@ type OpusCodec struct {
 }
 
 func (opus OpusCodec) codecid() codec.CodecID {
-	return codec.CODECID_AUDIO_OPUS
+	return codec.CodecidAudioOpus
 }
 
 func (opus OpusCodec) magic() []byte {
@@ -34,7 +34,7 @@ type VP8Codec struct {
 }
 
 func (vp8 VP8Codec) codecid() codec.CodecID {
-	return codec.CODECID_VIDEO_VP8
+	return codec.CodecidVideoVp8
 }
 
 func (vp8 VP8Codec) magic() []byte {
@@ -62,11 +62,11 @@ type oggParser interface {
 
 func createParser(cid codec.CodecID) oggParser {
 	switch cid {
-	case codec.CODECID_AUDIO_OPUS:
+	case codec.CodecidAudioOpus:
 		return &opusDemuxer{
 			lastpts: ^uint64(0),
 		}
-	case codec.CODECID_VIDEO_VP8:
+	case codec.CodecidVideoVp8:
 		return &vp8Demuxer{
 			lastpts: ^uint64(0),
 			pktIdx:  0,

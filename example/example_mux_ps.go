@@ -29,15 +29,15 @@ func main() {
 		psf.Write(pkg)
 	}
 
-	pid := muxer.AddStream(mpeg2.PS_STREAM_H265)
-	audioId := muxer.AddStream(mpeg2.PS_STREAM_AAC)
+	pid := muxer.AddStream(mpeg2.PsStreamH265)
+	audioId := muxer.AddStream(mpeg2.PsStreamAac)
 	buf, _ := ioutil.ReadAll(f2)
 	demuxer := mpeg2.NewPSDemuxer()
-	demuxer.OnFrame = func(frame []byte, cid mpeg2.PS_STREAM_TYPE, pts uint64, dts uint64) {
-		if cid == mpeg2.PS_STREAM_H265 {
+	demuxer.OnFrame = func(frame []byte, cid mpeg2.PsStreamType, pts uint64, dts uint64) {
+		if cid == mpeg2.PsStreamH265 {
 			muxer.Write(pid, frame, pts, dts)
 			// fmt.Println("write h264")
-		} else if cid == mpeg2.PS_STREAM_AAC {
+		} else if cid == mpeg2.PsStreamAac {
 			muxer.Write(audioId, frame, pts, dts)
 		}
 	}

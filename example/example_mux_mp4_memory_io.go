@@ -78,15 +78,15 @@ func main() {
 		fmt.Println(err)
 		return
 	}
-	vtid := muxer.AddVideoTrack(mp4.MP4_CODEC_H264)
+	vtid := muxer.AddVideoTrack(mp4.Mp4CodecH264)
 	buf, err := ioutil.ReadFile(tsfile)
 	if err != nil {
 		panic(err)
 	}
 	fmt.Printf("read %d size\n", len(buf))
 	demuxer := mpeg2.NewTSDemuxer()
-	demuxer.OnFrame = func(cid mpeg2.TS_STREAM_TYPE, frame []byte, pts uint64, dts uint64) {
-		if cid == mpeg2.TS_STREAM_H264 {
+	demuxer.OnFrame = func(cid mpeg2.TsStreamType, frame []byte, pts uint64, dts uint64) {
+		if cid == mpeg2.TsStreamH264 {
 			err = muxer.Write(vtid, frame, uint64(pts), uint64(dts))
 			if err != nil {
 				panic(err)

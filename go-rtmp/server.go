@@ -127,11 +127,11 @@ type RtmpServerHandle struct {
 func NewRtmpServerHandle(options ...func(*RtmpServerHandle)) *RtmpServerHandle {
 	server := &RtmpServerHandle{
 		hs:             newServerHandShake(),
-		cmdChan:        newChunkStreamWriter(CHUNK_CHANNEL_CMD),
-		userCtrlChan:   newChunkStreamWriter(CHUNK_CHANNEL_USE_CTRL),
-		reader:         newChunkStreamReader(FIX_CHUNK_SIZE),
-		wndAckSize:     DEFAULT_ACK_SIZE,
-		writeChunkSize: DEFAULT_CHUNK_SIZE,
+		cmdChan:        newChunkStreamWriter(ChunkChannelCmd),
+		userCtrlChan:   newChunkStreamWriter(ChunkChannelUseCtrl),
+		reader:         newChunkStreamReader(FixChunkSize),
+		wndAckSize:     DefaultAckSize,
+		writeChunkSize: DefaultChunkSize,
 		streamId:       1,
 	}
 
@@ -186,10 +186,10 @@ func (server *RtmpServerHandle) Input(data []byte) error {
 	for len(data) > 0 {
 		switch server.state {
 		case HandShake:
-			server.changeState(STATE_HANDSHAKEING)
+			server.changeState(StateHandshakeing)
 			r := server.hs.input(data)
-			if server.hs.getState() == HANDSHAKE_DONE {
-				server.changeState(STATE_HANDSHAKE_DONE)
+			if server.hs.getState() == HandshakeDone {
+				server.changeState(StateHandshakeDone)
 				server.state = ReadChunk
 			}
 			data = data[r:]
@@ -206,9 +206,9 @@ func (server *RtmpServerHandle) Input(data []byte) error {
 }
 
 func (server *RtmpServerHandle) WriteFrame(cid codec.CodecID, frame []byte, pts, dts uint32) error {
-	if cid == codec.CODECID_AUDIO_AAC || cid == codec.CODECID_AUDIO_G711A || cid == codec.CODECID_AUDIO_G711U {
+	if cid == codec.CodecidAudioAac || cid == codec.CodecidAudioG711a || cid == codec.CodecidAudioG711u {
 		return server.WriteAudio(cid, frame, pts, dts)
-	} else if cid == codec.CODECID_VIDEO_H264 || cid == codec.CODECID_VIDEO_H265 {
+	} else if cid == codec.CodecidVideoH264 || cid == codec.CodecidVideoH265 {
 		return server.WriteVideo(cid, frame, pts, dts)
 	} else {
 		return errors.New("unsupport codec id")
@@ -221,7 +221,7 @@ func (server *RtmpServerHandle) WriteAudio(cid codec.CodecID, frame []byte, pts,
 		server.audioMuxer = flv.CreateAudioMuxer(flv.CovertCodecId2SoundFromat(cid))
 	}
 	if server.audioChan == nil {
-		server.audioChan = newChunkStreamWriter(CHUNK_CHANNEL_AUDIO)
+		server.audioChan = newChunkStreamWriter(ChunkChannelAudio)
 		server.audioChan.chunkSize = server.writeChunkSize
 	}
 	tags := server.audioMuxer.Write(frame, pts, dts)
@@ -241,7 +241,7 @@ func (server *RtmpServerHandle) WriteVideo(cid codec.CodecID, frame []byte, pts,
 		server.videoMuxer = flv.CreateVideoMuxer(flv.CovertCodecId2FlvVideoCodecId(cid))
 	}
 	if server.videoChan == nil {
-		server.videoChan = newChunkStreamWriter(CHUNK_CHANNEL_VIDEO)
+		server.videoChan = newChunkStreamWriter(ChunkChannelVideo)
 		server.videoChan.chunkSize = server.writeChunkSize
 	}
 	tags := server.videoMuxer.Write(frame, pts, dts)
@@ -267,36 +267,36 @@ func (server *RtmpServerHandle) changeState(newState RtmpState) {
 
 func (server *RtmpServerHandle) handleMessage(msg *rtmpMessage) error {
 	switch msg.msgtype {
-	case SET_CHUNK_SIZE:
+	case SetChunkSize:
 		if len(msg.msg) < 4 {
 			return errors.New("bytes of \"set chunk size\"  < 4")
 		}
 		size := binary.BigEndian.Uint32(msg.msg)
 		server.reader.chunkSize = size
-	case ABORT_MESSAGE:
+	case AbortMessage:
 		//TODO
 	case ACKNOWLEDGEMENT:
 		if len(msg.msg) < 4 {
 			return errors.New("bytes of \"window acknowledgement size\"  < 4")
 		}
 		server.peerWndAckSize = binary.BigEndian.Uint32(msg.msg)
-	case USER_CONTROL:
+	case UserControl:
 		//TODO
-	case WND_ACK_SIZE:
+	case WndAckSize:
 		//TODO
-	case SET_PEER_BW:
+	case SetPeerBw:
 		//TODO
 	case AUDIO:
 		return server.handleAudioMessage(msg)
 	case VIDEO:
 		return server.handleVideoMessage(msg)
-	case Command_AMF0:
+	case CommandAmf0:
 		return server.handleCommand(msg.msg)
-	case Command_AMF3:
-	case Metadata_AMF0:
-	case Metadata_AMF3:
-	case SharedObject_AMF0:
-	case SharedObject_AMF3:
+	case CommandAmf3:
+	case MetadataAmf0:
+	case MetadataAmf3:
+	case SharedobjectAmf0:
+	case SharedobjectAmf3:
 	case Aggregate:
 	default:
 		return errors.New("unkown message type")
@@ -311,7 +311,7 @@ func (server *RtmpServerHandle) handleCommand(data []byte) error {
 	cmd := string(item.value.([]byte))
 	switch cmd {
 	case "connect":
-		server.changeState(STATE_RTMP_CONNECTING)
+		server.changeState(StateRtmpConnecting)
 		return server.handleConnect(data)
 	case "releaseStream":
 		server.handleReleaseStream(data)
@@ -340,14 +340,14 @@ func (server *RtmpServerHandle) handleConnect(data []byte) error {
 	}
 
 	buf := makeSetChunkSize(server.writeChunkSize)
-	bufs := server.userCtrlChan.writeData(buf, SET_CHUNK_SIZE, 0, 0)
+	bufs := server.userCtrlChan.writeData(buf, SetChunkSize, 0, 0)
 	server.userCtrlChan.chunkSize = server.writeChunkSize
 	server.cmdChan.chunkSize = server.writeChunkSize
 	buf = makeAcknowledgementSize(server.wndAckSize)
-	bufs = append(bufs, server.userCtrlChan.writeData(buf, WND_ACK_SIZE, 0, 0)...)
-	buf = makeSetPeerBandwidth(server.wndAckSize, LimitType_DYNAMIC)
-	bufs = append(bufs, server.userCtrlChan.writeData(buf, SET_PEER_BW, 0, 0)...)
-	bufs = append(bufs, server.cmdChan.writeData(makeConnectRes(), Command_AMF0, 0, 0)...)
+	bufs = append(bufs, server.userCtrlChan.writeData(buf, WndAckSize, 0, 0)...)
+	buf = makeSetPeerBandwidth(server.wndAckSize, LimittypeDynamic)
+	bufs = append(bufs, server.userCtrlChan.writeData(buf, SetPeerBw, 0, 0)...)
+	bufs = append(bufs, server.cmdChan.writeData(makeConnectRes(), CommandAmf0, 0, 0)...)
 	return server.output(bufs)
 }
 
@@ -368,7 +368,7 @@ func (server *RtmpServerHandle) handleCreateStream(data []byte) error {
 		return nil
 	}
 	tid := uint32(items[0].value.(float64))
-	bufs := server.cmdChan.writeData(makeCreateStreamRes(tid, server.streamId), Command_AMF0, 0, 0)
+	bufs := server.cmdChan.writeData(makeCreateStreamRes(tid, server.streamId), CommandAmf0, 0, 0)
 	return server.output(bufs)
 }
 
@@ -392,27 +392,27 @@ func (server *RtmpServerHandle) handlePlay(data []byte) error {
 		reset = items[5].value.(bool)
 	}
 
-	code := NETSTREAM_PLAY_START
+	code := NetstreamPlayStart
 	if server.onPlay != nil {
 		code = server.onPlay(server.app, streamName, start, duration, reset)
 	}
-	if code == NETSTREAM_PLAY_START {
+	if code == NetstreamPlayStart {
 		res := makeUserControlMessage(StreamBegin, int(server.streamId))
-		bufs := server.userCtrlChan.writeData(res, USER_CONTROL, 0, 0)
-		res = makeStatusRes(tid, NETSTREAM_PLAY_RESET, NETSTREAM_PLAY_RESET.Level(), string(NETSTREAM_PLAY_RESET.Description()))
-		bufs = append(bufs, server.cmdChan.writeData(res, Command_AMF0, server.streamId, 0)...)
-		res = makeStatusRes(tid, NETSTREAM_PLAY_START, NETSTREAM_PLAY_START.Level(), string(NETSTREAM_PLAY_START.Description()))
-		bufs = append(bufs, server.cmdChan.writeData(res, Command_AMF0, server.streamId, 0)...)
+		bufs := server.userCtrlChan.writeData(res, UserControl, 0, 0)
+		res = makeStatusRes(tid, NetstreamPlayReset, NetstreamPlayReset.Level(), string(NetstreamPlayReset.Description()))
+		bufs = append(bufs, server.cmdChan.writeData(res, CommandAmf0, server.streamId, 0)...)
+		res = makeStatusRes(tid, NetstreamPlayStart, NetstreamPlayStart.Level(), string(NetstreamPlayStart.Description()))
+		bufs = append(bufs, server.cmdChan.writeData(res, CommandAmf0, server.streamId, 0)...)
 		if err := server.output(bufs); err != nil {
 			return err
 		}
-		server.changeState(STATE_RTMP_PLAY_START)
+		server.changeState(StateRtmpPlayStart)
 	} else {
 		res := makeStatusRes(tid, code, code.Level(), string(code.Description()))
-		if err := server.output(server.cmdChan.writeData(res, Command_AMF0, server.streamId, 0)); err != nil {
+		if err := server.output(server.cmdChan.writeData(res, CommandAmf0, server.streamId, 0)); err != nil {
 			return err
 		}
-		server.changeState(STATE_RTMP_PLAY_FAILED)
+		server.changeState(StateRtmpPlayFailed)
 	}
 	return nil
 }
@@ -422,18 +422,18 @@ func (server *RtmpServerHandle) handlePublish(data []byte) error {
 	tid := int(items[0].value.(float64))
 	streamName := string(items[2].value.([]byte))
 	server.streamName = streamName
-	code := NETSTREAM_PUBLISH_START
+	code := NetstreamPublishStart
 	if server.onPublish != nil {
 		code = server.onPublish(server.app, streamName)
 	}
 	res := makeStatusRes(tid, code, code.Level(), string(code.Description()))
-	if err := server.output(server.cmdChan.writeData(res, Command_AMF0, server.streamId, 0)); err != nil {
+	if err := server.output(server.cmdChan.writeData(res, CommandAmf0, server.streamId, 0)); err != nil {
 		return err
 	}
-	if code == NETSTREAM_PUBLISH_START {
-		server.changeState(STATE_RTMP_PUBLISH_START)
+	if code == NetstreamPublishStart {
+		server.changeState(StateRtmpPublishStart)
 	} else {
-		server.changeState(STATE_RTMP_PUBLISH_FAILED)
+		server.changeState(StateRtmpPublishFailed)
 	}
 	return nil
 }
@@ -452,7 +452,7 @@ func (server *RtmpServerHandle) handleVideoMessage(msg *rtmpMessage) error {
 
 func (server *RtmpServerHandle) handleAudioMessage(msg *rtmpMessage) error {
 	if server.audioDemuxer == nil {
-		server.audioDemuxer = flv.CreateAudioTagDemuxer(flv.FLV_SOUND_FORMAT((msg.msg[0] >> 4) & 0x0F))
+		server.audioDemuxer = flv.CreateAudioTagDemuxer(flv.FlvSoundFormat((msg.msg[0] >> 4) & 0x0F))
 		server.audioDemuxer.OnFrame(func(codecid codec.CodecID, frame []byte) {
 			dts := server.timestamp
 			pts := dts

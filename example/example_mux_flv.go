@@ -17,15 +17,15 @@ func main() {
 	fw := flv.CreateFlvWriter(newflv)
 	fw.WriteFlvHeader()
 	fr.OnFrame = func(ci codec.CodecID, b []byte, pts uint32, dts uint32) {
-		if ci == codec.CODECID_AUDIO_AAC {
+		if ci == codec.CodecidAudioAac {
 			fw.WriteAAC(b, pts, dts)
-		} else if ci == codec.CODECID_AUDIO_MP3 {
+		} else if ci == codec.CodecidAudioMp3 {
 			fmt.Println("write mp3 frame")
 			fw.WriteMp3(b, pts, dts)
-		} else if ci == codec.CODECID_VIDEO_H264 {
+		} else if ci == codec.CodecidVideoH264 {
 			fmt.Println("write H264 frame")
 			fw.WriteH264(b, pts, dts)
-		} else if ci == codec.CODECID_VIDEO_H265 {
+		} else if ci == codec.CodecidVideoH265 {
 			fw.WriteH265(b, pts, dts)
 		}
 	}

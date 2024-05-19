@@ -52,23 +52,23 @@ import (
 //  PreviousTagSizeN-1          UI32                        Size of second-to-last tag, including its header, in bytes.
 //  ---------------------------------------------------------------------------------------------------------------
 
-type FLV_PARSER_STATE int
+type FlvParserState int
 
 const (
-	FLV_PARSER_INIT FLV_PARSER_STATE = iota + 1
-	FLV_PARSER_FILE_HEAD
-	FLV_PARSER_TAG_SIZE
-	FLV_PARSER_FLV_TAG
-	FLV_PARSER_DETECT_VIDEO
-	FLV_PARSER_DETECT_AUDIO
-	FLV_PARSER_VIDEO_TAG
-	FLV_PARSER_AUDIO_TAG
-	FLV_PARSER_SCRIPT_TAG
+	FlvParserInit FlvParserState = iota + 1
+	FlvParserFileHead
+	FlvParserTagSize
+	FlvParserFlvTag
+	FlvParserDetectVideo
+	FlvParserDetectAudio
+	FlvParserVideoTag
+	FlvParserAudioTag
+	FlvParserScriptTag
 )
 
 type FlvReader struct {
 	cache        []byte
-	state        FLV_PARSER_STATE
+	state        FlvParserState
 	videoDemuxer VideoTagDemuxer
 	audioDemuxer AudioTagDemuxer
 	flvTag       FlvTag
@@ -78,7 +78,7 @@ type FlvReader struct {
 func CreateFlvReader() *FlvReader {
 	flvFile := &FlvReader{
 		OnFrame:      nil,
-		state:        FLV_PARSER_INIT,
+		state:        FlvParserInit,
 		videoDemuxer: nil,
 		audioDemuxer: nil,
 		cache:        make([]byte, 0, 4096),
@@ -97,9 +97,9 @@ func (f *FlvReader) Input(data []byte) (err error) {
 
 	for len(buf) > 0 {
 		switch f.state {
-		case FLV_PARSER_INIT:
-			f.state = FLV_PARSER_FILE_HEAD
-		case FLV_PARSER_FILE_HEAD:
+		case FlvParserInit:
+			f.state = FlvParserFileHead
+		case FlvParserFileHead:
 			if len(buf) < 9 {
 				goto end
 			}
@@ -107,46 +107,46 @@ func (f *FlvReader) Input(data []byte) (err error) {
 				goto end
 			}
 			buf = buf[9:]
-			f.state = FLV_PARSER_TAG_SIZE
-		case FLV_PARSER_TAG_SIZE:
+			f.state = FlvParserTagSize
+		case FlvParserTagSize:
 			if len(buf) < 4 {
 				goto end
 			}
 			buf = buf[4:]
-			f.state = FLV_PARSER_FLV_TAG
-		case FLV_PARSER_FLV_TAG:
+			f.state = FlvParserFlvTag
+		case FlvParserFlvTag:
 			if len(buf) < 11 {
 				goto end
 			}
 			f.flvTag.Decode(buf)
 			buf = buf[11:]
-			if f.flvTag.TagType == uint8(VIDEO_TAG) {
+			if f.flvTag.TagType == uint8(VideoTagType) {
 				if f.videoDemuxer == nil {
-					f.state = FLV_PARSER_DETECT_VIDEO
+					f.state = FlvParserDetectVideo
 				} else {
-					f.state = FLV_PARSER_VIDEO_TAG
+					f.state = FlvParserVideoTag
 				}
-			} else if f.flvTag.TagType == uint8(AUDIO_TAG) {
+			} else if f.flvTag.TagType == uint8(AudioTagType) {
 				if f.audioDemuxer == nil {
-					f.state = FLV_PARSER_DETECT_AUDIO
+					f.state = FlvParserDetectAudio
 				} else {
-					f.state = FLV_PARSER_AUDIO_TAG
+					f.state = FlvParserAudioTag
 				}
 			} else {
 				//TODO MateData tag
-				f.state = FLV_PARSER_SCRIPT_TAG
+				f.state = FlvParserScriptTag
 			}
-		case FLV_PARSER_DETECT_VIDEO:
-			if err = f.createVideoTagDemuxer(FLV_VIDEO_CODEC_ID(buf[0] & 0x0F)); err != nil {
+		case FlvParserDetectVideo:
+			if err = f.createVideoTagDemuxer(FlvVideoCodecId(buf[0] & 0x0F)); err != nil {
 				goto end
 			}
-			f.state = FLV_PARSER_VIDEO_TAG
-		case FLV_PARSER_DETECT_AUDIO:
-			if err = f.createAudioTagDemuxer(FLV_SOUND_FORMAT((buf[0] >> 4) & 0x0F)); err != nil {
+			f.state = FlvParserVideoTag
+		case FlvParserDetectAudio:
+			if err = f.createAudioTagDemuxer(FlvSoundFormat((buf[0] >> 4) & 0x0F)); err != nil {
 				goto end
 			}
-			f.state = FLV_PARSER_AUDIO_TAG
-		case FLV_PARSER_VIDEO_TAG:
+			f.state = FlvParserAudioTag
+		case FlvParserVideoTag:
 			if f.flvTag.DataSize > uint32(len(buf)) {
 				goto end
 			}
@@ -155,8 +155,8 @@ func (f *FlvReader) Input(data []byte) (err error) {
 				return err
 			}
 			buf = buf[f.flvTag.DataSize:]
-			f.state = FLV_PARSER_TAG_SIZE
-		case FLV_PARSER_AUDIO_TAG:
+			f.state = FlvParserTagSize
+		case FlvParserAudioTag:
 			if f.flvTag.DataSize > uint32(len(buf)) {
 				goto end
 			}
@@ -165,13 +165,13 @@ func (f *FlvReader) Input(data []byte) (err error) {
 				return err
 			}
 			buf = buf[f.flvTag.DataSize:]
-			f.state = FLV_PARSER_TAG_SIZE
-		case FLV_PARSER_SCRIPT_TAG:
+			f.state = FlvParserTagSize
+		case FlvParserScriptTag:
 			if f.flvTag.DataSize > uint32(len(buf)) {
 				goto end
 			}
 			buf = buf[f.flvTag.DataSize:]
-			f.state = FLV_PARSER_TAG_SIZE
+			f.state = FlvParserTagSize
 		default:
 			panic("unkown state")
 		}
@@ -198,11 +198,11 @@ end:
 	return nil
 }
 
-func (f *FlvReader) createVideoTagDemuxer(cid FLV_VIDEO_CODEC_ID) error {
+func (f *FlvReader) createVideoTagDemuxer(cid FlvVideoCodecId) error {
 	switch cid {
-	case FLV_AVC:
+	case FlvAvc:
 		f.videoDemuxer = NewAVCTagDemuxer()
-	case FLV_HEVC:
+	case FlvHevc:
 		f.videoDemuxer = NewHevcTagDemuxer()
 	default:
 		return errors.New("unsupport video codec id")
@@ -215,11 +215,11 @@ func (f *FlvReader) createVideoTagDemuxer(cid FLV_VIDEO_CODEC_ID) error {
 	return nil
 }
 
-func (f *FlvReader) createAudioTagDemuxer(formats FLV_SOUND_FORMAT) error {
+func (f *FlvReader) createAudioTagDemuxer(formats FlvSoundFormat) error {
 	switch formats {
-	case FLV_G711A, FLV_G711U, FLV_MP3:
+	case FlvG711a, FlvG711u, FlvMp3:
 		f.audioDemuxer = NewG711Demuxer(formats)
-	case FLV_AAC:
+	case FlvAac:
 		f.audioDemuxer = NewAACTagDemuxer()
 	default:
 		return errors.New("unsupport audio codec id")
@@ -282,7 +282,7 @@ func (f *FlvWriter) WriteFlvHeader() (err error) {
 // adts aac frame
 func (f *FlvWriter) WriteAAC(data []byte, pts uint32, dts uint32) error {
 	if f.muxer.audioMuxer == nil {
-		f.muxer.SetAudioCodeId(FLV_AAC)
+		f.muxer.SetAudioCodeId(FlvAac)
 	} else {
 		if _, ok := f.muxer.audioMuxer.(*AACMuxer); !ok {
 			panic("audio codec change")
@@ -293,7 +293,7 @@ func (f *FlvWriter) WriteAAC(data []byte, pts uint32, dts uint32) error {
 
 func (f *FlvWriter) WriteG711A(data []byte, pts uint32, dts uint32) error {
 	if f.muxer.audioMuxer == nil {
-		f.muxer.SetAudioCodeId(FLV_G711A)
+		f.muxer.SetAudioCodeId(FlvG711a)
 	} else {
 		if _, ok := f.muxer.audioMuxer.(*G711AMuxer); !ok {
 			panic("audio codec change")
@@ -304,7 +304,7 @@ func (f *FlvWriter) WriteG711A(data []byte, pts uint32, dts uint32) error {
 
 func (f *FlvWriter) WriteG711U(data []byte, pts uint32, dts uint32) error {
 	if f.muxer.audioMuxer == nil {
-		f.muxer.SetAudioCodeId(FLV_G711U)
+		f.muxer.SetAudioCodeId(FlvG711u)
 	} else {
 		if _, ok := f.muxer.audioMuxer.(*G711UMuxer); !ok {
 			panic("audio codec change")
@@ -315,7 +315,7 @@ func (f *FlvWriter) WriteG711U(data []byte, pts uint32, dts uint32) error {
 
 func (f *FlvWriter) WriteMp3(data []byte, pts uint32, dts uint32) error {
 	if f.muxer.audioMuxer == nil {
-		f.muxer.SetAudioCodeId(FLV_MP3)
+		f.muxer.SetAudioCodeId(FlvMp3)
 	} else {
 		if _, ok := f.muxer.audioMuxer.(*Mp3Muxer); !ok {
 			panic("audio codec change")
@@ -344,7 +344,7 @@ func (f *FlvWriter) writeAudio(data []byte, pts uint32, dts uint32) error {
 // H264 Frame with startcode 0x0000001
 func (f *FlvWriter) WriteH264(data []byte, pts uint32, dts uint32) error {
 	if f.muxer.videoMuxer == nil {
-		f.muxer.SetVideoCodeId(FLV_AVC)
+		f.muxer.SetVideoCodeId(FlvAvc)
 	} else {
 		if _, ok := f.muxer.videoMuxer.(*AVCMuxer); !ok {
 			panic("video codec change")
@@ -356,7 +356,7 @@ func (f *FlvWriter) WriteH264(data []byte, pts uint32, dts uint32) error {
 
 func (f *FlvWriter) WriteH265(data []byte, pts uint32, dts uint32) error {
 	if f.muxer.videoMuxer == nil {
-		f.muxer.SetVideoCodeId(FLV_HEVC)
+		f.muxer.SetVideoCodeId(FlvHevc)
 	} else {
 		if _, ok := f.muxer.videoMuxer.(*HevcMuxer); !ok {
 			panic("video codec change")

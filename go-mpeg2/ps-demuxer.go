@@ -6,13 +6,13 @@ import (
 
 type psstream struct {
 	sid       uint8
-	cid       PS_STREAM_TYPE
+	cid       PsStreamType
 	pts       uint64
 	dts       uint64
 	streamBuf []byte
 }
 
-func newpsstream(sid uint8, cid PS_STREAM_TYPE) *psstream {
+func newpsstream(sid uint8, cid PsStreamType) *psstream {
 	return &psstream{
 		sid:       sid,
 		cid:       cid,
@@ -25,7 +25,7 @@ type PSDemuxer struct {
 	pkg       *PSPacket
 	mpeg1     bool
 	cache     []byte
-	OnFrame   func(frame []byte, cid PS_STREAM_TYPE, pts uint64, dts uint64)
+	OnFrame   func(frame []byte, cid PsStreamType, pts uint64, dts uint64)
 	//解ps包过程中，解码回调psm，system header，pes包等
 	//decodeResult 解码ps包时的产生的错误
 	//这个回调主要用于debug，查看是否ps包存在问题
@@ -70,8 +70,8 @@ func (psdemuxer *PSDemuxer) Input(data []byte) error {
 			saveReseved()
 			break
 		}
-		prefix_code := bs.NextBits(32)
-		switch prefix_code {
+		prefixCode := bs.NextBits(32)
+		switch prefixCode {
 		case 0x000001BA: //pack header
 			if psdemuxer.pkg.Header == nil {
 				psdemuxer.pkg.Header = new(PSPackHeader)
@@ -86,7 +86,7 @@ func (psdemuxer *PSDemuxer) Input(data []byte) error {
 				panic("psdemuxer.pkg.Header must not be nil")
 			}
 			if psdemuxer.pkg.System == nil {
-				psdemuxer.pkg.System = new(System_header)
+				psdemuxer.pkg.System = new(SystemHeader)
 			}
 			ret = psdemuxer.pkg.System.Decode(bs)
 			if psdemuxer.OnPacket != nil {
@@ -94,12 +94,12 @@ func (psdemuxer *PSDemuxer) Input(data []byte) error {
 			}
 		case 0x000001BC: //program stream map
 			if psdemuxer.pkg.Psm == nil {
-				psdemuxer.pkg.Psm = new(Program_stream_map)
+				psdemuxer.pkg.Psm = new(ProgramStreamMap)
 			}
 			if ret = psdemuxer.pkg.Psm.Decode(bs); ret == nil {
-				for _, streaminfo := range psdemuxer.pkg.Psm.Stream_map {
-					if _, found := psdemuxer.streamMap[streaminfo.Elementary_stream_id]; !found {
-						stream := newpsstream(streaminfo.Elementary_stream_id, PS_STREAM_TYPE(streaminfo.Stream_type))
+				for _, streaminfo := range psdemuxer.pkg.Psm.StreamMap {
+					if _, found := psdemuxer.streamMap[streaminfo.ElementaryStreamId]; !found {
+						stream := newpsstream(streaminfo.ElementaryStreamId, PsStreamType(streaminfo.StreamType))
 						psdemuxer.streamMap[stream.sid] = stream
 					}
 				}
@@ -116,13 +116,13 @@ func (psdemuxer *PSDemuxer) Input(data []byte) error {
 			ret = psdemuxer.pkg.CommPes.Decode(bs)
 		case 0x000001FF: //program stream directory
 			if psdemuxer.pkg.Psd == nil {
-				psdemuxer.pkg.Psd = new(Program_stream_directory)
+				psdemuxer.pkg.Psd = new(ProgramStreamDirectory)
 			}
 			ret = psdemuxer.pkg.Psd.Decode(bs)
 		case 0x000001B9: //MPEG_program_end_code
 			continue
 		default:
-			if prefix_code&0xFFFFFFE0 == 0x000001C0 || prefix_code&0xFFFFFFE0 == 0x000001E0 {
+			if prefixCode&0xFFFFFFE0 == 0x000001C0 || prefixCode&0xFFFFFFE0 == 0x000001E0 {
 				if psdemuxer.pkg.Pes == nil {
 					psdemuxer.pkg.Pes = NewPesPacket()
 				}
@@ -135,16 +135,16 @@ func (psdemuxer *PSDemuxer) Input(data []byte) error {
 					psdemuxer.OnPacket(psdemuxer.pkg.Pes, ret)
 				}
 				if ret == nil {
-					if stream, found := psdemuxer.streamMap[psdemuxer.pkg.Pes.Stream_id]; found {
-						if psdemuxer.mpeg1 && stream.cid == PS_STREAM_UNKNOW {
+					if stream, found := psdemuxer.streamMap[psdemuxer.pkg.Pes.StreamId]; found {
+						if psdemuxer.mpeg1 && stream.cid == PsStreamUnknow {
 							psdemuxer.guessCodecid(stream)
 						}
 						psdemuxer.demuxPespacket(stream, psdemuxer.pkg.Pes)
 					} else {
 						if psdemuxer.mpeg1 {
-							stream := newpsstream(psdemuxer.pkg.Pes.Stream_id, PS_STREAM_UNKNOW)
+							stream := newpsstream(psdemuxer.pkg.Pes.StreamId, PsStreamUnknow)
 							psdemuxer.streamMap[stream.sid] = stream
-							stream.streamBuf = append(stream.streamBuf, psdemuxer.pkg.Pes.Pes_payload...)
+							stream.streamBuf = append(stream.streamBuf, psdemuxer.pkg.Pes.PesPayload...)
 							stream.pts = psdemuxer.pkg.Pes.Pts
 							stream.dts = psdemuxer.pkg.Pes.Dts
 						}
@@ -175,17 +175,17 @@ func (psdemuxer *PSDemuxer) Flush() {
 }
 
 func (psdemuxer *PSDemuxer) guessCodecid(stream *psstream) {
-	if stream.sid&0xE0 == uint8(PES_STREAM_AUDIO) {
-		stream.cid = PS_STREAM_AAC
-	} else if stream.sid&0xE0 == uint8(PES_STREAM_VIDEO) {
+	if stream.sid&0xE0 == uint8(PesStreamAudio) {
+		stream.cid = PsStreamAac
+	} else if stream.sid&0xE0 == uint8(PesStreamVideo) {
 		h264score := 0
 		h265score := 0
 		codec.SplitFrame(stream.streamBuf, func(nalu []byte) bool {
 			h264nalutype := codec.H264NaluTypeWithoutStartCode(nalu)
 			h265nalutype := codec.H265NaluTypeWithoutStartCode(nalu)
-			if h264nalutype == codec.H264_NAL_PPS ||
-				h264nalutype == codec.H264_NAL_SPS ||
-				h264nalutype == codec.H264_NAL_I_SLICE {
+			if h264nalutype == codec.H264NalPps ||
+				h264nalutype == codec.H264NalSps ||
+				h264nalutype == codec.H264NalISlice {
 				h264score += 2
 			} else if h264nalutype < 5 {
 				h264score += 1
@@ -193,20 +193,20 @@ func (psdemuxer *PSDemuxer) guessCodecid(stream *psstream) {
 				h264score -= 1
 			}
 
-			if h265nalutype == codec.H265_NAL_PPS ||
-				h265nalutype == codec.H265_NAL_SPS ||
-				h265nalutype == codec.H265_NAL_VPS ||
-				(h265nalutype >= codec.H265_NAL_SLICE_BLA_W_LP && h265nalutype <= codec.H265_NAL_SLICE_CRA) {
+			if h265nalutype == codec.H265NalPps ||
+				h265nalutype == codec.H265NalSps ||
+				h265nalutype == codec.H265NalVps ||
+				(h265nalutype >= codec.H265NalSliceBlaWLp && h265nalutype <= codec.H265NalSliceCra) {
 				h265score += 2
-			} else if h265nalutype >= codec.H265_NAL_Slice_TRAIL_N && h265nalutype <= codec.H265_NAL_SLICE_RASL_R {
+			} else if h265nalutype >= codec.H265NalSliceTrailN && h265nalutype <= codec.H265NalSliceRaslR {
 				h265score += 1
 			} else if h265nalutype > 40 {
 				h265score -= 1
 			}
 			if h264score > h265score && h264score >= 4 {
-				stream.cid = PS_STREAM_H264
+				stream.cid = PsStreamH264
 			} else if h264score < h265score && h265score >= 4 {
-				stream.cid = PS_STREAM_H265
+				stream.cid = PsStreamH265
 			}
 			return true
 		})
@@ -215,15 +215,15 @@ func (psdemuxer *PSDemuxer) guessCodecid(stream *psstream) {
 
 func (psdemuxer *PSDemuxer) demuxPespacket(stream *psstream, pes *PesPacket) error {
 	switch stream.cid {
-	case PS_STREAM_AAC, PS_STREAM_G711A, PS_STREAM_G711U:
+	case PsStreamAac, PsStreamG711a, PsStreamG711u:
 		return psdemuxer.demuxAudio(stream, pes)
-	case PS_STREAM_H264, PS_STREAM_H265:
+	case PsStreamH264, PsStreamH265:
 		return psdemuxer.demuxH26x(stream, pes)
-	case PS_STREAM_UNKNOW:
+	case PsStreamUnknow:
 		if stream.pts != pes.Pts {
 			stream.streamBuf = nil
 		}
-		stream.streamBuf = append(stream.streamBuf, pes.Pes_payload...)
+		stream.streamBuf = append(stream.streamBuf, pes.PesPayload...)
 		stream.pts = pes.Pts
 		stream.dts = pes.Dts
 	}
@@ -237,7 +237,7 @@ func (psdemuxer *PSDemuxer) demuxAudio(stream *psstream, pes *PesPacket) error {
 		}
 		stream.streamBuf = stream.streamBuf[:0]
 	}
-	stream.streamBuf = append(stream.streamBuf, pes.Pes_payload...)
+	stream.streamBuf = append(stream.streamBuf, pes.PesPayload...)
 	stream.pts = pes.Pts
 	stream.dts = pes.Dts
 	return nil
@@ -248,23 +248,23 @@ func (psdemuxer *PSDemuxer) demuxH26x(stream *psstream, pes *PesPacket) error {
 		stream.pts = pes.Pts
 		stream.dts = pes.Dts
 	}
-	stream.streamBuf = append(stream.streamBuf, pes.Pes_payload...)
+	stream.streamBuf = append(stream.streamBuf, pes.PesPayload...)
 	start, sc := codec.FindStartCode(stream.streamBuf, 0)
 	for start >= 0 {
 		end, sc2 := codec.FindStartCode(stream.streamBuf, start+int(sc))
 		if end < 0 {
 			break
 		}
-		if stream.cid == PS_STREAM_H264 {
+		if stream.cid == PsStreamH264 {
 			naluType := codec.H264NaluType(stream.streamBuf[start:])
-			if naluType != codec.H264_NAL_AUD {
+			if naluType != codec.H264NalAud {
 				if psdemuxer.OnFrame != nil {
 					psdemuxer.OnFrame(stream.streamBuf[start:end], stream.cid, stream.pts/90, stream.dts/90)
 				}
 			}
-		} else if stream.cid == PS_STREAM_H265 {
+		} else if stream.cid == PsStreamH265 {
 			naluType := codec.H265NaluType(stream.streamBuf[start:])
-			if naluType != codec.H265_NAL_AUD {
+			if naluType != codec.H265NalAud {
 				if psdemuxer.OnFrame != nil {
 					psdemuxer.OnFrame(stream.streamBuf[start:end], stream.cid, stream.pts/90, stream.dts/90)
 				}

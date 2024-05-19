@@ -7,25 +7,25 @@ import (
 	"github.com/timmattison/gomedia/go-codec"
 )
 
-func WriteAudioTag(data []byte, cid FLV_SOUND_FORMAT, sampleRate int, channelCount int, isSequenceHeader bool) []byte {
+func WriteAudioTag(data []byte, cid FlvSoundFormat, sampleRate int, channelCount int, isSequenceHeader bool) []byte {
 	var atag AudioTag
 	atag.SoundFormat = uint8(cid)
-	if cid == FLV_AAC {
-		atag.SoundRate = uint8(FLV_SAMPLE_44000)
+	if cid == FlvAac {
+		atag.SoundRate = uint8(FlvSample44000)
 		atag.SoundSize = 1
 		atag.SoundType = 1
 	} else {
 		switch sampleRate {
 		case 5500:
-			atag.SoundRate = uint8(FLV_SAMPLE_5500)
+			atag.SoundRate = uint8(FlvSample5500)
 		case 11025:
-			atag.SoundRate = uint8(FLV_SAMPLE_11000)
+			atag.SoundRate = uint8(FlvSample11000)
 		case 22050:
-			atag.SoundRate = uint8(FLV_SAMPLE_22000)
+			atag.SoundRate = uint8(FlvSample22000)
 		case 44100:
-			atag.SoundRate = uint8(FLV_SAMPLE_44000)
+			atag.SoundRate = uint8(FlvSample44000)
 		default:
-			atag.SoundRate = uint8(FLV_SAMPLE_44000)
+			atag.SoundRate = uint8(FlvSample44000)
 		}
 		atag.SoundSize = 1
 		if channelCount > 1 {
@@ -45,19 +45,19 @@ func WriteAudioTag(data []byte, cid FLV_SOUND_FORMAT, sampleRate int, channelCou
 	return tagData
 }
 
-func WriteVideoTag(data []byte, isKey bool, cid FLV_VIDEO_CODEC_ID, cts int32, isSequenceHeader bool) []byte {
+func WriteVideoTag(data []byte, isKey bool, cid FlvVideoCodecId, cts int32, isSequenceHeader bool) []byte {
 	var vtag VideoTag
 	vtag.CodecId = uint8(cid)
 	vtag.CompositionTime = cts
 	if isKey {
-		vtag.FrameType = uint8(KEY_FRAME)
+		vtag.FrameType = uint8(KeyFrame)
 	} else {
-		vtag.FrameType = uint8(INTER_FRAME)
+		vtag.FrameType = uint8(InterFrame)
 	}
 	if isSequenceHeader {
-		vtag.AVCPacketType = uint8(AVC_SEQUENCE_HEADER)
+		vtag.AVCPacketType = uint8(AvcSequenceHeader)
 	} else {
-		vtag.AVCPacketType = uint8(AVC_NALU)
+		vtag.AVCPacketType = uint8(AvcNalu)
 	}
 	tagData := vtag.Encode()
 	tagData = append(tagData, data...)
@@ -90,7 +90,7 @@ func (muxer *AVCMuxer) Write(frames []byte, pts uint32, dts uint32) [][]byte {
 	codec.SplitFrameWithStartCode(frames, func(nalu []byte) bool {
 		naltype := codec.H264NaluType(nalu)
 		switch naltype {
-		case codec.H264_NAL_SPS:
+		case codec.H264NalSps:
 			spsid := codec.GetSPSIdWithStartCode(nalu)
 			s, found := muxer.spsset[spsid]
 			if !found || !bytes.Equal(s, nalu) {
@@ -99,7 +99,7 @@ func (muxer *AVCMuxer) Write(frames []byte, pts uint32, dts uint32) [][]byte {
 				muxer.spsset[spsid] = naluCopy
 				muxer.cache = append(muxer.cache, codec.ConvertAnnexBToAVCC(nalu)...)
 			}
-		case codec.H264_NAL_PPS:
+		case codec.H264NalPps:
 			ppsid := codec.GetPPSIdWithStartCode(nalu)
 			muxer.ppsset[ppsid] = nalu
 			s, found := muxer.ppsset[ppsid]
@@ -110,9 +110,9 @@ func (muxer *AVCMuxer) Write(frames []byte, pts uint32, dts uint32) [][]byte {
 				muxer.cache = append(muxer.cache, codec.ConvertAnnexBToAVCC(nalu)...)
 			}
 		default:
-			if naltype <= codec.H264_NAL_I_SLICE {
+			if naltype <= codec.H264NalISlice {
 				vcl = true
-				if naltype == codec.H264_NAL_I_SLICE {
+				if naltype == codec.H264NalISlice {
 					isKey = true
 				}
 			}
@@ -135,12 +135,12 @@ func (muxer *AVCMuxer) Write(frames []byte, pts uint32, dts uint32) [][]byte {
 			idx++
 		}
 		extraData, _ := codec.CreateH264AVCCExtradata(spss, ppss)
-		tags = append(tags, WriteVideoTag(extraData, true, FLV_AVC, 0, true))
+		tags = append(tags, WriteVideoTag(extraData, true, FlvAvc, 0, true))
 		muxer.first = false
 	}
 
 	if vcl {
-		tags = append(tags, WriteVideoTag(muxer.cache, isKey, FLV_AVC, int32(pts-dts), false))
+		tags = append(tags, WriteVideoTag(muxer.cache, isKey, FlvAvc, int32(pts-dts), false))
 		muxer.cache = muxer.cache[:0]
 	}
 	return tags
@@ -166,13 +166,13 @@ func (muxer *HevcMuxer) Write(frames []byte, pts uint32, dts uint32) [][]byte {
 	codec.SplitFrameWithStartCode(frames, func(nalu []byte) bool {
 		naltype := codec.H265NaluType(nalu)
 		switch naltype {
-		case codec.H265_NAL_SPS:
+		case codec.H265NalSps:
 			muxer.hvcc.UpdateSPS(nalu)
 			muxer.cache = append(muxer.cache, codec.ConvertAnnexBToAVCC(nalu)...)
-		case codec.H265_NAL_PPS:
+		case codec.H265NalPps:
 			muxer.hvcc.UpdatePPS(nalu)
 			muxer.cache = append(muxer.cache, codec.ConvertAnnexBToAVCC(nalu)...)
-		case codec.H265_NAL_VPS:
+		case codec.H265NalVps:
 			muxer.hvcc.UpdateVPS(nalu)
 			muxer.cache = append(muxer.cache, codec.ConvertAnnexBToAVCC(nalu)...)
 		default:
@@ -187,20 +187,20 @@ func (muxer *HevcMuxer) Write(frames []byte, pts uint32, dts uint32) [][]byte {
 	var tags [][]byte
 	if muxer.first && len(muxer.hvcc.Arrays) > 0 {
 		extraData, _ := muxer.hvcc.Encode()
-		tags = append(tags, WriteVideoTag(extraData, true, FLV_HEVC, 0, true))
+		tags = append(tags, WriteVideoTag(extraData, true, FlvHevc, 0, true))
 		muxer.first = false
 	}
 	if vcl {
-		tags = append(tags, WriteVideoTag(muxer.cache, isKey, FLV_HEVC, int32(pts-dts), false))
+		tags = append(tags, WriteVideoTag(muxer.cache, isKey, FlvHevc, int32(pts-dts), false))
 		muxer.cache = muxer.cache[:0]
 	}
 	return tags
 }
 
-func CreateVideoMuxer(cid FLV_VIDEO_CODEC_ID) AVTagMuxer {
-	if cid == FLV_AVC {
+func CreateVideoMuxer(cid FlvVideoCodecId) AVTagMuxer {
+	if cid == FlvAvc {
 		return NewAVCMuxer()
-	} else if cid == FLV_HEVC {
+	} else if cid == FlvHevc {
 		return NewHevcMuxer()
 	}
 	return nil
@@ -221,10 +221,10 @@ func (muxer *AACMuxer) Write(frames []byte, pts uint32, dts uint32) [][]byte {
 		hdr.Decode(aac)
 		if muxer.updateSequence {
 			asc, _ := codec.ConvertADTSToASC(aac)
-			tags = append(tags, WriteAudioTag(asc.Encode(), FLV_AAC, 0, 0, true))
+			tags = append(tags, WriteAudioTag(asc.Encode(), FlvAac, 0, 0, true))
 			muxer.updateSequence = false
 		}
-		tags = append(tags, WriteAudioTag(aac[7:], FLV_AAC, 0, 0, false))
+		tags = append(tags, WriteAudioTag(aac[7:], FlvAac, 0, 0, false))
 	})
 	return tags
 }
@@ -243,7 +243,7 @@ func NewG711AMuxer(channelCount int, sampleRate int) *G711AMuxer {
 
 func (muxer *G711AMuxer) Write(frames []byte, pts uint32, dts uint32) [][]byte {
 	tags := make([][]byte, 1)
-	tags[0] = WriteAudioTag(frames, FLV_G711A, muxer.sampleRate, muxer.channelCount, true)
+	tags[0] = WriteAudioTag(frames, FlvG711a, muxer.sampleRate, muxer.channelCount, true)
 	return tags
 }
 
@@ -261,7 +261,7 @@ func NewG711UMuxer(channelCount int, sampleRate int) *G711UMuxer {
 
 func (muxer *G711UMuxer) Write(frames []byte, pts uint32, dts uint32) [][]byte {
 	tags := make([][]byte, 1)
-	tags[0] = WriteAudioTag(frames, FLV_G711U, muxer.sampleRate, muxer.channelCount, true)
+	tags[0] = WriteAudioTag(frames, FlvG711u, muxer.sampleRate, muxer.channelCount, true)
 	return tags
 }
 
@@ -271,19 +271,19 @@ type Mp3Muxer struct {
 func (muxer *Mp3Muxer) Write(frames []byte, pts uint32, dts uint32) [][]byte {
 	tags := make([][]byte, 1)
 	codec.SplitMp3Frames(frames, func(head *codec.MP3FrameHead, frame []byte) {
-		tags = append(tags, WriteAudioTag(frames, FLV_MP3, head.GetSampleRate(), head.GetChannelCount(), true))
+		tags = append(tags, WriteAudioTag(frames, FlvMp3, head.GetSampleRate(), head.GetChannelCount(), true))
 	})
 	return tags
 }
 
-func CreateAudioMuxer(cid FLV_SOUND_FORMAT) AVTagMuxer {
-	if cid == FLV_AAC {
+func CreateAudioMuxer(cid FlvSoundFormat) AVTagMuxer {
+	if cid == FlvAac {
 		return &AACMuxer{updateSequence: true}
-	} else if cid == FLV_G711A {
+	} else if cid == FlvG711a {
 		return NewG711AMuxer(1, 5500)
-	} else if cid == FLV_G711U {
+	} else if cid == FlvG711u {
 		return NewG711UMuxer(1, 5500)
-	} else if cid == FLV_MP3 {
+	} else if cid == FlvMp3 {
 		return new(Mp3Muxer)
 	} else {
 		return nil
@@ -295,18 +295,18 @@ type FlvMuxer struct {
 	audioMuxer AVTagMuxer
 }
 
-func NewFlvMuxer(vid FLV_VIDEO_CODEC_ID, aid FLV_SOUND_FORMAT) *FlvMuxer {
+func NewFlvMuxer(vid FlvVideoCodecId, aid FlvSoundFormat) *FlvMuxer {
 	return &FlvMuxer{
 		videoMuxer: CreateVideoMuxer(vid),
 		audioMuxer: CreateAudioMuxer(aid),
 	}
 }
 
-func (muxer *FlvMuxer) SetVideoCodeId(cid FLV_VIDEO_CODEC_ID) {
+func (muxer *FlvMuxer) SetVideoCodeId(cid FlvVideoCodecId) {
 	muxer.videoMuxer = CreateVideoMuxer(cid)
 }
 
-func (muxer *FlvMuxer) SetAudioCodeId(cid FLV_SOUND_FORMAT) {
+func (muxer *FlvMuxer) SetAudioCodeId(cid FlvSoundFormat) {
 	muxer.audioMuxer = CreateAudioMuxer(cid)
 }
 
@@ -314,25 +314,25 @@ func (muxer *FlvMuxer) WriteVideo(frames []byte, pts uint32, dts uint32) ([][]by
 	if muxer.videoMuxer == nil {
 		return nil, errors.New("video Muxer is Nil")
 	}
-	return muxer.WriteFrames(VIDEO_TAG, frames, pts, dts)
+	return muxer.WriteFrames(VideoTagType, frames, pts, dts)
 }
 
 func (muxer *FlvMuxer) WriteAudio(frames []byte, pts uint32, dts uint32) ([][]byte, error) {
 	if muxer.audioMuxer == nil {
 		return nil, errors.New("audio Muxer is Nil")
 	}
-	return muxer.WriteFrames(AUDIO_TAG, frames, pts, dts)
+	return muxer.WriteFrames(AudioTagType, frames, pts, dts)
 }
 
 func (muxer *FlvMuxer) WriteFrames(frameType TagType, frames []byte, pts uint32, dts uint32) ([][]byte, error) {
 
 	var ftag FlvTag
 	var tags [][]byte
-	if frameType == AUDIO_TAG {
-		ftag.TagType = uint8(AUDIO_TAG)
+	if frameType == AudioTagType {
+		ftag.TagType = uint8(AudioTagType)
 		tags = muxer.audioMuxer.Write(frames, pts, dts)
-	} else if frameType == VIDEO_TAG {
-		ftag.TagType = uint8(VIDEO_TAG)
+	} else if frameType == VideoTagType {
+		ftag.TagType = uint8(VideoTagType)
 		tags = muxer.videoMuxer.Write(frames, pts, dts)
 	} else {
 		return nil, errors.New("unsupport Frame Type")

@@ -24,11 +24,11 @@ func TestRtmpServerHandle_Play(t *testing.T) {
 			handle := NewRtmpServerHandle()
 			handle.onPlay = func(app, streamName string, start, duration float64, reset bool) StatusCode {
 				fmt.Println("onplay", app, streamName, start, duration)
-				return NETSTREAM_PLAY_START
+				return NetstreamPlayStart
 			}
 
 			handle.OnStateChange(func(newstate RtmpState) {
-				if newstate == STATE_RTMP_PLAY_START {
+				if newstate == StateRtmpPlayStart {
 					close(ready)
 				}
 			})
@@ -42,11 +42,11 @@ func TestRtmpServerHandle_Play(t *testing.T) {
 				<-ready
 				f := flv.CreateFlvReader()
 				f.OnFrame = func(cid codec.CodecID, frame []byte, pts, dts uint32) {
-					if cid == codec.CODECID_VIDEO_H264 {
+					if cid == codec.CodecidVideoH264 {
 						fmt.Println("write video frame", pts, dts)
 						handle.WriteVideo(cid, frame, pts, dts)
 						time.Sleep(time.Millisecond * 33)
-					} else if cid == codec.CODECID_AUDIO_AAC {
+					} else if cid == codec.CodecidAudioAac {
 						handle.WriteAudio(cid, frame, pts, dts)
 					}
 				}
@@ -95,7 +95,7 @@ func TestRtmpServerHandle_Pub(t *testing.T) {
 			handle := NewRtmpServerHandle()
 			handle.OnPublish(func(app, streamName string) StatusCode {
 				videoFile, _ = os.OpenFile(streamName+".h264", os.O_CREATE|os.O_RDWR, 0666)
-				return NETSTREAM_PUBLISH_START
+				return NetstreamPublishStart
 			})
 
 			handle.SetOutput(func(b []byte) error {
@@ -104,7 +104,7 @@ func TestRtmpServerHandle_Pub(t *testing.T) {
 			})
 
 			handle.OnFrame(func(cid codec.CodecID, pts, dts uint32, frame []byte) {
-				if cid == codec.CODECID_VIDEO_H264 {
+				if cid == codec.CodecidVideoH264 {
 					fmt.Println("H264, length:", len(frame), "pts:", pts, "dts:", dts)
 					videoFile.Write(frame)
 				}

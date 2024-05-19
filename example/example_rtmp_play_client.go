@@ -50,9 +50,9 @@ func main() {
 
 	client := rtmp.NewRtmpClient(rtmp.WithChunkSize(6000), rtmp.WithComplexHandshake())
 	client.OnFrame(func(cid codec.CodecID, pts, dts uint32, frame []byte) {
-		if cid == codec.CODECID_VIDEO_H264 || cid == codec.CODECID_VIDEO_H265 {
+		if cid == codec.CodecidVideoH264 || cid == codec.CodecidVideoH265 {
 			videoFd.Write(frame)
-		} else if cid == codec.CODECID_AUDIO_AAC {
+		} else if cid == codec.CodecidAudioAac {
 			audioFd.Write(frame)
 		}
 	})

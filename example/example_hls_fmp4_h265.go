@@ -61,7 +61,7 @@ func generateH265M3U8(f string) {
 		fmt.Println(err)
 		return
 	}
-	muxer, err = mp4.CreateMp4Muxer(mp4file, mp4.WithMp4Flag(mp4.MP4_FLAG_DASH))
+	muxer, err = mp4.CreateMp4Muxer(mp4file, mp4.WithMp4Flag(mp4.Mp4FlagDash))
 	if err != nil {
 		fmt.Println(err)
 		return
@@ -90,8 +90,8 @@ func generateH265M3U8(f string) {
 		}
 		muxer.ReBindWriter(mp4file)
 	})
-	vtid = muxer.AddVideoTrack(mp4.MP4_CODEC_H265)
-	atid = muxer.AddAudioTrack(mp4.MP4_CODEC_AAC)
+	vtid = muxer.AddVideoTrack(mp4.Mp4CodecH265)
+	atid = muxer.AddAudioTrack(mp4.Mp4CodecAac)
 
 	mp4fileReader, _ := os.Open(f)
 	defer mp4fileReader.Close()
@@ -110,10 +110,10 @@ func generateH265M3U8(f string) {
 			fmt.Println(err)
 			break
 		}
-		if pkg.Cid == mp4.MP4_CODEC_H265 {
+		if pkg.Cid == mp4.Mp4CodecH265 {
 
 			muxer.Write(vtid, pkg.Data, pkg.Pts, pkg.Dts)
-		} else if pkg.Cid == mp4.MP4_CODEC_AAC {
+		} else if pkg.Cid == mp4.Mp4CodecAac {
 			muxer.Write(atid, pkg.Data, pkg.Pts, pkg.Dts)
 		}
 	}
