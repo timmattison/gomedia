@@ -57,10 +57,10 @@ func (muxer *PSMuxer) Write(sid uint8, frame []byte, pts uint64, dts uint64) err
 	if len(frame) <= 0 {
 		return nil
 	}
-	var withaud = false
-	var idr_flag = false
-	var first = true
-	var vcl = false
+	var withaud bool = false
+	var idr_flag bool = false
+	var first bool = true
+	var vcl bool = false
 	if stream.Stream_type == uint8(PS_STREAM_H264) || stream.Stream_type == uint8(PS_STREAM_H265) {
 		codec.SplitFrame(frame, func(nalu []byte) bool {
 			if stream.Stream_type == uint8(PS_STREAM_H264) {

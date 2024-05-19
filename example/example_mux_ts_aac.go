@@ -36,7 +36,7 @@ func main() {
 	aac, _ := ioutil.ReadAll(f)
 	var pts uint64 = 0
 	var dts uint64 = 0
-	var i = 0
+	var i int = 0
 	codec.SplitAACFrame(aac, func(aac []byte) {
 
 		if i < 3 {

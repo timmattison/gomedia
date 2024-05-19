@@ -122,8 +122,8 @@ func (pack *H264Packer) packSingleNalu(nalu []byte, timestamp uint32) error {
 // +---------------+
 
 func (pack *H264Packer) packFuA(nalu []byte, timestamp uint32) (err error) {
-	var fuIndicator = nalu[0]&0xE0 | 0x1c
-	var fuHeader = nalu[0]&0x1F | 0x80
+	var fuIndicator byte = nalu[0]&0xE0 | 0x1c
+	var fuHeader byte = nalu[0]&0x1F | 0x80
 	nalu = nalu[1:]
 	for {
 		pkg := RtpPacket{}

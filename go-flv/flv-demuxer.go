@@ -80,7 +80,7 @@ func (demuxer *AVCTagDemuxer) Decode(data []byte) error {
 		}
 
 		if idr && (!hassps || !haspps) {
-			var nalus = make([]byte, 0, 2048)
+			var nalus []byte = make([]byte, 0, 2048)
 			for _, sps := range demuxer.spss {
 				nalus = append(nalus, sps...)
 			}
@@ -178,7 +178,7 @@ func (demuxer *HevcTagDemuxer) decodeNalus(data []byte, CompositionTime int32) e
 	}
 
 	if idr && (!hassps || !haspps || !hasvps) {
-		var nalus = make([]byte, 0, 2048)
+		var nalus []byte = make([]byte, 0, 2048)
 		nalus = append(demuxer.SpsPpsVps, data...)
 		if demuxer.onframe != nil {
 			demuxer.onframe(codec.CODECID_VIDEO_H265, nalus, int(CompositionTime))

@@ -5,18 +5,18 @@ import (
 	"io"
 )
 
-var isom = [4]byte{'i', 's', 'o', 'm'}
-var iso2 = [4]byte{'i', 's', 'o', '2'}
-var iso3 = [4]byte{'i', 's', 'o', '3'}
-var iso4 = [4]byte{'i', 's', 'o', '4'}
-var iso5 = [4]byte{'i', 's', 'o', '5'}
-var iso6 = [4]byte{'i', 's', 'o', '6'}
-var avc1 = [4]byte{'a', 'v', 'c', '1'}
-var mp41 = [4]byte{'m', 'p', '4', '1'}
-var mp42 = [4]byte{'m', 'p', '4', '2'}
-var dash = [4]byte{'d', 'a', 's', 'h'}
-var msdh = [4]byte{'m', 's', 'd', 'h'}
-var msix = [4]byte{'m', 's', 'i', 'x'}
+var isom [4]byte = [4]byte{'i', 's', 'o', 'm'}
+var iso2 [4]byte = [4]byte{'i', 's', 'o', '2'}
+var iso3 [4]byte = [4]byte{'i', 's', 'o', '3'}
+var iso4 [4]byte = [4]byte{'i', 's', 'o', '4'}
+var iso5 [4]byte = [4]byte{'i', 's', 'o', '5'}
+var iso6 [4]byte = [4]byte{'i', 's', 'o', '6'}
+var avc1 [4]byte = [4]byte{'a', 'v', 'c', '1'}
+var mp41 [4]byte = [4]byte{'m', 'p', '4', '1'}
+var mp42 [4]byte = [4]byte{'m', 'p', '4', '2'}
+var dash [4]byte = [4]byte{'d', 'a', 's', 'h'}
+var msdh [4]byte = [4]byte{'m', 's', 'd', 'h'}
+var msix [4]byte = [4]byte{'m', 's', 'i', 'x'}
 
 func mov_tag(tag [4]byte) uint32 {
 	return binary.LittleEndian.Uint32(tag[:])

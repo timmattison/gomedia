@@ -34,7 +34,7 @@ func TestCreateMp4Reader(t *testing.T) {
 			break
 		}
 		nn += 4
-		var isize = uint64(binary.BigEndian.Uint32(size))
+		var isize uint64 = uint64(binary.BigEndian.Uint32(size))
 		if isize == 1 {
 			size := make([]byte, 8)
 			_, err = io.ReadFull(f, size)
