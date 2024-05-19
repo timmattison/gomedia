@@ -2,8 +2,8 @@ package mp4
 
 import (
 	"encoding/binary"
-	"io"
 	"encoding/hex"
+	"io"
 )
 
 // UUIDs for different DRM systems
@@ -45,7 +45,7 @@ func (pssh *PsshBox) Decode(r io.Reader, size uint32) (offset int, err error) {
 	}
 	dataLen := binary.BigEndian.Uint32(buf[n:])
 	n += 4
-	pssh.Data = buf[n:n+int(dataLen)]
+	pssh.Data = buf[n : n+int(dataLen)]
 	return
 }
 

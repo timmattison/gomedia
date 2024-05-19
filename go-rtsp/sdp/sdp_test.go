@@ -5,7 +5,7 @@ import (
 	"testing"
 )
 
-var sdpstr string = `v=0
+var sdpstr = `v=0
 o=- 0 0 IN IP6 ::1
 s=No Name
 c=IN IP6 ::1

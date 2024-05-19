@@ -88,7 +88,7 @@ func (h265 *H265Packer) packFu(nalu []byte, timestamp uint32) error {
 	var fuHeader byte
 	payloadHdr[0] = (nalu[0] & 0x81) | (0x31 << 1)
 	payloadHdr[1] = nalu[1]
-	fuHeader = ((nalu[0] >> 1) & 0x3f)
+	fuHeader = (nalu[0] >> 1) & 0x3f
 	start := true
 	end := false
 	nalu = nalu[2:]
@@ -156,7 +156,7 @@ func (unpacker *H265UnPacker) UnPack(pkt []byte) error {
 		unpacker.onRtp(pkg)
 	}
 
-	packType := (pkg.Payload[0] >> 1 & 0x3f)
+	packType := pkg.Payload[0] >> 1 & 0x3f
 	switch {
 	case 0 < packType && packType < 40:
 		unpacker.frameBuffer.Write(pkg.Payload)

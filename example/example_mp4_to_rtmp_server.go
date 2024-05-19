@@ -42,9 +42,9 @@ func (adjust *TimestampAdjust) adjust(timestamp int64) int64 {
 	return adjust.adjust_timestamp
 }
 
-var video_pts_adjust *TimestampAdjust = newTimestampAdjust()
-var video_dts_adjust *TimestampAdjust = newTimestampAdjust()
-var audio_ts_adjust *TimestampAdjust = newTimestampAdjust()
+var video_pts_adjust = newTimestampAdjust()
+var video_dts_adjust = newTimestampAdjust()
+var audio_ts_adjust = newTimestampAdjust()
 
 // Will push the last file under mp4sPath to the specified rtmp server
 func main() {

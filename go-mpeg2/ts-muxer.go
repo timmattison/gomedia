@@ -113,7 +113,7 @@ func (mux *TSMuxer) Write(pid uint16, data []byte, pts uint64, dts uint64) error
 		whichpmt.pcr_pid = pid
 	}
 
-	var withaud bool = false
+	var withaud = false
 
 	if whichstream.streamtype == TS_STREAM_H264 || whichstream.streamtype == TS_STREAM_H265 {
 		codec.SplitFrame(data, func(nalu []byte) bool {
@@ -218,7 +218,7 @@ func (mux *TSMuxer) writePmt(pmt *Pmt, t_pmt *table_pmt) {
 }
 
 func (mux *TSMuxer) writePES(pes *pes_stream, pmt *table_pmt, data []byte, pts uint64, dts uint64, idr_flag bool, withaud bool) {
-	var firstPesPacket bool = true
+	var firstPesPacket = true
 	bsw := codec.NewBitStreamWriter(TS_PAKCET_SIZE)
 	for {
 		bsw.Reset()

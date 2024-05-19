@@ -85,8 +85,8 @@ func NewAVCMuxer() *AVCMuxer {
 }
 
 func (muxer *AVCMuxer) Write(frames []byte, pts uint32, dts uint32) [][]byte {
-	var vcl bool = false
-	var isKey bool = false
+	var vcl = false
+	var isKey = false
 	codec.SplitFrameWithStartCode(frames, func(nalu []byte) bool {
 		naltype := codec.H264NaluType(nalu)
 		switch naltype {
@@ -161,8 +161,8 @@ func NewHevcMuxer() *HevcMuxer {
 }
 
 func (muxer *HevcMuxer) Write(frames []byte, pts uint32, dts uint32) [][]byte {
-	var vcl bool = false
-	var isKey bool = false
+	var vcl = false
+	var isKey = false
 	codec.SplitFrameWithStartCode(frames, func(nalu []byte) bool {
 		naltype := codec.H265NaluType(nalu)
 		switch naltype {
