@@ -52,7 +52,6 @@ func NewDemuxer() *Demuxer {
 }
 
 func (demuxer *Demuxer) Input(buf []byte) (err error) {
-
 	if len(buf) == 0 {
 		return nil
 	}

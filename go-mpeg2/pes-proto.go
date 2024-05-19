@@ -7,8 +7,10 @@ import (
 	"github.com/timmattison/gomedia/go-codec"
 )
 
-var H264_AUD_NALU []byte = []byte{0x00, 0x00, 0x00, 0x01, 0x09, 0xF0} //ffmpeg mpegtsenc.c mpegts_write_packet_internal
-var H265_AUD_NALU []byte = []byte{0x00, 0x00, 0x00, 0x01, 0x46, 0x01, 0x50}
+var (
+	H264_AUD_NALU []byte = []byte{0x00, 0x00, 0x00, 0x01, 0x09, 0xF0} // ffmpeg mpegtsenc.c mpegts_write_packet_internal
+	H265_AUD_NALU []byte = []byte{0x00, 0x00, 0x00, 0x01, 0x46, 0x01, 0x50}
+)
 
 type PES_STREMA_ID int
 
@@ -23,7 +25,6 @@ const (
 )
 
 func findPESIDByStreamType(cid TS_STREAM_TYPE) PES_STREMA_ID {
-
 	switch cid {
 	case TS_STREAM_AAC, TS_STREAM_AUDIO_MPEG1, TS_STREAM_AUDIO_MPEG2:
 		return PES_STREAM_AUDIO
@@ -60,8 +61,8 @@ type PesPacket struct {
 	Additional_copy_info      uint8
 	Previous_PES_packet_CRC   uint16
 	Pes_payload               []byte
-	//TODO
-	//if ( PES_extension_flag == '1')
+	// TODO
+	// if ( PES_extension_flag == '1')
 	// PES_private_data_flag                uint8
 	// pack_header_field_flag               uint8
 	// program_packet_sequence_counter_flag uint8
@@ -134,8 +135,8 @@ func (pkg *PesPacket) Decode(bs *codec.BitStream) error {
 	if bs.RemainBytes() < 9 {
 		return errNeedMore
 	}
-	bs.SkipBits(24)             //packet_start_code_prefix
-	pkg.Stream_id = bs.Uint8(8) //stream_id
+	bs.SkipBits(24)             // packet_start_code_prefix
+	pkg.Stream_id = bs.Uint8(8) // stream_id
 	pkg.PES_packet_length = bs.Uint16(16)
 	bs.SkipBits(2) //'10'
 	pkg.PES_scrambling_control = bs.Uint8(2)
@@ -237,8 +238,8 @@ func (pkg *PesPacket) DecodeMpeg1(bs *codec.BitStream) error {
 	if bs.RemainBytes() < 6 {
 		return errNeedMore
 	}
-	bs.SkipBits(24)             //packet_start_code_prefix
-	pkg.Stream_id = bs.Uint8(8) //stream_id
+	bs.SkipBits(24)             // packet_start_code_prefix
+	pkg.Stream_id = bs.Uint8(8) // stream_id
 	pkg.PES_packet_length = bs.Uint16(16)
 	if pkg.PES_packet_length != 0 && bs.RemainBytes() < int(pkg.PES_packet_length) {
 		bs.UnRead(6 * 8)

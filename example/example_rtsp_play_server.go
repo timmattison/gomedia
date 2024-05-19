@@ -78,7 +78,7 @@ func (server *RtspPlaySeverSession) HandleOption(svr *rtsp.RtspServer, req rtsp.
 func (server *RtspPlaySeverSession) HandleDescribe(svr *rtsp.RtspServer, req rtsp.RtspRequest, res *rtsp.RtspResponse) {
 	fmt.Println("handle describe")
 	fmt.Println("add video track")
-	//rfc1890 MP2T payload type is 33
+	// rfc1890 MP2T payload type is 33
 	videoTrack := rtsp.NewVideoTrack(rtsp.RtspCodec{Cid: rtsp.RTSP_CODEC_TS, PayloadType: 33, SampleRate: 90000})
 	svr.AddTrack(videoTrack)
 	server.tracks["video"] = videoTrack
@@ -212,26 +212,21 @@ func (server *RtspPlaySeverSession) HandleAnnounce(svr *rtsp.RtspServer, req rts
 }
 
 func (server *RtspPlaySeverSession) HandlePause(svr *rtsp.RtspServer, req rtsp.RtspRequest, res *rtsp.RtspResponse) {
-
 }
 
 func (server *RtspPlaySeverSession) HandleTeardown(svr *rtsp.RtspServer, req rtsp.RtspRequest, res *rtsp.RtspResponse) {
 }
 
 func (server *RtspPlaySeverSession) HandleGetParameter(svr *rtsp.RtspServer, req rtsp.RtspRequest, res *rtsp.RtspResponse) {
-
 }
 
 func (server *RtspPlaySeverSession) HandleSetParameter(svr *rtsp.RtspServer, req rtsp.RtspRequest, res *rtsp.RtspResponse) {
-
 }
 
 func (server *RtspPlaySeverSession) HandleRecord(svr *rtsp.RtspServer, req rtsp.RtspRequest, res *rtsp.RtspResponse, timeRange *rtsp.RangeTime, info []*rtsp.RtpInfo) {
-
 }
 
 func (server *RtspPlaySeverSession) HandleResponse(svr *rtsp.RtspServer, res rtsp.RtspResponse) {
-
 }
 
 func main() {

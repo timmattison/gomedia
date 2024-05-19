@@ -7,11 +7,13 @@ import (
 	"github.com/timmattison/gomedia/go-codec"
 )
 
-type OnVideoFrameCallBack func(codecid codec.CodecID, frame []byte, cts int)
-type VideoTagDemuxer interface {
-	Decode(data []byte) error
-	OnFrame(onframe OnVideoFrameCallBack)
-}
+type (
+	OnVideoFrameCallBack func(codecid codec.CodecID, frame []byte, cts int)
+	VideoTagDemuxer      interface {
+		Decode(data []byte) error
+		OnFrame(onframe OnVideoFrameCallBack)
+	}
+)
 
 type AVCTagDemuxer struct {
 	spss    map[uint64][]byte
@@ -32,7 +34,6 @@ func (demuxer *AVCTagDemuxer) OnFrame(onframe OnVideoFrameCallBack) {
 }
 
 func (demuxer *AVCTagDemuxer) Decode(data []byte) error {
-
 	if len(data) < 5 {
 		return errors.New("avc tag size < 5")
 	}
@@ -117,7 +118,6 @@ func (demuxer *HevcTagDemuxer) OnFrame(onframe OnVideoFrameCallBack) {
 }
 
 func (demuxer *HevcTagDemuxer) Decode(data []byte) error {
-
 	if len(data) < 5 {
 		return errors.New("hevc tag size < 5")
 	}
@@ -216,7 +216,6 @@ func (demuxer *AACTagDemuxer) OnFrame(onframe OnAudioFrameCallBack) {
 }
 
 func (demuxer *AACTagDemuxer) Decode(data []byte) error {
-
 	if len(data) < 2 {
 		return errors.New("aac tag size < 2")
 	}
@@ -260,7 +259,6 @@ func (demuxer *G711Demuxer) OnFrame(onframe OnAudioFrameCallBack) {
 }
 
 func (demuxer *G711Demuxer) Decode(data []byte) error {
-
 	if len(data) < 1 {
 		return errors.New("audio tag size < 1")
 	}

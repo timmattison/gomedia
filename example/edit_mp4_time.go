@@ -26,7 +26,7 @@ func main() {
 	timeBuf := make([]byte, 4)
 	binary.BigEndian.PutUint32(timeBuf, uint32(newTime))
 
-	mp4Fd, err := os.OpenFile(mp4FilePath, os.O_CREATE|os.O_RDWR, 0666)
+	mp4Fd, err := os.OpenFile(mp4FilePath, os.O_CREATE|os.O_RDWR, 0o666)
 	if err != nil {
 		fmt.Println(err)
 		return
@@ -59,14 +59,14 @@ Loop:
 			offset2, _ := mp4Fd.Seek(0, io.SeekCurrent)
 			if mvhd.Box.Version == 0 {
 				mp4Fd.Seek(offset+4, io.SeekStart)
-				mp4Fd.Write(timeBuf) //create time
-				mp4Fd.Write(timeBuf) //modify time
+				mp4Fd.Write(timeBuf) // create time
+				mp4Fd.Write(timeBuf) // modify time
 			} else {
 				mp4Fd.Seek(offset+4, io.SeekStart)
 				mp4Fd.Write([]byte{0x00, 0x00, 0x00, 0x00})
-				mp4Fd.Write(timeBuf) //create time
+				mp4Fd.Write(timeBuf) // create time
 				mp4Fd.Write([]byte{0x00, 0x00, 0x00, 0x00})
-				mp4Fd.Write(timeBuf) //modify time
+				mp4Fd.Write(timeBuf) // modify time
 			}
 			mp4Fd.Seek(offset2, io.SeekStart)
 		case mov_tag([4]byte{'t', 'r', 'a', 'k'}):
@@ -83,14 +83,14 @@ Loop:
 			offset2, _ := mp4Fd.Seek(0, io.SeekCurrent)
 			if mdhd.Box.Version == 0 {
 				mp4Fd.Seek(offset+4, io.SeekStart)
-				mp4Fd.Write(timeBuf) //create time
-				mp4Fd.Write(timeBuf) //modify time
+				mp4Fd.Write(timeBuf) // create time
+				mp4Fd.Write(timeBuf) // modify time
 			} else {
 				mp4Fd.Seek(offset+4, io.SeekStart)
 				mp4Fd.Write([]byte{0x00, 0x00, 0x00, 0x00})
-				mp4Fd.Write(timeBuf) //create time
+				mp4Fd.Write(timeBuf) // create time
 				mp4Fd.Write([]byte{0x00, 0x00, 0x00, 0x00})
-				mp4Fd.Write(timeBuf) //modify time
+				mp4Fd.Write(timeBuf) // modify time
 			}
 			mp4Fd.Seek(offset2, io.SeekStart)
 		case mov_tag([4]byte{'t', 'k', 'h', 'd'}):
@@ -103,14 +103,14 @@ Loop:
 			offset2, _ := mp4Fd.Seek(0, io.SeekCurrent)
 			if tkhd.Box.Version == 0 {
 				mp4Fd.Seek(offset+4, io.SeekStart)
-				mp4Fd.Write(timeBuf) //create time
-				mp4Fd.Write(timeBuf) //modify time
+				mp4Fd.Write(timeBuf) // create time
+				mp4Fd.Write(timeBuf) // modify time
 			} else {
 				mp4Fd.Seek(offset+4, io.SeekStart)
 				mp4Fd.Write([]byte{0x00, 0x00, 0x00, 0x00})
-				mp4Fd.Write(timeBuf) //create time
+				mp4Fd.Write(timeBuf) // create time
 				mp4Fd.Write([]byte{0x00, 0x00, 0x00, 0x00})
-				mp4Fd.Write(timeBuf) //modify time
+				mp4Fd.Write(timeBuf) // modify time
 			}
 			mp4Fd.Seek(offset2, io.SeekStart)
 		default:

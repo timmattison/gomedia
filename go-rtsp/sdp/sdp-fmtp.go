@@ -301,11 +301,9 @@ func (param *AACFmtpParam) Load(fmtp string) {
 			param.indexDeltaLength, _ = strconv.Atoi(kv[1])
 		}
 	}
-
 }
 
 func (param *AACFmtpParam) Save() string {
-
 	paramstr := fmt.Sprintf("streamtype=5;mode=%s;sizeLength=%d;indexLength=%d;indexDeltaLength=%d",
 		param.mode, param.sizeLength, param.indexLength, param.indexDeltaLength)
 

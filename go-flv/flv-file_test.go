@@ -11,9 +11,9 @@ import (
 
 func TestFlvReader_Input(t *testing.T) {
 	t.Run("test_1", func(t *testing.T) {
-		videoFile, _ := os.OpenFile("v.h264", os.O_CREATE|os.O_RDWR, 0666)
+		videoFile, _ := os.OpenFile("v.h264", os.O_CREATE|os.O_RDWR, 0o666)
 		defer videoFile.Close()
-		audioFile, _ := os.OpenFile("a.aac", os.O_CREATE|os.O_RDWR, 0666)
+		audioFile, _ := os.OpenFile("a.aac", os.O_CREATE|os.O_RDWR, 0o666)
 		defer audioFile.Close()
 		f := CreateFlvReader()
 		f.OnFrame = func(cid codec.CodecID, frame []byte, pts, dts uint32) {
@@ -43,9 +43,8 @@ func TestFlvReader_Input(t *testing.T) {
 }
 
 func TestFlvWriter_Write(t *testing.T) {
-
 	t.Run("test_2", func(t *testing.T) {
-		newflv, _ := os.OpenFile("new.flv", os.O_CREATE|os.O_RDWR, 0666)
+		newflv, _ := os.OpenFile("new.flv", os.O_CREATE|os.O_RDWR, 0o666)
 		defer newflv.Close()
 		wf := CreateFlvWriter(newflv)
 		wf.WriteFlvHeader()
@@ -71,9 +70,8 @@ func TestFlvWriter_Write(t *testing.T) {
 }
 
 func TestFlvWriter_WriteHevc(t *testing.T) {
-
 	t.Run("test_3", func(t *testing.T) {
-		newflv, _ := os.OpenFile("h265.flv", os.O_CREATE|os.O_RDWR, 0666)
+		newflv, _ := os.OpenFile("h265.flv", os.O_CREATE|os.O_RDWR, 0o666)
 		defer newflv.Close()
 		wf := CreateFlvWriter(newflv)
 		wf.WriteFlvHeader()
@@ -100,9 +98,8 @@ func TestFlvWriter_WriteHevc(t *testing.T) {
 }
 
 func TestFlvReadH265(t *testing.T) {
-
 	t.Run("test_4", func(t *testing.T) {
-		videoFile, _ := os.OpenFile("v2.h265", os.O_CREATE|os.O_RDWR, 0666)
+		videoFile, _ := os.OpenFile("v2.h265", os.O_CREATE|os.O_RDWR, 0o666)
 		defer videoFile.Close()
 		f := CreateFlvReader()
 		f.OnFrame = func(cid codec.CodecID, frame []byte, pts, dts uint32) {

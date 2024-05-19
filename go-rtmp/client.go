@@ -158,7 +158,6 @@ func (cli *RtmpClient) GetState() RtmpState {
 }
 
 func (cli *RtmpClient) Input(data []byte) error {
-
 	switch cli.state {
 	case HandShake:
 		cli.changeState(STATE_HANDSHAKEING)
@@ -182,7 +181,6 @@ func (cli *RtmpClient) Input(data []byte) error {
 			cli.timestamp = msg.timestamp
 			return cli.handleMessage(msg)
 		})
-
 		if err != nil {
 			return err
 		}
@@ -260,7 +258,7 @@ func (cli *RtmpClient) handleMessage(msg *rtmpMessage) error {
 		size := binary.BigEndian.Uint32(msg.msg)
 		cli.reader.chunkSize = size
 	case ABORT_MESSAGE:
-		//TODO
+		// TODO
 	case ACKNOWLEDGEMENT:
 		if len(msg.msg) < 4 {
 			return errors.New("bytes of \"window acknowledgement size\"  < 4")
@@ -269,9 +267,9 @@ func (cli *RtmpClient) handleMessage(msg *rtmpMessage) error {
 	case USER_CONTROL:
 		return cli.handleUserEvent(msg.msg)
 	case WND_ACK_SIZE:
-		//TODO
+		// TODO
 	case SET_PEER_BW:
-		//TODO
+		// TODO
 	case AUDIO:
 		return cli.handleAudioMessage(msg)
 	case VIDEO:
@@ -355,13 +353,12 @@ func (cli *RtmpClient) handleResult(data []byte) error {
 	case CREATE_STREAM:
 		return cli.handleCreateStreamResponse(data)
 	case GET_STREAM_LENGTH:
-		//TODO
+		// TODO
 	}
 	return nil
 }
 
 func (cli *RtmpClient) handleConnectResponse(data []byte) error {
-
 	items, _ := decodeAmf0(data)
 	if len(items) > 0 {
 		if tid, ok := items[0].value.(float64); ok {
@@ -396,7 +393,6 @@ func (cli *RtmpClient) handleConnectResponse(data []byte) error {
 }
 
 func (cli *RtmpClient) handleCreateStreamResponse(data []byte) error {
-
 	items, _ := decodeAmf0(data)
 	if len(items) > 0 {
 		if tid, ok := items[0].value.(float64); ok {

@@ -9,9 +9,11 @@ import (
 	"github.com/timmattison/gomedia/go-mp4"
 )
 
-var mp4filename = flag.String("mp4file", "test.mp4", "mp4 file you want to decode")
-var rawvideo = flag.String("videofile", "v.h264", "export raw video data to the videofile")
-var rawaudio = flag.String("audiofile", "a.aac", "export raw audio data to the audiofile")
+var (
+	mp4filename = flag.String("mp4file", "test.mp4", "mp4 file you want to decode")
+	rawvideo    = flag.String("videofile", "v.h264", "export raw video data to the videofile")
+	rawaudio    = flag.String("audiofile", "a.aac", "export raw audio data to the audiofile")
+)
 
 func main() {
 	flag.Parse()
@@ -21,13 +23,13 @@ func main() {
 		return
 	}
 	defer f.Close()
-	vfile, err := os.OpenFile(*rawvideo, os.O_CREATE|os.O_RDWR, 0666)
+	vfile, err := os.OpenFile(*rawvideo, os.O_CREATE|os.O_RDWR, 0o666)
 	if err != nil {
 		fmt.Println(err)
 		return
 	}
 	defer vfile.Close()
-	afile, err := os.OpenFile(*rawaudio, os.O_CREATE|os.O_RDWR, 0666)
+	afile, err := os.OpenFile(*rawaudio, os.O_CREATE|os.O_RDWR, 0o666)
 	if err != nil {
 		fmt.Println(err)
 		return
@@ -56,5 +58,4 @@ func main() {
 			afile.Write(pkg.Data)
 		}
 	}
-
 }

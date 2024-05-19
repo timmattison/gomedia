@@ -86,14 +86,14 @@ func (sps *SPS) Decode(bs *BitStream) {
 		sps.Profile_idc == 86 || sps.Profile_idc == 118 || sps.Profile_idc == 128 {
 		sps.Chroma_format_idc = bs.ReadUE()
 		if sps.Chroma_format_idc == 3 {
-			sps.Separate_colour_plane_flag = bs.Uint8(1) //separate_colour_plane_flag
+			sps.Separate_colour_plane_flag = bs.Uint8(1) // separate_colour_plane_flag
 		}
-		sps.Bit_depth_luma_minus8 = bs.ReadUE()   //bit_depth_luma_minus8
-		sps.Bit_depth_chroma_minus8 = bs.ReadUE() //bit_depth_chroma_minus8
-		bs.SkipBits(1)                            //qpprime_y_zero_transform_bypass_flag
+		sps.Bit_depth_luma_minus8 = bs.ReadUE()   // bit_depth_luma_minus8
+		sps.Bit_depth_chroma_minus8 = bs.ReadUE() // bit_depth_chroma_minus8
+		bs.SkipBits(1)                            // qpprime_y_zero_transform_bypass_flag
 		seq_scaling_matrix_present_flag := bs.GetBit()
 		if seq_scaling_matrix_present_flag == 1 {
-			//seq_scaling_list_present_flag[i]
+			// seq_scaling_list_present_flag[i]
 			if sps.Chroma_format_idc == 3 {
 				bs.SkipBits(12)
 			} else {
@@ -106,12 +106,12 @@ func (sps *SPS) Decode(bs *BitStream) {
 	if sps.Pic_order_cnt_type == 0 {
 		bs.ReadUE() // log2_max_pic_order_cnt_lsb_minus4
 	} else if sps.Pic_order_cnt_type == 1 {
-		bs.SkipBits(1) //delta_pic_order_always_zero_flag
-		bs.ReadSE()    //offset_for_non_ref_pic
-		bs.ReadSE()    //offset_for_top_to_bottom_field
+		bs.SkipBits(1) // delta_pic_order_always_zero_flag
+		bs.ReadSE()    // offset_for_non_ref_pic
+		bs.ReadSE()    // offset_for_top_to_bottom_field
 		num_ref_frames_in_pic_order_cnt_cycle := bs.ReadUE()
 		for i := 0; i < int(num_ref_frames_in_pic_order_cnt_cycle); i++ {
-			bs.ReadSE() //offset_for_ref_frame
+			bs.ReadSE() // offset_for_ref_frame
 		}
 	}
 	sps.Max_num_ref_frames = bs.ReadUE()
@@ -125,10 +125,10 @@ func (sps *SPS) Decode(bs *BitStream) {
 	sps.Direct_8x8_inference_flag = bs.GetBit()
 	sps.Frame_cropping_flag = bs.GetBit()
 	if sps.Frame_cropping_flag == 1 {
-		sps.Frame_crop_left_offset = bs.ReadUE()   //frame_crop_left_offset
-		sps.Frame_crop_right_offset = bs.ReadUE()  //frame_crop_right_offset
-		sps.Frame_crop_top_offset = bs.ReadUE()    //frame_crop_top_offset
-		sps.Frame_crop_bottom_offset = bs.ReadUE() //frame_crop_bottom_offset
+		sps.Frame_crop_left_offset = bs.ReadUE()   // frame_crop_left_offset
+		sps.Frame_crop_right_offset = bs.ReadUE()  // frame_crop_right_offset
+		sps.Frame_crop_top_offset = bs.ReadUE()    // frame_crop_top_offset
+		sps.Frame_crop_bottom_offset = bs.ReadUE() // frame_crop_bottom_offset
 	}
 	sps.Vui_parameters_present_flag = bs.GetBit()
 
@@ -310,7 +310,6 @@ func GetH264Resolution(sps []byte) (width uint32, height uint32) {
 //   variable PPS NALU data
 
 func CreateH264AVCCExtradata(spss [][]byte, ppss [][]byte) ([]byte, error) {
-
 	if len(spss) == 0 || len(ppss) == 0 {
 		return nil, errors.New("lack of sps or pps")
 	}

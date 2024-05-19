@@ -19,7 +19,7 @@ func main() {
 	defer f.Close()
 
 	tsfilename := os.Args[2]
-	tsf, err := os.OpenFile(tsfilename, os.O_WRONLY|os.O_CREATE, 0666)
+	tsf, err := os.OpenFile(tsfilename, os.O_WRONLY|os.O_CREATE, 0o666)
 	if err != nil {
 		fmt.Println(err)
 		return
@@ -38,7 +38,6 @@ func main() {
 	var dts uint64 = 0
 	var i int = 0
 	codec.SplitAACFrame(aac, func(aac []byte) {
-
 		if i < 3 {
 			pts += 23
 			dts += 23
@@ -50,5 +49,4 @@ func main() {
 		}
 		fmt.Println(muxer.Write(pid, aac, pts, dts))
 	})
-
 }

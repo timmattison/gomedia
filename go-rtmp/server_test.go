@@ -12,13 +12,11 @@ import (
 )
 
 func TestRtmpServerHandle_Play(t *testing.T) {
-
 	t.Run("server play", func(t *testing.T) {
 		listen, _ := net.Listen("tcp4", "0.0.0.0:1935")
 		conn, _ := listen.Accept()
 
 		go func() {
-
 			ready := make(chan struct{})
 
 			handle := NewRtmpServerHandle()
@@ -84,17 +82,15 @@ func TestRtmpServerHandle_Play(t *testing.T) {
 }
 
 func TestRtmpServerHandle_Pub(t *testing.T) {
-
 	t.Run("server pub", func(t *testing.T) {
 		listen, _ := net.Listen("tcp4", "0.0.0.0:1935")
 		conn, _ := listen.Accept()
 
 		go func() {
-
 			var videoFile *os.File
 			handle := NewRtmpServerHandle()
 			handle.OnPublish(func(app, streamName string) StatusCode {
-				videoFile, _ = os.OpenFile(streamName+".h264", os.O_CREATE|os.O_RDWR, 0666)
+				videoFile, _ = os.OpenFile(streamName+".h264", os.O_CREATE|os.O_RDWR, 0o666)
 				return NETSTREAM_PUBLISH_START
 			})
 

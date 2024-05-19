@@ -15,8 +15,7 @@ import (
 	"github.com/timmattison/gomedia/go-mpeg2"
 )
 
-type hlsSession struct {
-}
+type hlsSession struct{}
 
 type mp4Segment struct {
 	start       uint64
@@ -215,5 +214,4 @@ func main() {
 	}
 	fmt.Println("server.listen")
 	fmt.Println(server.ListenAndServe())
-
 }

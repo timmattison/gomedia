@@ -18,14 +18,14 @@ func init() {
 type RtspSample struct {
 	Cid       RTSP_CODEC_ID
 	Sample    []byte
-	Timestamp uint32 //in milliseconds
+	Timestamp uint32 // in milliseconds
 	Completed bool
 }
 
 type OnSampleCallBack func(sample RtspSample)
 
 type RtspTrack struct {
-	TrackName    string //video/audio/application
+	TrackName    string // video/audio/application
 	Codec        RtspCodec
 	transport    *RtspTransport
 	onSample     OnSampleCallBack
@@ -43,8 +43,10 @@ type RtspTrack struct {
 	autoSendRR   bool
 }
 
-type PacketCallBack func(b []byte, isRtcp bool) error
-type TrackOption func(t *RtspTrack)
+type (
+	PacketCallBack func(b []byte, isRtcp bool) error
+	TrackOption    func(t *RtspTrack)
+)
 
 func WithCodecParamHandler(handler sdp.FmtpCodecParamParser) TrackOption {
 	return func(t *RtspTrack) {
@@ -60,8 +62,8 @@ func WithDisableRtcpRR() TrackOption {
 
 func NewVideoTrack(codec RtspCodec, opt ...TrackOption) *RtspTrack {
 	return newTrack("video", codec, opt...)
-
 }
+
 func NewAudioTrack(codec RtspCodec, opt ...TrackOption) *RtspTrack {
 	return newTrack("audio", codec, opt...)
 }
@@ -125,7 +127,7 @@ func (track *RtspTrack) OnSample(onsample OnSampleCallBack) {
 		sample := RtspSample{
 			Cid:       track.Codec.Cid,
 			Sample:    frame,
-			Timestamp: timestamp, //uint32(uint64() * 1000 / uint64(track.Codec.SampleRate)),
+			Timestamp: timestamp, // uint32(uint64() * 1000 / uint64(track.Codec.SampleRate)),
 			Completed: !lost,
 		}
 		if sample.Cid == RTSP_CODEC_H264 {
@@ -244,7 +246,7 @@ func (track *RtspTrack) mediaDescripe() string {
 }
 
 func (track *RtspTrack) Input(data []byte, isRtcp bool) error {
-	//TODO
+	// TODO
 	if isRtcp {
 		return track.inputRtcp(data)
 	}
@@ -269,7 +271,6 @@ func (track *RtspTrack) inputRtcp(data []byte) error {
 }
 
 func (track *RtspTrack) createUnpacker() rtp.UnPacker {
-
 	switch track.Codec.Cid {
 	case RTSP_CODEC_H264:
 		return rtp.NewH264UnPacker()

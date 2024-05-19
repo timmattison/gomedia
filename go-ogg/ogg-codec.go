@@ -15,8 +15,7 @@ type oggCodec interface {
 	magicSize() int
 }
 
-type OpusCodec struct {
-}
+type OpusCodec struct{}
 
 func (opus OpusCodec) codecid() codec.CodecID {
 	return codec.CODECID_AUDIO_OPUS
@@ -30,8 +29,7 @@ func (opus OpusCodec) magicSize() int {
 	return 8
 }
 
-type VP8Codec struct {
-}
+type VP8Codec struct{}
 
 func (vp8 VP8Codec) codecid() codec.CodecID {
 	return codec.CODECID_VIDEO_VP8
@@ -116,7 +114,6 @@ func (opus *opusDemuxer) header(stream *oggStream, packet []byte) (err error) {
 }
 
 func (opus *opusDemuxer) packet(stream *oggStream, packet []byte) (frame []byte, pts uint64, dts uint64) {
-
 	if stream.lost == 1 {
 		return packet, opus.lastpts, opus.lastpts
 	}
@@ -146,6 +143,7 @@ func (opus *opusDemuxer) packet(stream *oggStream, packet []byte) (frame []byte,
 
 	return
 }
+
 func (opus *opusDemuxer) gptopts(granulePos uint64) uint64 {
 	return 0
 }
@@ -194,7 +192,7 @@ func (vp8 *vp8Demuxer) header(stream *oggStream, packet []byte) (err error) {
 		if packet[6] != 0x20 {
 			return
 		}
-		//TODO Parse Comment
+		// TODO Parse Comment
 	default:
 		return nil
 	}
@@ -202,7 +200,6 @@ func (vp8 *vp8Demuxer) header(stream *oggStream, packet []byte) (err error) {
 }
 
 func (vp8 *vp8Demuxer) packet(stream *oggStream, packet []byte) (frame []byte, pts uint64, dts uint64) {
-
 	if stream.lost == 1 {
 		return packet, vp8.lastpts, vp8.lastpts
 	}

@@ -6,8 +6,7 @@ import (
 	"github.com/timmattison/gomedia/go-rtsp/rtp"
 )
 
-//https://www.rfc-editor.org/rfc/rfc3550#section-17
-
+// https://www.rfc-editor.org/rfc/rfc3550#section-17
 type RtcpContext struct {
 	ssrc             uint32
 	senderSSRC       uint32
@@ -47,7 +46,7 @@ func NewRtcpContext(ssrc uint32, seq uint16, sampleRate uint32) *RtcpContext {
 	}
 }
 
-//rfc 3550 Computing the RTCP Transmission Interval
+// rfc 3550 Computing the RTCP Transmission Interval
 // func (ctx *RtcpContext) ComputeTransmitInterval() float32 {
 // }
 
@@ -105,7 +104,7 @@ func (ctx *RtcpContext) SendRtp(pkt *rtp.RtpPacket) {
 	ctx.lastRtpTimestamp = pkt.Header.Timestamp
 }
 
-//RFC3550 A.8 Estimating the Interarrival Jitter
+// RFC3550 A.8 Estimating the Interarrival Jitter
 // int transit = arrival - r->ts;
 // int d = transit - s->transit;
 // s->transit = transit;

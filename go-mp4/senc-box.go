@@ -1,4 +1,5 @@
 package mp4
+
 import (
 	"encoding/binary"
 	"io"
@@ -11,11 +12,11 @@ const (
 // SencBox - Sample Encryption Box (senc) (in trak or traf box)
 // See ISO/IEC 23001-7 Section 7.2 and CMAF specification
 // Full Box + SampleCount
-type SencBox struct{
-	Box              *FullBox
-	SampleCount      uint32
-	PerSampleIVSize  uint32
-	EntryList		 *movsenc
+type SencBox struct {
+	Box             *FullBox
+	SampleCount     uint32
+	PerSampleIVSize uint32
+	EntryList       *movsenc
 }
 
 func (senc *SencBox) Decode(r io.Reader, size uint32, perSampleIVSize uint8) (offset int, err error) {
@@ -24,23 +25,22 @@ func (senc *SencBox) Decode(r io.Reader, size uint32, perSampleIVSize uint8) (of
 	}
 	senc.PerSampleIVSize = uint32(perSampleIVSize)
 	buf := make([]byte, size-12)
-    if _, err = io.ReadFull(r, buf); err != nil {
-        return 0, err
-    }
+	if _, err = io.ReadFull(r, buf); err != nil {
+		return 0, err
+	}
 	n := 0
 	senc.SampleCount = binary.BigEndian.Uint32(buf[n:])
 	n += 4
 	sencFlags := uint32(senc.Box.Flags[0])<<16 | uint32(senc.Box.Flags[1])<<8 | uint32(senc.Box.Flags[2])
 
-
 	senc.EntryList = new(movsenc)
 	senc.EntryList.entrys = make([]sencEntry, senc.SampleCount)
 	for i := 0; i < int(senc.SampleCount); i++ {
-		senc.EntryList.entrys[i].iv = buf[n:n+int(senc.PerSampleIVSize)]
+		senc.EntryList.entrys[i].iv = buf[n : n+int(senc.PerSampleIVSize)]
 		n += int(senc.PerSampleIVSize)
 
 		if sencFlags&UseSubsampleEncryption <= 0 {
-        	continue
+			continue
 		}
 
 		subsampleCount := binary.BigEndian.Uint16(buf[n:])

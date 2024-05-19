@@ -75,7 +75,6 @@ func (dops *OpusSpecificBox) Encode() (int, []byte) {
 }
 
 func (dops *OpusSpecificBox) Decode(r io.Reader, size uint32) (offset int, err error) {
-
 	dopsBuf := make([]byte, size-BasicBoxLen)
 	ChannelMappingFamily := 0
 	if size-BasicBoxLen-10 > 0 {

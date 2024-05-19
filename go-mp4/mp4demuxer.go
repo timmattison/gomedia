@@ -65,13 +65,13 @@ type Mp4Info struct {
 
 type MovDemuxer struct {
 	reader        io.ReadSeeker
-	mdatOffset    []uint64 //一个mp4文件可能存在多个mdatbox
+	mdatOffset    []uint64 // 一个mp4文件可能存在多个mdatbox
 	tracks        []*mp4track
 	readSampleIdx []uint32
 	mp4out        []byte
 	mp4Info       Mp4Info
 
-	//for demux fmp4
+	// for demux fmp4
 	isFragement  bool
 	currentTrack *mp4track
 	pssh         []PsshBox

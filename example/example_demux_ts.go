@@ -11,7 +11,6 @@ import (
 )
 
 func main() {
-
 	tsfile := os.Args[1]
 	tsFd, err := os.Open(tsfile)
 	if err != nil {
@@ -20,35 +19,35 @@ func main() {
 	}
 	defer tsFd.Close()
 
-	h264FileFd, err := os.OpenFile("video.h264", os.O_CREATE|os.O_RDWR, 0666)
+	h264FileFd, err := os.OpenFile("video.h264", os.O_CREATE|os.O_RDWR, 0o666)
 	if err != nil {
 		fmt.Println(err)
 		return
 	}
 	defer h264FileFd.Close()
 
-	h265FileFd, err := os.OpenFile("video.h265", os.O_CREATE|os.O_RDWR, 0666)
+	h265FileFd, err := os.OpenFile("video.h265", os.O_CREATE|os.O_RDWR, 0o666)
 	if err != nil {
 		fmt.Println(err)
 		return
 	}
 	defer h265FileFd.Close()
 
-	aacFileFd, err := os.OpenFile("audio.aac", os.O_CREATE|os.O_RDWR, 0666)
+	aacFileFd, err := os.OpenFile("audio.aac", os.O_CREATE|os.O_RDWR, 0o666)
 	if err != nil {
 		fmt.Println(err)
 		return
 	}
 	defer aacFileFd.Close()
 
-	mpaFileFd, err := os.OpenFile("audio.mpa", os.O_CREATE|os.O_RDWR, 0666)
+	mpaFileFd, err := os.OpenFile("audio.mpa", os.O_CREATE|os.O_RDWR, 0o666)
 	if err != nil {
 		fmt.Println(err)
 		return
 	}
 	defer mpaFileFd.Close()
 
-	fd3, err := os.OpenFile("ts_debug.log", os.O_CREATE|os.O_RDWR, 0666)
+	fd3, err := os.OpenFile("ts_debug.log", os.O_CREATE|os.O_RDWR, 0o666)
 	if err != nil {
 		fmt.Println(err)
 		return

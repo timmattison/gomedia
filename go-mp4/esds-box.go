@@ -71,7 +71,6 @@ func makeESDescriptor(trackid uint16, cid MP4_CODEC_TYPE, vosData []byte) []byte
 }
 
 func makeDecoderConfigDescriptor(cid MP4_CODEC_TYPE, vosData []byte) []byte {
-
 	decoder_specific_info_len := uint32(0)
 	if len(vosData) > 0 {
 		decoder_specific_info_len = uint32(len(vosData)) + 5
@@ -120,7 +119,7 @@ func decodeESDescriptor(esd []byte, track *mp4track) (vosData []byte) {
 			streamDependenceFlag := bs.Uint8(1)
 			_ = bs.Uint8(1) // urlFlag
 			oCRstreamFlag := bs.Uint8(1)
-			_ = bs.Uint8(5) //streamPriority
+			_ = bs.Uint8(5) // streamPriority
 			if streamDependenceFlag == 1 {
 				_ = bs.Uint8(16) // dependsOnEsId
 			}

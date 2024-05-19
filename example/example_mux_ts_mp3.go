@@ -19,7 +19,7 @@ func main() {
 	defer f.Close()
 
 	tsfilename := os.Args[2]
-	tsf, err := os.OpenFile(tsfilename, os.O_WRONLY|os.O_CREATE, 0666)
+	tsf, err := os.OpenFile(tsfilename, os.O_WRONLY|os.O_CREATE, 0o666)
 	if err != nil {
 		fmt.Println(err)
 		return
@@ -44,5 +44,4 @@ func main() {
 		pts += uint64(delta)
 		dts = pts
 	})
-
 }

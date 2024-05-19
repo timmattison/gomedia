@@ -96,7 +96,7 @@ func (demuxer *TSDemuxer) Input(r io.Reader) error {
 			for p, s := range demuxer.programs {
 				if p == pkg.PID { // pmt table
 					if pkg.Payload_unit_start_indicator == 1 {
-						bs.SkipBits(8) //pointer filed
+						bs.SkipBits(8) // pointer filed
 					}
 					pkg.Payload, err = ReadSection(TS_TID_PMS, bs)
 					if err != nil {

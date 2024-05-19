@@ -26,9 +26,9 @@ type PSDemuxer struct {
 	mpeg1     bool
 	cache     []byte
 	OnFrame   func(frame []byte, cid PS_STREAM_TYPE, pts uint64, dts uint64)
-	//解ps包过程中，解码回调psm，system header，pes包等
-	//decodeResult 解码ps包时的产生的错误
-	//这个回调主要用于debug，查看是否ps包存在问题
+	// 解ps包过程中，解码回调psm，system header，pes包等
+	// decodeResult 解码ps包时的产生的错误
+	// 这个回调主要用于debug，查看是否ps包存在问题
 	OnPacket func(pkg Display, decodeResult error)
 }
 
@@ -72,7 +72,7 @@ func (psdemuxer *PSDemuxer) Input(data []byte) error {
 		}
 		prefix_code := bs.NextBits(32)
 		switch prefix_code {
-		case 0x000001BA: //pack header
+		case 0x000001BA: // pack header
 			if psdemuxer.pkg.Header == nil {
 				psdemuxer.pkg.Header = new(PSPackHeader)
 			}
@@ -81,7 +81,7 @@ func (psdemuxer *PSDemuxer) Input(data []byte) error {
 			if psdemuxer.OnPacket != nil {
 				psdemuxer.OnPacket(psdemuxer.pkg.Header, ret)
 			}
-		case 0x000001BB: //system header
+		case 0x000001BB: // system header
 			if psdemuxer.pkg.Header == nil {
 				panic("psdemuxer.pkg.Header must not be nil")
 			}
@@ -92,7 +92,7 @@ func (psdemuxer *PSDemuxer) Input(data []byte) error {
 			if psdemuxer.OnPacket != nil {
 				psdemuxer.OnPacket(psdemuxer.pkg.System, ret)
 			}
-		case 0x000001BC: //program stream map
+		case 0x000001BC: // program stream map
 			if psdemuxer.pkg.Psm == nil {
 				psdemuxer.pkg.Psm = new(Program_stream_map)
 			}
@@ -114,12 +114,12 @@ func (psdemuxer *PSDemuxer) Input(data []byte) error {
 				psdemuxer.pkg.CommPes = new(CommonPesPacket)
 			}
 			ret = psdemuxer.pkg.CommPes.Decode(bs)
-		case 0x000001FF: //program stream directory
+		case 0x000001FF: // program stream directory
 			if psdemuxer.pkg.Psd == nil {
 				psdemuxer.pkg.Psd = new(Program_stream_directory)
 			}
 			ret = psdemuxer.pkg.Psd.Decode(bs)
-		case 0x000001B9: //MPEG_program_end_code
+		case 0x000001B9: // MPEG_program_end_code
 			continue
 		default:
 			if prefix_code&0xFFFFFFE0 == 0x000001C0 || prefix_code&0xFFFFFFE0 == 0x000001E0 {

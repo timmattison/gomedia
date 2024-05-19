@@ -45,14 +45,14 @@ func TestRtmpClient_Play(t *testing.T) {
 		cli.OnFrame(func(cid codec.CodecID, pts, dts uint32, frame []byte) {
 			if cid == codec.CODECID_VIDEO_H264 {
 				if firstVideo {
-					fd, _ = os.OpenFile("v.h264", os.O_CREATE|os.O_RDWR, 0666)
+					fd, _ = os.OpenFile("v.h264", os.O_CREATE|os.O_RDWR, 0o666)
 					firstVideo = false
 				}
 				fmt.Printf("recv frame id:%d, pts:%d , dts:%d\n", cid, pts, dts)
 				fd.Write(frame)
 			} else {
 				if firstAudio {
-					fd2, _ = os.OpenFile("a.aac", os.O_CREATE|os.O_RDWR, 0666)
+					fd2, _ = os.OpenFile("a.aac", os.O_CREATE|os.O_RDWR, 0o666)
 					firstAudio = false
 				}
 				fd2.Write(frame)
@@ -80,7 +80,6 @@ func TestRtmpClient_Play(t *testing.T) {
 }
 
 func TestRtmpClient_Pub(t *testing.T) {
-
 	t.Run("pub", func(t *testing.T) {
 		c, err := net.Dial("tcp4", "49.235.110.177:1935")
 		if err != nil {

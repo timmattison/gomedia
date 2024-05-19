@@ -25,7 +25,7 @@ func main() {
 	var vtid uint32 = 0
 
 	mp4filename := "convert_ts.mp4"
-	mp4file, err := os.OpenFile(mp4filename, os.O_CREATE|os.O_RDWR, 0666)
+	mp4file, err := os.OpenFile(mp4filename, os.O_CREATE|os.O_RDWR, 0o666)
 	if err != nil {
 		fmt.Println(err)
 		return

@@ -139,7 +139,7 @@ func (server *RtspServer) hanleRtpOverRtsp(packet []byte) (int, error) {
 			return 4 + int(length), track.Input(packet[4:4+length], isRtcp)
 		}
 	}
-	//improve compatibility
+	// improve compatibility
 	return 4 + int(length), nil
 }
 

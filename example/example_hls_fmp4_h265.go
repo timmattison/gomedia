@@ -56,7 +56,7 @@ func generateH265M3U8(f string) {
 	var atid uint32
 	i := 0
 	filename := fmt.Sprintf("hevcstream-%d.mp4", i)
-	mp4file, err := os.OpenFile(filename, os.O_CREATE|os.O_RDWR, 0666)
+	mp4file, err := os.OpenFile(filename, os.O_CREATE|os.O_RDWR, 0o666)
 	if err != nil {
 		fmt.Println(err)
 		return
@@ -75,7 +75,7 @@ func generateH265M3U8(f string) {
 
 		mp4file.Close()
 		if i == 0 {
-			initFile, _ := os.OpenFile("hevcinit.mp4", os.O_CREATE|os.O_RDWR, 0666)
+			initFile, _ := os.OpenFile("hevcinit.mp4", os.O_CREATE|os.O_RDWR, 0o666)
 			muxer.WriteInitSegment(initFile)
 			initFile.Close()
 			hls.initUri = "hevcinit.mp4"
@@ -83,7 +83,7 @@ func generateH265M3U8(f string) {
 
 		i++
 		filename = fmt.Sprintf("hevcstream-%d.mp4", i)
-		mp4file, err = os.OpenFile(filename, os.O_CREATE|os.O_RDWR, 0666)
+		mp4file, err = os.OpenFile(filename, os.O_CREATE|os.O_RDWR, 0o666)
 		if err != nil {
 			fmt.Println(err)
 			return
@@ -111,7 +111,6 @@ func generateH265M3U8(f string) {
 			break
 		}
 		if pkg.Cid == mp4.MP4_CODEC_H265 {
-
 			muxer.Write(vtid, pkg.Data, pkg.Pts, pkg.Dts)
 		} else if pkg.Cid == mp4.MP4_CODEC_AAC {
 			muxer.Write(atid, pkg.Data, pkg.Pts, pkg.Dts)
@@ -119,7 +118,7 @@ func generateH265M3U8(f string) {
 	}
 	muxer.FlushFragment()
 	m3u8Name := "test.m3u8"
-	m3u8, _ := os.OpenFile(m3u8Name, os.O_CREATE|os.O_RDWR, 0666)
+	m3u8, _ := os.OpenFile(m3u8Name, os.O_CREATE|os.O_RDWR, 0o666)
 	defer m3u8.Close()
 	m3u8.WriteString(hls.makeM3u8())
 	mp4file.Close()
@@ -169,5 +168,4 @@ func main() {
 	}
 	fmt.Println("server.listen")
 	fmt.Println(server.ListenAndServe())
-
 }

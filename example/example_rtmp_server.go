@@ -15,8 +15,10 @@ var port = flag.String("port", "1935", "rtmp server listen port")
 
 type MediaCenter map[string]*MediaProducer
 
-var center MediaCenter
-var mtx sync.Mutex
+var (
+	center MediaCenter
+	mtx    sync.Mutex
+)
 
 func init() {
 	center = make(map[string]*MediaProducer)
@@ -163,7 +165,6 @@ func newMediaSession(conn net.Conn) *MediaSession {
 }
 
 func (sess *MediaSession) init() {
-
 	sess.handle.OnPlay(func(app, streamName string, start, duration float64, reset bool) rtmp.StatusCode {
 		if source := center.find(streamName); source == nil {
 			return rtmp.NETSTREAM_PLAY_NOTFOUND
@@ -197,11 +198,11 @@ func (sess *MediaSession) init() {
 			sess.handle.OnFrame(func(cid codec.CodecID, pts, dts uint32, frame []byte) {
 				f := &MediaFrame{
 					cid:   cid,
-					frame: frame, //make([]byte, len(frame)),
+					frame: frame, // make([]byte, len(frame)),
 					pts:   pts,
 					dts:   dts,
 				}
-				//copy(f.frame, frame)
+				// copy(f.frame, frame)
 				sess.C <- f
 			})
 			name := sess.handle.GetStreamName()
@@ -264,7 +265,7 @@ func (sess *MediaSession) sendToClient() {
 			sess.lists = nil
 			sess.mtx.Unlock()
 			for _, frame := range frames {
-				if firstVideo { //wait for I frame
+				if firstVideo { // wait for I frame
 					if frame.cid == codec.CODECID_VIDEO_H264 && codec.IsH264IDRFrame(frame.frame) {
 						firstVideo = false
 					} else if frame.cid == codec.CODECID_VIDEO_H265 && codec.IsH265IDRFrame(frame.frame) {

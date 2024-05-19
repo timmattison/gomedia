@@ -30,7 +30,6 @@ type SgpdBox struct {
 	SampleGroupEntries           []interface{}
 }
 
-
 func decodeSgpdBox(demuxer *MovDemuxer, size uint32) (err error) {
 	buf := make([]byte, size-BasicBoxLen)
 	if _, err = io.ReadFull(demuxer.reader, buf); err != nil {
@@ -45,7 +44,7 @@ func decodeSgpdBox(demuxer *MovDemuxer, size uint32) (err error) {
 		Version: version,
 		Flags:   versionAndFlags & 0x00ffffff,
 	}
-	b.GroupingType = string(buf[n:n+4])
+	b.GroupingType = string(buf[n : n+4])
 	n += 4
 
 	if b.Version >= 1 {
@@ -61,7 +60,7 @@ func decodeSgpdBox(demuxer *MovDemuxer, size uint32) (err error) {
 
 	track := demuxer.tracks[len(demuxer.tracks)-1]
 	for i := 0; i < entryCount; i++ {
-		var descriptionLength = b.DefaultLength
+		descriptionLength := b.DefaultLength
 		if b.Version >= 1 && b.DefaultLength == 0 {
 			descriptionLength = binary.BigEndian.Uint32(buf[n:])
 			n += 4
@@ -69,7 +68,7 @@ func decodeSgpdBox(demuxer *MovDemuxer, size uint32) (err error) {
 		}
 		var (
 			sgEntry interface{}
-			offset int
+			offset  int
 		)
 		sgEntry, offset, err = decodeSampleGroupEntry(b.GroupingType, descriptionLength, buf[n:])
 		n += offset
@@ -85,7 +84,7 @@ func decodeSgpdBox(demuxer *MovDemuxer, size uint32) (err error) {
 		b.SampleGroupEntries = append(b.SampleGroupEntries, sgEntry)
 	}
 
- 	return nil
+	return nil
 }
 
 type SampleGroupEntryDecoder func(name string, length uint32, buf []byte) (interface{}, int, error)
@@ -125,7 +124,7 @@ func DecodeSeigSampleGroupEntry(name string, length uint32, buf []byte) (interfa
 	if s.IsProtected == 1 && s.PerSampleIVSize == 0 {
 		constantIVSize := int(buf[n])
 		n += 1
-		s.ConstantIV = buf[n:n+constantIVSize]
+		s.ConstantIV = buf[n : n+constantIVSize]
 		n += constantIVSize
 	}
 	if length != uint32(s.Size()) {

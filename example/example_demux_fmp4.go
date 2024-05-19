@@ -16,9 +16,9 @@ func main() {
 	}
 	defer fmp4.Close()
 
-	videof, _ := os.OpenFile("fmp4.h264", os.O_CREATE|os.O_RDWR, 0666)
+	videof, _ := os.OpenFile("fmp4.h264", os.O_CREATE|os.O_RDWR, 0o666)
 	defer videof.Close()
-	audiof, _ := os.OpenFile("fmp4.aac", os.O_CREATE|os.O_RDWR, 0666)
+	audiof, _ := os.OpenFile("fmp4.aac", os.O_CREATE|os.O_RDWR, 0o666)
 	defer audiof.Close()
 
 	demuxer := mp4.CreateMp4Demuxer(fmp4)

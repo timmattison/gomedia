@@ -7,14 +7,14 @@ import (
 	"github.com/timmattison/gomedia/go-codec"
 )
 
-//h265 nalu head
+// h265 nalu head
 // +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 // |F| nalu type |  layer id | tid |
 // +---------------+-+-+-+-+-+-+-+-+
 
-//rtp h265
-//rfc7798
-//fu
+// rtp h265
+// rfc7798
+// fu
 //  0                   1                   2                   3
 //  0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
 // +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
@@ -64,7 +64,7 @@ func (h265 *H265Packer) Pack(data []byte, timestamp uint32) error {
 }
 
 func (h265 *H265Packer) packSingleNalu(nalu []byte, timestamp uint32) error {
-	//fmt.Println("pack single nalu")
+	// fmt.Println("pack single nalu")
 	pkg := RtpPacket{}
 	pkg.Header.PayloadType = h265.pt
 	pkg.Header.SequenceNumber = h265.sequence

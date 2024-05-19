@@ -52,31 +52,33 @@ const (
 	STATE_Recording
 )
 
-type OutPutCallBack func([]byte) error
-type TrackCallBack func(track *RtspTrack)
-type RtspClient struct {
-	uri              string
-	usrName          string
-	passwd           string
-	isRecord         bool
-	cseq             int32
-	auth             authenticate
-	output           OutPutCallBack
-	lastRequest      *RtspRequest
-	tracks           map[string]*RtspTrack
-	cache            []byte
-	reponseHandler   func(res *RtspResponse) error
-	serverCapability []string
-	state            int
-	sdpContext       *sdp.Sdp
-	setupStep        int
-	handle           ClientHandle
-	sessionId        string
-	timeout          int
-	scale            float32
-	speed            float32
-	timeRange        RangeTime
-}
+type (
+	OutPutCallBack func([]byte) error
+	TrackCallBack  func(track *RtspTrack)
+	RtspClient     struct {
+		uri              string
+		usrName          string
+		passwd           string
+		isRecord         bool
+		cseq             int32
+		auth             authenticate
+		output           OutPutCallBack
+		lastRequest      *RtspRequest
+		tracks           map[string]*RtspTrack
+		cache            []byte
+		reponseHandler   func(res *RtspResponse) error
+		serverCapability []string
+		state            int
+		sdpContext       *sdp.Sdp
+		setupStep        int
+		handle           ClientHandle
+		sessionId        string
+		timeout          int
+		scale            float32
+		speed            float32
+		timeRange        RangeTime
+	}
+)
 
 type ClientOption func(cli *RtspClient)
 
@@ -198,7 +200,6 @@ func (client *RtspClient) Pause() (err error) {
 }
 
 func (client *RtspClient) Play() {
-
 }
 
 func (client *RtspClient) SetSpeed(speed float32) {
@@ -214,7 +215,6 @@ func (client *RtspClient) SetRange(timeRange RangeTime) {
 }
 
 func (client *RtspClient) EnableRTCP() {
-
 }
 
 func (client *RtspClient) KeepAlive(method string) error {
@@ -279,12 +279,11 @@ func (client *RtspClient) handlRtpOverRtsp(packet []byte) (ret int, err error) {
 			return 4 + int(length), track.Input(packet[4:4+length], isRtcp)
 		}
 	}
-	//improve compatibility
+	// improve compatibility
 	return 4 + int(length), nil
 }
 
 func (client *RtspClient) handleRtspMessage(msg []byte) (int, error) {
-
 	idx := bytes.IndexFunc(msg, func(r rune) bool {
 		if r == ' ' {
 			return false
@@ -333,7 +332,6 @@ func (client *RtspClient) handleRequest(req []byte) (ret int, err error) {
 }
 
 func (client *RtspClient) handleUnAuth(response RtspResponse) error {
-
 	if _, found := response.Fileds[WWWAuthenticate]; !found {
 		return errors.New("need WWW-Authenticate")
 	}
@@ -393,7 +391,6 @@ func (client *RtspClient) handleOption(res *RtspResponse) error {
 // 2.The RTSP Content-Location field
 // 3.The RTSP request URL
 func (client *RtspClient) handleDescribe(res *RtspResponse) (err error) {
-
 	if res.StatusCode != 200 {
 		if client.handle != nil {
 			return client.handle.HandleDescribe(client, *res, nil, nil)
@@ -485,7 +482,6 @@ func (client *RtspClient) handleDescribe(res *RtspResponse) (err error) {
 }
 
 func (client *RtspClient) handleSetup(res *RtspResponse) error {
-
 	lastTrack := client.tracks[client.sdpContext.Medias[client.setupStep-1].MediaType]
 	if res.StatusCode != 200 {
 		if client.handle == nil {
@@ -588,7 +584,6 @@ func (client *RtspClient) handleSetup(res *RtspResponse) error {
 }
 
 func (client *RtspClient) handlePlay(res *RtspResponse) (err error) {
-
 	if res.StatusCode != 200 {
 		if client.handle != nil {
 			return client.handle.HandlePlay(client, *res, nil, nil)

@@ -12,7 +12,7 @@ func main() {
 	flvfilereader, _ := os.Open(os.Args[1])
 	defer flvfilereader.Close()
 	fr := flv.CreateFlvReader()
-	newflv, _ := os.OpenFile(os.Args[1]+"_new.flv", os.O_CREATE|os.O_RDWR, 0666)
+	newflv, _ := os.OpenFile(os.Args[1]+"_new.flv", os.O_CREATE|os.O_RDWR, 0o666)
 	defer newflv.Close()
 	fw := flv.CreateFlvWriter(newflv)
 	fw.WriteFlvHeader()

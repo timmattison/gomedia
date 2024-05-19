@@ -1,8 +1,8 @@
 package mp4
-import (
 
-"encoding/binary"
-"io"
+import (
+	"encoding/binary"
+	"io"
 )
 
 func decodeTencBox(demuxer *MovDemuxer, size uint32) (err error) {

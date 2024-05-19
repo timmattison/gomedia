@@ -216,7 +216,6 @@ func (server *RtmpServerHandle) WriteFrame(cid codec.CodecID, frame []byte, pts,
 }
 
 func (server *RtmpServerHandle) WriteAudio(cid codec.CodecID, frame []byte, pts, dts uint32) error {
-
 	if server.audioMuxer == nil {
 		server.audioMuxer = flv.CreateAudioMuxer(flv.CovertCodecId2SoundFromat(cid))
 	}
@@ -274,18 +273,18 @@ func (server *RtmpServerHandle) handleMessage(msg *rtmpMessage) error {
 		size := binary.BigEndian.Uint32(msg.msg)
 		server.reader.chunkSize = size
 	case ABORT_MESSAGE:
-		//TODO
+		// TODO
 	case ACKNOWLEDGEMENT:
 		if len(msg.msg) < 4 {
 			return errors.New("bytes of \"window acknowledgement size\"  < 4")
 		}
 		server.peerWndAckSize = binary.BigEndian.Uint32(msg.msg)
 	case USER_CONTROL:
-		//TODO
+		// TODO
 	case WND_ACK_SIZE:
-		//TODO
+		// TODO
 	case SET_PEER_BW:
-		//TODO
+		// TODO
 	case AUDIO:
 		return server.handleAudioMessage(msg)
 	case VIDEO:

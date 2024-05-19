@@ -142,7 +142,7 @@ func (mux *TSMuxer) Write(pid uint16, data []byte, pts uint64, dts uint64) error
 	if mux.pat_period == 0 || mux.pat_period+400 < dts {
 		mux.pat_period = dts
 		if mux.pat_period == 0 {
-			mux.pat_period = 1 //avoid write pat twice
+			mux.pat_period = 1 // avoid write pat twice
 		}
 		tmppat := NewPat()
 		tmppat.Version_number = mux.pat.version_number
@@ -192,7 +192,7 @@ func (mux *TSMuxer) writePat(pat *Pat) {
 	mux.pat.cc = (mux.pat.cc + 1) % 16
 	bsw := codec.NewBitStreamWriter(TS_PAKCET_SIZE)
 	tshdr.EncodeHeader(bsw)
-	bsw.PutByte(0x00) //pointer
+	bsw.PutByte(0x00) // pointer
 	pat.Encode(bsw)
 	bsw.FillRemainData(0xff)
 	if mux.OnPacket != nil {
@@ -209,7 +209,7 @@ func (mux *TSMuxer) writePmt(pmt *Pmt, t_pmt *table_pmt) {
 	t_pmt.cc = (t_pmt.cc + 1) % 16
 	bsw := codec.NewBitStreamWriter(TS_PAKCET_SIZE)
 	tshdr.EncodeHeader(bsw)
-	bsw.PutByte(0x00) //pointer
+	bsw.PutByte(0x00) // pointer
 	pmt.Encode(bsw)
 	bsw.FillRemainData(0xff)
 	if mux.OnPacket != nil {

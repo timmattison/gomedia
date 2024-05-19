@@ -13,8 +13,10 @@ import (
 	"github.com/timmattison/gomedia/go-rtmp"
 )
 
-var rtmpUrl = flag.String("url", "rtmp://127.0.0.1/live/test", "publish rtmp url")
-var flvFile = flag.String("flv", "test.flv", "push flv file to server")
+var (
+	rtmpUrl = flag.String("url", "rtmp://127.0.0.1/live/test", "publish rtmp url")
+	flvFile = flag.String("flv", "test.flv", "push flv file to server")
+)
 
 func publish(fileName string, cli *rtmp.RtmpClient) {
 	fmt.Println(fileName)
@@ -53,7 +55,7 @@ func main() {
 	if u.Port() == "" {
 		host += ":1935"
 	}
-	//connect to remote rtmp server
+	// connect to remote rtmp server
 	c, err := net.Dial("tcp4", host)
 	if err != nil {
 		fmt.Println("connect failed", err)
@@ -62,10 +64,10 @@ func main() {
 
 	isReady := make(chan struct{})
 
-	//创建rtmp client 使能复杂握手,rtmp推流
+	// 创建rtmp client 使能复杂握手,rtmp推流
 	cli := rtmp.NewRtmpClient(rtmp.WithComplexHandshake(), rtmp.WithEnablePublish())
 
-	//监听状态变化,STATE_RTMP_PUBLISH_START 状态通知推流
+	// 监听状态变化,STATE_RTMP_PUBLISH_START 状态通知推流
 	cli.OnStateChange(func(newState rtmp.RtmpState) {
 		if newState == rtmp.STATE_RTMP_PUBLISH_START {
 			fmt.Println("ready for publish")

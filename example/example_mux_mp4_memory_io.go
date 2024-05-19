@@ -65,7 +65,7 @@ func (ws *cacheWriterSeeker) Seek(offset int64, whence int) (int64, error) {
 func main() {
 	tsfile := "demo.ts"
 	mp4FileName := "cache.mp4"
-	mp4File, err := os.OpenFile(mp4FileName, os.O_CREATE|os.O_RDWR, 0666)
+	mp4File, err := os.OpenFile(mp4FileName, os.O_CREATE|os.O_RDWR, 0o666)
 	if err != nil {
 		fmt.Println(err)
 		return

@@ -15,20 +15,20 @@ func main() {
 	defer rfd.Close()
 	buf, _ := ioutil.ReadAll(rfd)
 	fmt.Printf("read %d size\n", len(buf))
-	fd, err := os.OpenFile(os.Args[2], os.O_CREATE|os.O_RDWR, 0666)
+	fd, err := os.OpenFile(os.Args[2], os.O_CREATE|os.O_RDWR, 0o666)
 	if err != nil {
 		fmt.Println(err)
 		return
 	}
 	defer fd.Close()
-	fd2, err := os.OpenFile(os.Args[3], os.O_CREATE|os.O_RDWR, 0666)
+	fd2, err := os.OpenFile(os.Args[3], os.O_CREATE|os.O_RDWR, 0o666)
 	if err != nil {
 		fmt.Println(err)
 		return
 	}
 	defer fd2.Close()
 
-	fd3, err := os.OpenFile("ps_demux_result", os.O_CREATE|os.O_RDWR, 0666)
+	fd3, err := os.OpenFile("ps_demux_result", os.O_CREATE|os.O_RDWR, 0o666)
 	if err != nil {
 		fmt.Println(err)
 		return
@@ -41,7 +41,7 @@ func main() {
 			if codec.H264NaluType(frame) == 9 {
 				return
 			}
-			//fmt.Printf("write h264 frame:%d\n", len(frame))
+			// fmt.Printf("write h264 frame:%d\n", len(frame))
 			n, err := fd.Write(frame)
 			if err != nil || n != len(frame) {
 				fmt.Println(err)
@@ -54,7 +54,6 @@ func main() {
 		}
 	}
 	demuxer.OnPacket = func(pkg mpeg2.Display, decodeResult error) {
-
 		switch value := pkg.(type) {
 		case *mpeg2.PSPackHeader:
 			fd3.WriteString("--------------PS Pack Header--------------\n")

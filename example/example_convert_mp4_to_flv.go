@@ -10,7 +10,6 @@ import (
 )
 
 func main() {
-
 	mp4filename := os.Args[1]
 
 	f, err := os.Open(mp4filename)
@@ -25,7 +24,7 @@ func main() {
 	} else {
 		fmt.Printf("%+v\n", infos)
 	}
-	flvFile, _ := os.OpenFile(os.Args[2], os.O_CREATE|os.O_RDWR, 0666)
+	flvFile, _ := os.OpenFile(os.Args[2], os.O_CREATE|os.O_RDWR, 0o666)
 	defer flvFile.Close()
 	fw := flv.CreateFlvWriter(flvFile)
 	fw.WriteFlvHeader()

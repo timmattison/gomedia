@@ -65,8 +65,7 @@ const (
 	STATE_RTMP_PUBLISH_FAILED
 )
 
-//https://blog.csdn.net/wq892373445/article/details/118387494
-
+// https://blog.csdn.net/wq892373445/article/details/118387494
 type StatusLevel string
 
 const (
@@ -197,11 +196,13 @@ func (c StatusCode) Description() StatusLevel {
 	return ""
 }
 
-type OutputCB func([]byte) error
-type OnFrame func(cid codec.CodecID, pts, dts uint32, frame []byte)
-type OnStatus func(code, level, describe string)
-type OnError func(code, describe string)
-type OnReleaseStream func(app, streamName string)
-type OnPlay func(app, streamName string, start, duration float64, reset bool) StatusCode
-type OnPublish func(app, streamName string) StatusCode
-type OnStateChange func(newState RtmpState)
+type (
+	OutputCB        func([]byte) error
+	OnFrame         func(cid codec.CodecID, pts, dts uint32, frame []byte)
+	OnStatus        func(code, level, describe string)
+	OnError         func(code, describe string)
+	OnReleaseStream func(app, streamName string)
+	OnPlay          func(app, streamName string, start, duration float64, reset bool) StatusCode
+	OnPublish       func(app, streamName string) StatusCode
+	OnStateChange   func(newState RtmpState)
+)

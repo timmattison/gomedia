@@ -104,7 +104,7 @@ func (elst *EditListBox) Decode(r io.Reader) (offset int, err error) {
 }
 
 func makeElstBox(track *mp4track) (boxdata []byte) {
-	//startCt := track.samplelist[0].pts - track.samplelist[0].dts
+	// startCt := track.samplelist[0].pts - track.samplelist[0].dts
 	delay := track.samplelist[0].pts * 1000 / uint64(track.timescale)
 	entryCount := 1
 	version := uint32(0)
@@ -129,7 +129,7 @@ func makeElstBox(track *mp4track) (boxdata []byte) {
 	// 	elst.entrys.entrys[0].mediaRateFraction = 0
 	// }
 
-	//简单起见，mediaTime先固定为0,即不延迟播放
+	// 简单起见，mediaTime先固定为0,即不延迟播放
 	elst.entrys.entrys[entryCount-1].segmentDuration = uint64(track.duration)
 	elst.entrys.entrys[entryCount-1].mediaTime = 0
 	elst.entrys.entrys[entryCount-1].mediaRateInteger = 0x0001

@@ -79,10 +79,10 @@ const (
 
 type PSPackHeader struct {
 	IsMpeg1                          bool
-	System_clock_reference_base      uint64 //33 bits
-	System_clock_reference_extension uint16 //9 bits
-	Program_mux_rate                 uint32 //22 bits
-	Pack_stuffing_length             uint8  //3 bitss
+	System_clock_reference_base      uint64 // 33 bits
+	System_clock_reference_extension uint16 // 9 bits
+	Program_mux_rate                 uint32 // 22 bits
+	Pack_stuffing_length             uint8  // 3 bitss
 }
 
 func (ps_pkg_hdr *PSPackHeader) PrettyPrint(file *os.File) {
@@ -101,12 +101,12 @@ func (ps_pkg_hdr *PSPackHeader) Decode(bs *codec.BitStream) error {
 		panic("ps header must start with 000001BA")
 	}
 
-	if bs.NextBits(2) == 0x01 { //mpeg2
+	if bs.NextBits(2) == 0x01 { // mpeg2
 		if bs.RemainBytes() < 10 {
 			return errNeedMore
 		}
 		return ps_pkg_hdr.decodeMpeg2(bs)
-	} else if bs.NextBits(4) == 0x02 { //mpeg1
+	} else if bs.NextBits(4) == 0x02 { // mpeg1
 		if bs.RemainBytes() < 8 {
 			return errNeedMore
 		}
@@ -453,7 +453,7 @@ func (psm *Program_stream_map) Decode(bs *codec.BitStream) error {
 		elem.Stream_type = bs.Uint8(8)
 		elem.Elementary_stream_id = bs.Uint8(8)
 		elem.Elementary_stream_info_length = bs.Uint16(16)
-		//TODO Parser descriptor
+		// TODO Parser descriptor
 		if bs.RemainBytes() < int(elem.Elementary_stream_info_length) {
 			return errParser
 		}
@@ -486,7 +486,7 @@ func (psd *Program_stream_directory) Decode(bs *codec.BitStream) error {
 		bs.UnRead(6 * 8)
 		return errNeedMore
 	}
-	//TODO Program Stream directory
+	// TODO Program Stream directory
 	bs.SkipBits(int(psd.PES_packet_length) * 8)
 	return nil
 }

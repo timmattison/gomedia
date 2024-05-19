@@ -11,9 +11,11 @@ import (
 	"github.com/timmattison/gomedia/go-rtmp"
 )
 
-var rtmpUrl = flag.String("url", "rtmp://127.0.0.1/live/test", "play rtmp url")
-var video = flag.String("video", "v.h264", "safe video data to the file")
-var audio = flag.String("audio", "a.aac", "safe audio data to the file")
+var (
+	rtmpUrl = flag.String("url", "rtmp://127.0.0.1/live/test", "play rtmp url")
+	video   = flag.String("video", "v.h264", "safe video data to the file")
+	audio   = flag.String("audio", "a.aac", "safe audio data to the file")
+)
 
 func main() {
 	flag.Parse()
@@ -27,15 +29,15 @@ func main() {
 		host += ":1935"
 	}
 
-	//connect to remote rtmp server
+	// connect to remote rtmp server
 	c, err := net.Dial("tcp4", host)
 	if err != nil {
 		fmt.Println(err)
 		return
 	}
 
-	videoFd, _ := os.OpenFile(*video, os.O_CREATE|os.O_RDWR, 0666)
-	audioFd, _ := os.OpenFile(*audio, os.O_CREATE|os.O_RDWR, 0666)
+	videoFd, _ := os.OpenFile(*video, os.O_CREATE|os.O_RDWR, 0o666)
+	audioFd, _ := os.OpenFile(*audio, os.O_CREATE|os.O_RDWR, 0o666)
 	defer func() {
 		if c != nil {
 			c.Close()
@@ -57,7 +59,7 @@ func main() {
 		}
 	})
 
-	//must set output callback
+	// must set output callback
 	client.SetOutput(func(b []byte) error {
 		_, err := c.Write(b)
 		return err

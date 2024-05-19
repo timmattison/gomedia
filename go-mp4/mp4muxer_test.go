@@ -50,7 +50,6 @@ func TestCreateMp4Reader(t *testing.T) {
 }
 
 func TestCreateMp4Muxer(t *testing.T) {
-
 	f, err := os.Open("jellyfish-3-mbps-hd.h265")
 	if err != nil {
 		fmt.Println(err)
@@ -59,7 +58,7 @@ func TestCreateMp4Muxer(t *testing.T) {
 	defer f.Close()
 
 	mp4filename := "jellyfish-3-mbps-hd.h265.mp4"
-	mp4file, err := os.OpenFile(mp4filename, os.O_CREATE|os.O_RDWR, 0666)
+	mp4file, err := os.OpenFile(mp4filename, os.O_CREATE|os.O_RDWR, 0o666)
 	if err != nil {
 		fmt.Println(err)
 		return
@@ -125,7 +124,7 @@ func TestMuxAAC(t *testing.T) {
 	defer f.Close()
 
 	mp4filename := "aac.mp4"
-	mp4file, err := os.OpenFile(mp4filename, os.O_CREATE|os.O_RDWR, 0666)
+	mp4file, err := os.OpenFile(mp4filename, os.O_CREATE|os.O_RDWR, 0o666)
 	if err != nil {
 		fmt.Println(err)
 		return
@@ -134,8 +133,8 @@ func TestMuxAAC(t *testing.T) {
 
 	aac, _ := ioutil.ReadAll(f)
 	var pts uint64 = 0
-	//var dts uint64 = 0
-	//var i int = 0
+	// var dts uint64 = 0
+	// var i int = 0
 	samples := uint64(0)
 	muxer, err := CreateMp4Muxer(mp4file)
 	if err != nil {
@@ -157,7 +156,7 @@ func TestMuxAAC(t *testing.T) {
 		// 	i = 0
 		// }
 		muxer.Write(tid, aac, pts, pts)
-		//fmt.Println(pts)
+		// fmt.Println(pts)
 	})
 	muxer.WriteTrailer()
 }
@@ -172,7 +171,7 @@ func TestMuxMp4(t *testing.T) {
 	defer tsfile.Close()
 
 	mp4filename := "test14.mp4" // output
-	mp4file, err := os.OpenFile(mp4filename, os.O_CREATE|os.O_RDWR, 0666)
+	mp4file, err := os.OpenFile(mp4filename, os.O_CREATE|os.O_RDWR, 0o666)
 	if err != nil {
 		fmt.Println(err)
 		return
@@ -187,7 +186,7 @@ func TestMuxMp4(t *testing.T) {
 	vtid := muxer.AddVideoTrack(MP4_CODEC_H264)
 	atid := muxer.AddAudioTrack(MP4_CODEC_AAC)
 
-	afile, err := os.OpenFile("r.aac", os.O_CREATE|os.O_RDWR, 0666)
+	afile, err := os.OpenFile("r.aac", os.O_CREATE|os.O_RDWR, 0o666)
 	if err != nil {
 		fmt.Println(err)
 		return
@@ -195,7 +194,6 @@ func TestMuxMp4(t *testing.T) {
 	defer afile.Close()
 	demuxer := mpeg2.NewTSDemuxer()
 	demuxer.OnFrame = func(cid mpeg2.TS_STREAM_TYPE, frame []byte, pts uint64, dts uint64) {
-
 		if cid == mpeg2.TS_STREAM_AAC {
 			err = muxer.Write(atid, frame, uint64(pts), uint64(dts))
 			if err != nil {

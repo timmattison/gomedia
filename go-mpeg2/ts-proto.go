@@ -27,7 +27,7 @@ const (
 	TS_TID_PAS       PAT_TID = 0x00 // program_association_section
 	TS_TID_CAS               = 0x01 // conditional_access_section(CA_section)
 	TS_TID_PMS               = 0x02 // TS_program_map_section
-	TS_TID_SDS               = 0x03 //TS_description_section
+	TS_TID_SDS               = 0x03 // TS_description_section
 	TS_TID_FORBIDDEN PAT_TID = 0xFF
 )
 
@@ -195,29 +195,29 @@ func (pkg *TSPacket) DecodeHeader(bs *codec.BitStream) error {
 
 type Adaptation_field struct {
 	SingleStuffingByte                         bool   // The value 0 is for inserting a single stuffing byte in a Transport Stream packet
-	Adaptation_field_length                    uint8  //8   uimsbf
-	Discontinuity_indicator                    uint8  //1   bslbf
-	Random_access_indicator                    uint8  //1   bslbf
-	Elementary_stream_priority_indicator       uint8  //1   bslbf
-	PCR_flag                                   uint8  //1   bslbf
-	OPCR_flag                                  uint8  //1   bslbf
-	Splicing_point_flag                        uint8  //1   bslbf
-	Transport_private_data_flag                uint8  //1   bslbf
-	Adaptation_field_extension_flag            uint8  //1   bslbf
-	Program_clock_reference_base               uint64 //33  uimsbf
-	Program_clock_reference_extension          uint16 //9   uimsbf
-	Original_program_clock_reference_base      uint64 //33  uimsbf
-	Original_program_clock_reference_extension uint16 //9   uimsbf
-	Splice_countdown                           uint8  //8   uimsbf
-	Transport_private_data_length              uint8  //8   uimsbf
-	Adaptation_field_extension_length          uint8  //8   uimsbf
-	Ltw_flag                                   uint8  //1   bslbf
-	Piecewise_rate_flag                        uint8  //1   bslbf
-	Seamless_splice_flag                       uint8  //1   bslbf
-	Ltw_valid_flag                             uint8  //1   bslbf
-	Ltw_offset                                 uint16 //15  uimsbf
-	Piecewise_rate                             uint32 //22  uimsbf
-	Splice_type                                uint8  //4   uimsbf
+	Adaptation_field_length                    uint8  // 8   uimsbf
+	Discontinuity_indicator                    uint8  // 1   bslbf
+	Random_access_indicator                    uint8  // 1   bslbf
+	Elementary_stream_priority_indicator       uint8  // 1   bslbf
+	PCR_flag                                   uint8  // 1   bslbf
+	OPCR_flag                                  uint8  // 1   bslbf
+	Splicing_point_flag                        uint8  // 1   bslbf
+	Transport_private_data_flag                uint8  // 1   bslbf
+	Adaptation_field_extension_flag            uint8  // 1   bslbf
+	Program_clock_reference_base               uint64 // 33  uimsbf
+	Program_clock_reference_extension          uint16 // 9   uimsbf
+	Original_program_clock_reference_base      uint64 // 33  uimsbf
+	Original_program_clock_reference_extension uint16 // 9   uimsbf
+	Splice_countdown                           uint8  // 8   uimsbf
+	Transport_private_data_length              uint8  // 8   uimsbf
+	Adaptation_field_extension_length          uint8  // 8   uimsbf
+	Ltw_flag                                   uint8  // 1   bslbf
+	Piecewise_rate_flag                        uint8  // 1   bslbf
+	Seamless_splice_flag                       uint8  // 1   bslbf
+	Ltw_valid_flag                             uint8  // 1   bslbf
+	Ltw_offset                                 uint16 // 15  uimsbf
+	Piecewise_rate                             uint32 // 22  uimsbf
+	Splice_type                                uint8  // 4   uimsbf
 	DTS_next_AU                                uint64
 	Stuffing_byte                              uint8
 }
@@ -293,7 +293,7 @@ func (adaptation *Adaptation_field) Encode(bsw *codec.BitStreamWriter) {
 	if adaptation.Splicing_point_flag == 1 {
 		bsw.PutUint8(adaptation.Splice_countdown, 8)
 	}
-	//TODO
+	// TODO
 	// if adaptation.Transport_private_data_flag == 0 {
 	// }
 	// if adaptation.Adaptation_field_extension_flag == 0 {
@@ -310,7 +310,7 @@ func (adaptation *Adaptation_field) Decode(bs *codec.BitStream) error {
 	}
 	adaptation.Adaptation_field_length = bs.Uint8(8)
 	startoffset := bs.ByteOffset()
-	//fmt.Printf("Adaptation_field_length=%d\n", adaptation.Adaptation_field_length)
+	// fmt.Printf("Adaptation_field_length=%d\n", adaptation.Adaptation_field_length)
 	if bs.RemainBytes() < int(adaptation.Adaptation_field_length) {
 		return errors.New("len of data < Adaptation_field_length")
 	}
@@ -415,14 +415,14 @@ func ReadSection(sectionType PAT_TID, bs *codec.BitStream) (interface{}, error) 
 }
 
 type Pat struct {
-	Table_id                 uint8  //8  uimsbf
-	Section_syntax_indicator uint8  //1  bslbf
-	Section_length           uint16 //12 uimsbf
-	Transport_stream_id      uint16 //16 uimsbf
-	Version_number           uint8  //5  uimsbf
-	Current_next_indicator   uint8  //1  bslbf
-	Section_number           uint8  //8  uimsbf
-	Last_section_number      uint8  //8  uimsbf
+	Table_id                 uint8  // 8  uimsbf
+	Section_syntax_indicator uint8  // 1  bslbf
+	Section_length           uint16 // 12 uimsbf
+	Transport_stream_id      uint16 // 16 uimsbf
+	Version_number           uint8  // 5  uimsbf
+	Current_next_indicator   uint8  // 1  bslbf
+	Section_number           uint8  // 8  uimsbf
+	Last_section_number      uint8  // 8  uimsbf
 	Pmts                     []PmtPair
 }
 
@@ -512,22 +512,22 @@ func (pat *Pat) Decode(bs *codec.BitStream) error {
 }
 
 type StreamPair struct {
-	StreamType     uint8  //8 uimsbf
-	Elementary_PID uint16 //13 uimsbf
-	ES_Info_Length uint16 //12 uimsbf
+	StreamType     uint8  // 8 uimsbf
+	Elementary_PID uint16 // 13 uimsbf
+	ES_Info_Length uint16 // 12 uimsbf
 }
 
 type Pmt struct {
-	Table_id                 uint8  //8  uimsbf
-	Section_syntax_indicator uint8  //1  bslbf
-	Section_length           uint16 //12 uimsbf
-	Program_number           uint16 //16 uimsbf
-	Version_number           uint8  //5  uimsbf
-	Current_next_indicator   uint8  //1  bslbf
-	Section_number           uint8  //8  uimsbf
-	Last_section_number      uint8  //8  uimsbf
-	PCR_PID                  uint16 //13 uimsbf
-	Program_info_length      uint16 //12 uimsbf
+	Table_id                 uint8  // 8  uimsbf
+	Section_syntax_indicator uint8  // 1  bslbf
+	Section_length           uint16 // 12 uimsbf
+	Program_number           uint16 // 16 uimsbf
+	Version_number           uint8  // 5  uimsbf
+	Current_next_indicator   uint8  // 1  bslbf
+	Section_number           uint8  // 8  uimsbf
+	Last_section_number      uint8  // 8  uimsbf
+	PCR_PID                  uint16 // 13 uimsbf
+	Program_info_length      uint16 // 12 uimsbf
 	Streams                  []StreamPair
 }
 
@@ -588,14 +588,14 @@ func (pmt *Pmt) Encode(bsw *codec.BitStreamWriter) {
 	bsw.PutUint8(0x07, 3)
 	bsw.PutUint16(pmt.PCR_PID, 13)
 	bsw.PutUint8(0x0f, 4)
-	//TODO Program info length
+	// TODO Program info length
 	bsw.PutUint16(0x0000 /*pmt.Program_info_length*/, 12)
 	for _, stream := range pmt.Streams {
 		bsw.PutUint8(stream.StreamType, 8)
 		bsw.PutUint8(0x00, 3)
 		bsw.PutUint16(stream.Elementary_PID, 13)
 		bsw.PutUint8(0x00, 4)
-		//TODO ES_info
+		// TODO ES_info
 		bsw.PutUint8(0 /*ES_info_length*/, 12)
 	}
 	length := bsw.DistanceFromMarkDot()
@@ -625,9 +625,9 @@ func (pmt *Pmt) Decode(bs *codec.BitStream) error {
 	pmt.PCR_PID = bs.Uint16(13)
 	bs.SkipBits(4)
 	pmt.Program_info_length = bs.Uint16(12)
-	//TODO N loop descriptors
+	// TODO N loop descriptors
 	bs.SkipBits(int(pmt.Program_info_length) * 8)
-	//fmt.Printf("section length %d pmt.Pogram_info_length=%d\n", pmt.Section_length, pmt.Pogram_info_length)
+	// fmt.Printf("section length %d pmt.Pogram_info_length=%d\n", pmt.Section_length, pmt.Pogram_info_length)
 	for i := 0; i < int(pmt.Section_length)-9-int(pmt.Program_info_length)-4; {
 		tmp := StreamPair{
 			StreamType:     0,
@@ -639,7 +639,7 @@ func (pmt *Pmt) Decode(bs *codec.BitStream) error {
 		tmp.Elementary_PID = bs.Uint16(13)
 		bs.SkipBits(4)
 		tmp.ES_Info_Length = bs.Uint16(12)
-		//TODO N loop descriptors
+		// TODO N loop descriptors
 		bs.SkipBits(int(tmp.ES_Info_Length) * 8)
 		pmt.Streams = append(pmt.Streams, tmp)
 		i += 5 + int(tmp.ES_Info_Length)

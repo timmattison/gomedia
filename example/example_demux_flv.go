@@ -9,7 +9,6 @@ import (
 )
 
 func main() {
-
 	flvfilereader, _ := os.Open(os.Args[1])
 	defer flvfilereader.Close()
 	fr := flv.CreateFlvReader()
@@ -20,20 +19,20 @@ func main() {
 	fr.OnFrame = func(ci codec.CodecID, b []byte, u1, u2 uint32) {
 		if ci == codec.CODECID_AUDIO_AAC {
 			if firstAudio {
-				audiof, _ = os.OpenFile("audio.aac", os.O_CREATE|os.O_RDWR, 0666)
+				audiof, _ = os.OpenFile("audio.aac", os.O_CREATE|os.O_RDWR, 0o666)
 				firstAudio = false
 			}
 			audiof.Write(b)
 		} else if ci == codec.CODECID_AUDIO_MP3 {
 			if firstAudio {
-				audiof, _ = os.OpenFile("audio.mp3", os.O_CREATE|os.O_RDWR, 0666)
+				audiof, _ = os.OpenFile("audio.mp3", os.O_CREATE|os.O_RDWR, 0o666)
 				firstAudio = false
 			}
 			fmt.Println("get mp3 frame")
 			audiof.Write(b)
 		} else if ci == codec.CODECID_VIDEO_H264 {
 			if firstVideo {
-				videof, _ = os.OpenFile("video.h264", os.O_CREATE|os.O_RDWR, 0666)
+				videof, _ = os.OpenFile("video.h264", os.O_CREATE|os.O_RDWR, 0o666)
 				firstVideo = false
 			}
 			fmt.Println("get h264 frame")
@@ -53,5 +52,4 @@ func main() {
 		}
 		fr.Input(cache[0:n])
 	}
-
 }

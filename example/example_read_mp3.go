@@ -24,5 +24,4 @@ func main() {
 		fmt.Printf("mp3 frame head %+v\n", head)
 		fmt.Printf("mp3 bitrate:%d,samplerate:%d,channelcount:%d\n", head.GetBitRate(), head.GetSampleRate(), head.GetChannelCount())
 	})
-
 }

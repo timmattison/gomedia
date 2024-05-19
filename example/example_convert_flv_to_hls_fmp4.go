@@ -57,7 +57,7 @@ func generateM3U8(flvFile string) {
 	var atid uint32
 	i := 0
 	filename := fmt.Sprintf("stream-%d.mp4", i)
-	mp4file, err := os.OpenFile(filename, os.O_CREATE|os.O_RDWR, 0666)
+	mp4file, err := os.OpenFile(filename, os.O_CREATE|os.O_RDWR, 0o666)
 	if err != nil {
 		fmt.Println(err)
 		return
@@ -76,7 +76,7 @@ func generateM3U8(flvFile string) {
 
 		mp4file.Close()
 		if i == 0 {
-			initFile, _ := os.OpenFile("init.mp4", os.O_CREATE|os.O_RDWR, 0666)
+			initFile, _ := os.OpenFile("init.mp4", os.O_CREATE|os.O_RDWR, 0o666)
 			muxer.WriteInitSegment(initFile)
 			initFile.Close()
 			hls.initUri = "init.mp4"
@@ -84,7 +84,7 @@ func generateM3U8(flvFile string) {
 
 		i++
 		filename = fmt.Sprintf("stream-%d.mp4", i)
-		mp4file, err = os.OpenFile(filename, os.O_CREATE|os.O_RDWR, 0666)
+		mp4file, err = os.OpenFile(filename, os.O_CREATE|os.O_RDWR, 0o666)
 		if err != nil {
 			fmt.Println(err)
 			return
@@ -123,7 +123,7 @@ func generateM3U8(flvFile string) {
 	}
 	muxer.FlushFragment()
 	m3u8Name := "test.m3u8"
-	m3u8, _ := os.OpenFile(m3u8Name, os.O_CREATE|os.O_RDWR, 0666)
+	m3u8, _ := os.OpenFile(m3u8Name, os.O_CREATE|os.O_RDWR, 0o666)
 	defer m3u8.Close()
 	m3u8.WriteString(hls.makeM3u8())
 	mp4file.Close()
@@ -174,5 +174,4 @@ func main() {
 	}
 	fmt.Println("server.listen")
 	fmt.Println(server.ListenAndServe())
-
 }

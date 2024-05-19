@@ -135,13 +135,12 @@ func (s *StreamSource) dispatch() {
 			for _, c := range s.consumers {
 				c.SendFrame(frame)
 			}
-
 		}
 	}
 }
 
 type RtspFrame struct {
-	frameType int //0 - video , 1 - audio
+	frameType int // 0 - video , 1 - audio
 	keyFrame  int
 	cid       rtsp.RTSP_CODEC_ID
 	frame     []byte
@@ -269,7 +268,7 @@ func (impl *ServerHandleImpl) HandleAnnounce(svr *rtsp.RtspServer, req rtsp.Rtsp
 	impl.sess.name = streamName
 	impl.sess.isProducer = true
 	if atrack, found := tracks["audio"]; found {
-		afile, err := os.OpenFile("rtsp.aac", os.O_CREATE|os.O_RDWR, 0666)
+		afile, err := os.OpenFile("rtsp.aac", os.O_CREATE|os.O_RDWR, 0o666)
 		if err != nil {
 			fmt.Println(err)
 			return
@@ -288,7 +287,7 @@ func (impl *ServerHandleImpl) HandleAnnounce(svr *rtsp.RtspServer, req rtsp.Rtsp
 	}
 
 	if vtrack, found := tracks["video"]; found {
-		vfile, err := os.OpenFile("rtsp.h265", os.O_CREATE|os.O_RDWR, 0666)
+		vfile, err := os.OpenFile("rtsp.h265", os.O_CREATE|os.O_RDWR, 0o666)
 		if err != nil {
 			fmt.Println(err)
 			return
@@ -300,7 +299,7 @@ func (impl *ServerHandleImpl) HandleAnnounce(svr *rtsp.RtspServer, req rtsp.Rtsp
 				frame:     make([]byte, len(sample.Sample)),
 				ts:        sample.Timestamp,
 			}
-			//fmt.Println("onsample", frame.ts)
+			// fmt.Println("onsample", frame.ts)
 			copy(frame.frame, sample.Sample)
 			if sample.Cid == rtsp.RTSP_CODEC_H264 {
 				if codec.H264NaluType(frame.frame) == codec.H264_NAL_I_SLICE {
@@ -313,7 +312,6 @@ func (impl *ServerHandleImpl) HandleAnnounce(svr *rtsp.RtspServer, req rtsp.Rtsp
 			}
 			vfile.Write(frame.frame)
 			source.producer.readChan <- frame
-
 		})
 	}
 }
@@ -330,27 +328,21 @@ func (impl *ServerHandleImpl) HandlePlay(svr *rtsp.RtspServer, req rtsp.RtspRequ
 }
 
 func (impl *ServerHandleImpl) HandlePause(svr *rtsp.RtspServer, req rtsp.RtspRequest, res *rtsp.RtspResponse) {
-
 }
 
 func (impl *ServerHandleImpl) HandleTeardown(svr *rtsp.RtspServer, req rtsp.RtspRequest, res *rtsp.RtspResponse) {
-
 }
 
 func (impl *ServerHandleImpl) HandleGetParameter(svr *rtsp.RtspServer, req rtsp.RtspRequest, res *rtsp.RtspResponse) {
-
 }
 
 func (impl *ServerHandleImpl) HandleSetParameter(svr *rtsp.RtspServer, req rtsp.RtspRequest, res *rtsp.RtspResponse) {
-
 }
 
 func (impl *ServerHandleImpl) HandleRecord(svr *rtsp.RtspServer, req rtsp.RtspRequest, res *rtsp.RtspResponse, timeRange *rtsp.RangeTime, info []*rtsp.RtpInfo) {
-
 }
 
 func (impl *ServerHandleImpl) HandleResponse(svr *rtsp.RtspServer, res rtsp.RtspResponse) {
-
 }
 
 func main() {

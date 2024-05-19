@@ -265,8 +265,7 @@ func (muxer *G711UMuxer) Write(frames []byte, pts uint32, dts uint32) [][]byte {
 	return tags
 }
 
-type Mp3Muxer struct {
-}
+type Mp3Muxer struct{}
 
 func (muxer *Mp3Muxer) Write(frames []byte, pts uint32, dts uint32) [][]byte {
 	tags := make([][]byte, 1)
@@ -325,7 +324,6 @@ func (muxer *FlvMuxer) WriteAudio(frames []byte, pts uint32, dts uint32) ([][]by
 }
 
 func (muxer *FlvMuxer) WriteFrames(frameType TagType, frames []byte, pts uint32, dts uint32) ([][]byte, error) {
-
 	var ftag FlvTag
 	var tags [][]byte
 	if frameType == AUDIO_TAG {

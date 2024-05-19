@@ -17,7 +17,7 @@ func main() {
 	}
 	defer f2.Close()
 	psfilename := os.Args[2]
-	psf, err := os.OpenFile(psfilename, os.O_WRONLY|os.O_CREATE, 0666)
+	psf, err := os.OpenFile(psfilename, os.O_WRONLY|os.O_CREATE, 0o666)
 	if err != nil {
 		fmt.Println(err)
 		return
@@ -43,5 +43,4 @@ func main() {
 	}
 	demuxer.Input(buf)
 	demuxer.Flush()
-
 }

@@ -42,15 +42,17 @@ func (adjust *TimestampAdjust) adjust(timestamp int64) int64 {
 	return adjust.adjust_timestamp
 }
 
-var video_pts_adjust *TimestampAdjust = newTimestampAdjust()
-var video_dts_adjust *TimestampAdjust = newTimestampAdjust()
-var audio_ts_adjust *TimestampAdjust = newTimestampAdjust()
+var (
+	video_pts_adjust *TimestampAdjust = newTimestampAdjust()
+	video_dts_adjust *TimestampAdjust = newTimestampAdjust()
+	audio_ts_adjust  *TimestampAdjust = newTimestampAdjust()
+)
 
 // Will push the last file under mp4sPath to the specified rtmp server
 func main() {
 	var (
-		mp4Path = "your_mp4_dir" //like ./mp4/
-		rtmpUrl = "rtmpUrl"      //like rtmp://127.0.0.1:1935/live/test110
+		mp4Path = "your_mp4_dir" // like ./mp4/
+		rtmpUrl = "rtmpUrl"      // like rtmp://127.0.0.1:1935/live/test110
 	)
 	c, err := net.Dial("tcp4", "${rtmp_host}:${rtmp_port}") // like 127.0.0.1:1935
 	if err != nil {

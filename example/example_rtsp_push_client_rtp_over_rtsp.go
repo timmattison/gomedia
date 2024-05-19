@@ -14,8 +14,10 @@ import (
 	"github.com/timmattison/gomedia/go-rtsp/sdp"
 )
 
-var sendError error
-var flvFileName string
+var (
+	sendError   error
+	flvFileName string
+)
 
 type RtspRecordSession struct {
 	once       sync.Once
@@ -115,8 +117,8 @@ func (cli *RtspRecordSession) HandleRecord(client *rtsp.RtspClient, res rtsp.Rts
 		cli.Destory()
 	}()
 
-	//send rtcp sr packet
-	//it's not necessary in sometimes
+	// send rtcp sr packet
+	// it's not necessary in sometimes
 	go func() {
 		rtcpTimer := time.NewTicker(time.Duration(time.Second * 3))
 		defer rtcpTimer.Stop()
@@ -153,7 +155,6 @@ func (cli *RtspRecordSession) loopSend() {
 }
 
 func main() {
-
 	u, err := url.Parse(os.Args[1])
 	if err != nil {
 		panic(err)

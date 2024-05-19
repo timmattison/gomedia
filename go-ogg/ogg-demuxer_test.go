@@ -9,11 +9,10 @@ import (
 )
 
 func TestDemuxer_Input(t *testing.T) {
-
 	t.Run("ogg demux", func(t *testing.T) {
 		demuxer := NewDemuxer()
 		demuxer.OnPacket = func(streamId uint32, granule uint64, packet []byte, lost int) {
-			//fmt.Printf("onpacket sid:%d granule:%d package len:%d lost:%d\n", streamId, granule, len(packet), lost)
+			// fmt.Printf("onpacket sid:%d granule:%d package len:%d lost:%d\n", streamId, granule, len(packet), lost)
 		}
 		getAudioParam := false
 		getVideoParam := false
@@ -46,7 +45,7 @@ func TestDemuxer_Input(t *testing.T) {
 				fmt.Println(err)
 				break
 			}
-			//fmt.Printf("read buf %d\n", n)
+			// fmt.Printf("read buf %d\n", n)
 			err = demuxer.Input(buf[0:n])
 			if err != nil {
 				fmt.Println(err)

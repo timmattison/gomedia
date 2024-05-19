@@ -21,7 +21,7 @@ type sampleEntry struct {
 	offset                 uint64
 	size                   uint64
 	isKeyFrame             bool
-	SampleDescriptionIndex uint32 //always should be 1
+	SampleDescriptionIndex uint32 // always should be 1
 }
 
 type movchunk struct {
@@ -114,7 +114,7 @@ type mp4track struct {
 	writer      io.WriteSeeker
 	fragments   []movFragment
 
-	//for fmp4
+	// for fmp4
 	extraData          []byte
 	startDts           uint64
 	startPts           uint64
@@ -123,7 +123,7 @@ type mp4track struct {
 	defaultSampleFlags uint32
 	baseDataOffset     uint64
 
-	//for subsample
+	// for subsample
 	defaultIsProtected     uint8
 	defaultPerSampleIVSize uint8
 	defaultCryptByteBlock  uint8
@@ -330,8 +330,8 @@ func (track *mp4track) writeH264(h264 []byte, pts, dts uint64) (err error) {
 			copy(tmp, nalu)
 			h264extra.ppss = append(h264extra.ppss, tmp)
 		}
-		//aud/sps/pps/sei 为帧间隔
-		//通过first_slice_in_mb来判断，改nalu是否为一帧的开头
+		// aud/sps/pps/sei 为帧间隔
+		// 通过first_slice_in_mb来判断，改nalu是否为一帧的开头
 		if track.lastSample.hasVcl && isH264NewAccessUnit(nalu) {
 			var currentOffset int64
 			if currentOffset, err = track.writer.Seek(0, io.SeekCurrent); err != nil {
@@ -460,7 +460,7 @@ func (track *mp4track) writeAAC(aacframes []byte, pts, dts uint64) (err error) {
 	if currentOffset, err = track.writer.Seek(0, io.SeekCurrent); err != nil {
 		return
 	}
-	//某些情况下，aacframes 可能由多个aac帧组成需要分帧，否则quicktime 貌似播放有问题
+	// 某些情况下，aacframes 可能由多个aac帧组成需要分帧，否则quicktime 貌似播放有问题
 	codec.SplitAACFrame(aacframes, func(aac []byte) {
 		entry := sampleEntry{
 			pts:                    pts,

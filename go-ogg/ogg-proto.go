@@ -9,9 +9,7 @@ import (
 	"github.com/timmattison/gomedia/go-codec"
 )
 
-var (
-	CapturePattern [4]byte = [4]byte{'O', 'g', 'g', 'S'}
-)
+var CapturePattern [4]byte = [4]byte{'O', 'g', 'g', 'S'}
 
 // Ogg Page Head
 // 0                   1                   2                   3
@@ -99,11 +97,10 @@ type oggPage struct {
 }
 
 func readPage(data []byte) (*oggPage, error) {
-
 	if !bytes.Equal(data[:4], CapturePattern[:]) {
 		return nil, errors.New("capture pattern not found")
 	}
-	var page = &oggPage{}
+	page := &oggPage{}
 	data = data[4:]
 	page.version = data[0]
 

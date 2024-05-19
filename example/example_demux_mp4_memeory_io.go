@@ -62,9 +62,11 @@ func (rs *cacheReaderSeeker) Seek(offset int64, whence int) (int64, error) {
 	}
 }
 
-var mp4FileName = flag.String("mp4file", "test.mp4", "mp4 file you want to decode")
-var rawVideo = flag.String("videofile", "v.h264", "export raw video data to the videofile")
-var rawAudio = flag.String("audiofile", "a.aac", "export raw audio data to the audiofile")
+var (
+	mp4FileName = flag.String("mp4file", "test.mp4", "mp4 file you want to decode")
+	rawVideo    = flag.String("videofile", "v.h264", "export raw video data to the videofile")
+	rawAudio    = flag.String("audiofile", "a.aac", "export raw audio data to the audiofile")
+)
 
 func main() {
 	flag.Parse()
@@ -74,13 +76,13 @@ func main() {
 		return
 	}
 	defer f.Close()
-	vfile, err := os.OpenFile(*rawVideo, os.O_CREATE|os.O_RDWR, 0666)
+	vfile, err := os.OpenFile(*rawVideo, os.O_CREATE|os.O_RDWR, 0o666)
 	if err != nil {
 		fmt.Println(err)
 		return
 	}
 	defer vfile.Close()
-	afile, err := os.OpenFile(*rawAudio, os.O_CREATE|os.O_RDWR, 0666)
+	afile, err := os.OpenFile(*rawAudio, os.O_CREATE|os.O_RDWR, 0o666)
 	if err != nil {
 		fmt.Println(err)
 		return
@@ -116,5 +118,4 @@ func main() {
 			afile.Write(pkg.Data)
 		}
 	}
-
 }

@@ -133,7 +133,7 @@ func (f *FlvReader) Input(data []byte) (err error) {
 					f.state = FLV_PARSER_AUDIO_TAG
 				}
 			} else {
-				//TODO MateData tag
+				// TODO MateData tag
 				f.state = FLV_PARSER_SCRIPT_TAG
 			}
 		case FLV_PARSER_DETECT_VIDEO:
@@ -253,7 +253,6 @@ func CreateFlvWriter(writer io.Writer) *FlvWriter {
 }
 
 func (f *FlvWriter) WriteFlvHeader() (err error) {
-
 	var flvhdr [9]byte
 	flvhdr[0] = 'F'
 	flvhdr[1] = 'L'
@@ -325,7 +324,6 @@ func (f *FlvWriter) WriteMp3(data []byte, pts uint32, dts uint32) error {
 }
 
 func (f *FlvWriter) writeAudio(data []byte, pts uint32, dts uint32) error {
-
 	if tags, err := f.muxer.WriteAudio(data, pts, dts); err != nil {
 		return err
 	} else {

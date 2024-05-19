@@ -11,7 +11,7 @@ import (
 
 func main() {
 	mp4filename := "test2_fmp4.mp4"
-	mp4file, err := os.OpenFile(mp4filename, os.O_CREATE|os.O_RDWR, 0666)
+	mp4file, err := os.OpenFile(mp4filename, os.O_CREATE|os.O_RDWR, 0o666)
 	if err != nil {
 		fmt.Println(err)
 		return

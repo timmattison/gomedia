@@ -28,7 +28,6 @@ func NewRtpReceiver(conn *net.UDPConn) *RtpReceiver {
 }
 
 func (r *RtpReceiver) Read(p []byte) (n int, err error) {
-
 	if r.cache.Len() > 0 {
 		return r.cache.Read(p)
 	}
@@ -47,7 +46,7 @@ func (r *RtpReceiver) Read(p []byte) (n int, err error) {
 			fmt.Println("rtp payload length == 0")
 			continue
 		}
-		//filter out rtp head
+		// filter out rtp head
 		if readBytes-RTP_FIX_HEAD_LEN <= len(p) {
 			n = copy(p, r.buf[RTP_FIX_HEAD_LEN:readBytes])
 			return
@@ -58,8 +57,10 @@ func (r *RtpReceiver) Read(p []byte) (n int, err error) {
 	}
 }
 
-var videoFile = flag.String("videofile", "v.h264", "export raw video data to the videofile")
-var audioFile = flag.String("audiofile", "a.aac", "export raw audio data to the audiofile")
+var (
+	videoFile = flag.String("videofile", "v.h264", "export raw video data to the videofile")
+	audioFile = flag.String("audiofile", "a.aac", "export raw audio data to the audiofile")
+)
 
 // use ffmpeg commad to test this example
 // ffmpeg -re -i <media file> -vcodec copy -acodec copy -f rtp_mpegts rtp://127.0.0.1:19999
@@ -77,7 +78,6 @@ func main() {
 		if a != nil {
 			a.Close()
 		}
-
 	}()
 
 	localAddr, _ := net.ResolveUDPAddr("udp4", "127.0.0.1:19999")
@@ -86,13 +86,13 @@ func main() {
 	demuxer.OnFrame = func(cid mpeg2.TS_STREAM_TYPE, frame []byte, pts, dts uint64) {
 		if cid == mpeg2.TS_STREAM_H264 {
 			if v == nil {
-				v, _ = os.OpenFile(*videoFile, os.O_CREATE|os.O_RDWR, 0666)
+				v, _ = os.OpenFile(*videoFile, os.O_CREATE|os.O_RDWR, 0o666)
 			}
 			fmt.Println("Got H264 Frame:", "pts:", pts, "dts:", dts, "Frame len:", len(frame))
 			v.Write(frame)
 		} else if cid == mpeg2.TS_STREAM_AAC {
 			if a == nil {
-				a, _ = os.OpenFile(*audioFile, os.O_CREATE|os.O_RDWR, 0666)
+				a, _ = os.OpenFile(*audioFile, os.O_CREATE|os.O_RDWR, 0o666)
 			}
 			a.Write(frame)
 		}
