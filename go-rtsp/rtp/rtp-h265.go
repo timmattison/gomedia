@@ -53,7 +53,7 @@ func NewH265Packer(pt uint8, ssrc uint32, sequence uint16, mtu int) *H265Packer 
 
 func (h265 *H265Packer) Pack(data []byte, timestamp uint32) error {
 	codec.SplitFrame(data, func(nalu []byte) bool {
-		if len(nalu)+RtpFixHeadLen < h265.mtu {
+		if len(nalu)+RTP_FIX_HEAD_LEN < h265.mtu {
 			h265.packSingleNalu(nalu, timestamp)
 		} else {
 			h265.packFu(nalu, timestamp)
@@ -99,12 +99,12 @@ func (h265 *H265Packer) packFu(nalu []byte, timestamp uint32) error {
 		pkg.Header.SSRC = h265.ssrc
 		pkg.Header.Timestamp = timestamp
 		length := 0
-		if len(nalu)+RtpFixHeadLen+3 <= h265.mtu {
+		if len(nalu)+RTP_FIX_HEAD_LEN+3 <= h265.mtu {
 			end = true
 			length = len(nalu)
 			pkg.Header.Marker = 1
 		} else {
-			length = h265.mtu - RtpFixHeadLen - 3
+			length = h265.mtu - RTP_FIX_HEAD_LEN - 3
 		}
 		pkg.Payload = make([]byte, length+3)
 		pkg.Payload[0] = payloadHdr[0]

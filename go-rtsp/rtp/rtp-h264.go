@@ -29,7 +29,7 @@ type H264Packer struct {
 	ssrc     uint32
 	pt       uint8
 	sequence uint16
-	stapA    bool
+	stap_a   bool
 	sps      []byte
 	pps      []byte
 }
@@ -39,23 +39,23 @@ func NewH264Packer(pt uint8, ssrc uint32, sequence uint16, mtu int) *H264Packer 
 		pt:         pt,
 		ssrc:       ssrc,
 		sequence:   sequence,
-		stapA:      false,
+		stap_a:     false,
 		CommPacker: CommPacker{mtu: mtu},
 	}
 }
 
 func (pack *H264Packer) EnableStapA() {
-	pack.stapA = true
+	pack.stap_a = true
 }
 
 func (pack *H264Packer) Pack(frame []byte, timestamp uint32) (err error) {
 	codec.SplitFrame(frame, func(nalu []byte) bool {
-		naluType := codec.H264NaluType(nalu)
-		if pack.stapA {
-			switch naluType {
-			case codec.H264NalSps:
+		nalu_type := codec.H264NaluType(nalu)
+		if pack.stap_a {
+			switch nalu_type {
+			case codec.H264_NAL_SPS:
 				return true
-			case codec.H264NalPps:
+			case codec.H264_NAL_PPS:
 				return true
 			}
 			if pack.sps != nil && pack.pps != nil {
@@ -64,7 +64,7 @@ func (pack *H264Packer) Pack(frame []byte, timestamp uint32) (err error) {
 				pack.pps = nil
 			}
 		}
-		if len(frame)+RtpFixHeadLen < pack.mtu {
+		if len(frame)+RTP_FIX_HEAD_LEN < pack.mtu {
 			err = pack.packSingleNalu(nalu, timestamp)
 		} else {
 			err = pack.packFuA(nalu, timestamp)
@@ -131,7 +131,7 @@ func (pack *H264Packer) packFuA(nalu []byte, timestamp uint32) (err error) {
 		pkg.Header.SSRC = pack.ssrc
 		pkg.Header.SequenceNumber = pack.sequence
 		pkg.Header.Timestamp = timestamp
-		if len(nalu)+RtpFixHeadLen+2 <= pack.mtu {
+		if len(nalu)+RTP_FIX_HEAD_LEN+2 <= pack.mtu {
 			pkg.Header.Marker = 1
 			fuHeader |= 0x40
 			pkg.Payload = make([]byte, 0, 2+len(nalu))
@@ -153,8 +153,8 @@ func (pack *H264Packer) packFuA(nalu []byte, timestamp uint32) (err error) {
 		if fuHeader&0x80 > 0 {
 			fuHeader &= 0x7F
 		}
-		pkg.Payload = append(pkg.Payload, nalu[:pack.mtu-2-RtpFixHeadLen]...)
-		nalu = nalu[pack.mtu-2-RtpFixHeadLen:]
+		pkg.Payload = append(pkg.Payload, nalu[:pack.mtu-2-RTP_FIX_HEAD_LEN]...)
+		nalu = nalu[pack.mtu-2-RTP_FIX_HEAD_LEN:]
 		if pack.onRtp != nil {
 			pack.onRtp(&pkg)
 		}

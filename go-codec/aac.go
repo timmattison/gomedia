@@ -9,33 +9,33 @@ import "errors"
 //   2        Scalable Sampling Rate profile (SSR)
 //   3        (reserved)
 
-type AacProfile int
+type AAC_PROFILE int
 
 const (
-	MAIN AacProfile = iota
+	MAIN AAC_PROFILE = iota
 	LC
 	SSR
 )
 
-type AacSamplingFrequency int
+type AAC_SAMPLING_FREQUENCY int
 
 const (
-	AacSample96000 AacSamplingFrequency = iota
-	AacSample88200
-	AacSample64000
-	AacSample48000
-	AacSample44100
-	AacSample32000
-	AacSample24000
-	AacSample22050
-	AacSample16000
-	AacSample12000
-	AacSample11025
-	AacSample8000
-	AacSample7350
+	AAC_SAMPLE_96000 AAC_SAMPLING_FREQUENCY = iota
+	AAC_SAMPLE_88200
+	AAC_SAMPLE_64000
+	AAC_SAMPLE_48000
+	AAC_SAMPLE_44100
+	AAC_SAMPLE_32000
+	AAC_SAMPLE_24000
+	AAC_SAMPLE_22050
+	AAC_SAMPLE_16000
+	AAC_SAMPLE_12000
+	AAC_SAMPLE_11025
+	AAC_SAMPLE_8000
+	AAC_SAMPLE_7350
 )
 
-var AacSamplingIdx = [13]int{96000, 88200, 64000, 48000, 44100, 32000, 24000, 22050, 16000, 12000, 11025, 8000, 7350}
+var AAC_Sampling_Idx = [13]int{96000, 88200, 64000, 48000, 44100, 32000, 24000, 22050, 16000, 12000, 11025, 8000, 7350}
 
 // Table 4 – Syntax of adts_sequence()
 // adts_sequence() {
@@ -74,16 +74,16 @@ var AacSamplingIdx = [13]int{96000, 88200, 64000, 48000, 44100, 32000, 24000, 22
 //         home;                           1            bslbf
 // }
 
-type AdtsFixHeader struct {
-	ID                     uint8
-	Layer                  uint8
-	ProtectionAbsent       uint8
-	Profile                uint8
-	SamplingFrequencyIndex uint8
-	PrivateBit             uint8
-	ChannelConfiguration   uint8
-	Originalorcopy         uint8
-	Home                   uint8
+type ADTS_Fix_Header struct {
+	ID                       uint8
+	Layer                    uint8
+	Protection_absent        uint8
+	Profile                  uint8
+	Sampling_frequency_index uint8
+	Private_bit              uint8
+	Channel_configuration    uint8
+	Originalorcopy           uint8
+	Home                     uint8
 }
 
 // adts_variable_header() {
@@ -94,82 +94,82 @@ type AdtsFixHeader struct {
 //      number_of_raw_data_blocks_in_frame;         2      uimsfb
 // }
 
-type AdtsVariableHeader struct {
-	CopyrightIdentificationBit   uint8
-	copyrightIdentificationStart uint8
-	FrameLength                  uint16
-	AdtsBufferFullness           uint16
-	NumberOfRawDataBlocksInFrame uint8
+type ADTS_Variable_Header struct {
+	Copyright_identification_bit       uint8
+	copyright_identification_start     uint8
+	Frame_length                       uint16
+	Adts_buffer_fullness               uint16
+	Number_of_raw_data_blocks_in_frame uint8
 }
 
-type AdtsFrameHeader struct {
-	FixHeader      AdtsFixHeader
-	VariableHeader AdtsVariableHeader
+type ADTS_Frame_Header struct {
+	Fix_Header      ADTS_Fix_Header
+	Variable_Header ADTS_Variable_Header
 }
 
-func NewAdtsFrameHeader() *AdtsFrameHeader {
-	return &AdtsFrameHeader{
-		FixHeader: AdtsFixHeader{
-			ID:                     0,
-			Layer:                  0,
-			ProtectionAbsent:       1,
-			Profile:                uint8(MAIN),
-			SamplingFrequencyIndex: uint8(AacSample44100),
-			PrivateBit:             0,
-			ChannelConfiguration:   0,
-			Originalorcopy:         0,
-			Home:                   0,
+func NewAdtsFrameHeader() *ADTS_Frame_Header {
+	return &ADTS_Frame_Header{
+		Fix_Header: ADTS_Fix_Header{
+			ID:                       0,
+			Layer:                    0,
+			Protection_absent:        1,
+			Profile:                  uint8(MAIN),
+			Sampling_frequency_index: uint8(AAC_SAMPLE_44100),
+			Private_bit:              0,
+			Channel_configuration:    0,
+			Originalorcopy:           0,
+			Home:                     0,
 		},
 
-		VariableHeader: AdtsVariableHeader{
-			copyrightIdentificationStart: 0,
-			CopyrightIdentificationBit:   0,
-			FrameLength:                  0,
-			AdtsBufferFullness:           0,
-			NumberOfRawDataBlocksInFrame: 0,
+		Variable_Header: ADTS_Variable_Header{
+			copyright_identification_start:     0,
+			Copyright_identification_bit:       0,
+			Frame_length:                       0,
+			Adts_buffer_fullness:               0,
+			Number_of_raw_data_blocks_in_frame: 0,
 		},
 	}
 }
 
-func (frame *AdtsFrameHeader) Decode(aac []byte) {
+func (frame *ADTS_Frame_Header) Decode(aac []byte) {
 	_ = aac[6]
-	frame.FixHeader.ID = aac[1] >> 3
-	frame.FixHeader.Layer = aac[1] >> 1 & 0x03
-	frame.FixHeader.ProtectionAbsent = aac[1] & 0x01
-	frame.FixHeader.Profile = aac[2] >> 6 & 0x03
-	frame.FixHeader.SamplingFrequencyIndex = aac[2] >> 2 & 0x0F
-	frame.FixHeader.PrivateBit = aac[2] >> 1 & 0x01
-	frame.FixHeader.ChannelConfiguration = (aac[2] & 0x01 << 2) | (aac[3] >> 6)
-	frame.FixHeader.Originalorcopy = aac[3] >> 5 & 0x01
-	frame.FixHeader.Home = aac[3] >> 4 & 0x01
-	frame.VariableHeader.CopyrightIdentificationBit = aac[3] >> 3 & 0x01
-	frame.VariableHeader.copyrightIdentificationStart = aac[3] >> 2 & 0x01
-	frame.VariableHeader.FrameLength = (uint16(aac[3]&0x03) << 11) | (uint16(aac[4]) << 3) | (uint16(aac[5]>>5) & 0x07)
-	frame.VariableHeader.AdtsBufferFullness = (uint16(aac[5]&0x1F) << 6) | uint16(aac[6]>>2)
-	frame.VariableHeader.NumberOfRawDataBlocksInFrame = aac[6] & 0x03
+	frame.Fix_Header.ID = aac[1] >> 3
+	frame.Fix_Header.Layer = aac[1] >> 1 & 0x03
+	frame.Fix_Header.Protection_absent = aac[1] & 0x01
+	frame.Fix_Header.Profile = aac[2] >> 6 & 0x03
+	frame.Fix_Header.Sampling_frequency_index = aac[2] >> 2 & 0x0F
+	frame.Fix_Header.Private_bit = aac[2] >> 1 & 0x01
+	frame.Fix_Header.Channel_configuration = (aac[2] & 0x01 << 2) | (aac[3] >> 6)
+	frame.Fix_Header.Originalorcopy = aac[3] >> 5 & 0x01
+	frame.Fix_Header.Home = aac[3] >> 4 & 0x01
+	frame.Variable_Header.Copyright_identification_bit = aac[3] >> 3 & 0x01
+	frame.Variable_Header.copyright_identification_start = aac[3] >> 2 & 0x01
+	frame.Variable_Header.Frame_length = (uint16(aac[3]&0x03) << 11) | (uint16(aac[4]) << 3) | (uint16(aac[5]>>5) & 0x07)
+	frame.Variable_Header.Adts_buffer_fullness = (uint16(aac[5]&0x1F) << 6) | uint16(aac[6]>>2)
+	frame.Variable_Header.Number_of_raw_data_blocks_in_frame = aac[6] & 0x03
 }
 
-func (frame *AdtsFrameHeader) Encode() []byte {
+func (frame *ADTS_Frame_Header) Encode() []byte {
 	var hdr []byte
-	if frame.FixHeader.ProtectionAbsent == 1 {
+	if frame.Fix_Header.Protection_absent == 1 {
 		hdr = make([]byte, 7)
 	} else {
 		hdr = make([]byte, 9)
 	}
 	hdr[0] = 0xFF
 	hdr[1] = 0xF0
-	hdr[1] = hdr[1] | (frame.FixHeader.ID << 3) | (frame.FixHeader.Layer << 1) | frame.FixHeader.ProtectionAbsent
-	hdr[2] = frame.FixHeader.Profile<<6 | frame.FixHeader.SamplingFrequencyIndex<<2 | frame.FixHeader.PrivateBit<<1 | frame.FixHeader.ChannelConfiguration>>2
-	hdr[3] = frame.FixHeader.ChannelConfiguration<<6 | frame.FixHeader.Originalorcopy<<5 | frame.FixHeader.Home<<4
-	hdr[3] = hdr[3] | frame.VariableHeader.copyrightIdentificationStart<<3 | frame.VariableHeader.CopyrightIdentificationBit<<2 | byte(frame.VariableHeader.FrameLength<<11)
-	hdr[4] = byte(frame.VariableHeader.FrameLength >> 3)
-	hdr[5] = byte((frame.VariableHeader.FrameLength&0x07)<<5) | byte(frame.VariableHeader.AdtsBufferFullness>>3)
-	hdr[6] = byte(frame.VariableHeader.AdtsBufferFullness&0x3F<<2) | frame.VariableHeader.NumberOfRawDataBlocksInFrame
+	hdr[1] = hdr[1] | (frame.Fix_Header.ID << 3) | (frame.Fix_Header.Layer << 1) | frame.Fix_Header.Protection_absent
+	hdr[2] = frame.Fix_Header.Profile<<6 | frame.Fix_Header.Sampling_frequency_index<<2 | frame.Fix_Header.Private_bit<<1 | frame.Fix_Header.Channel_configuration>>2
+	hdr[3] = frame.Fix_Header.Channel_configuration<<6 | frame.Fix_Header.Originalorcopy<<5 | frame.Fix_Header.Home<<4
+	hdr[3] = hdr[3] | frame.Variable_Header.copyright_identification_start<<3 | frame.Variable_Header.Copyright_identification_bit<<2 | byte(frame.Variable_Header.Frame_length<<11)
+	hdr[4] = byte(frame.Variable_Header.Frame_length >> 3)
+	hdr[5] = byte((frame.Variable_Header.Frame_length&0x07)<<5) | byte(frame.Variable_Header.Adts_buffer_fullness>>3)
+	hdr[6] = byte(frame.Variable_Header.Adts_buffer_fullness&0x3F<<2) | frame.Variable_Header.Number_of_raw_data_blocks_in_frame
 	return hdr
 }
 
 func SampleToAACSampleIndex(sampling int) int {
-	for i, v := range AacSamplingIdx {
+	for i, v := range AAC_Sampling_Idx {
 		if v == sampling {
 			return i
 		}
@@ -178,7 +178,7 @@ func SampleToAACSampleIndex(sampling int) int {
 }
 
 func AACSampleIdxToSample(idx int) int {
-	return AacSamplingIdx[idx]
+	return AAC_Sampling_Idx[idx]
 }
 
 // +--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
@@ -186,29 +186,29 @@ func AACSampleIdxToSample(idx int) int {
 // +--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
 
 type AudioSpecificConfiguration struct {
-	AudioObjectType      uint8
-	SampleFreqIndex      uint8
-	ChannelConfiguration uint8
-	GaFramelengthFlag    uint8
-	GaDependsOnCoreCoder uint8
-	GaExtensionFlag      uint8
+	Audio_object_type        uint8
+	Sample_freq_index        uint8
+	Channel_configuration    uint8
+	GA_framelength_flag      uint8
+	GA_depends_on_core_coder uint8
+	GA_extension_flag        uint8
 }
 
 func NewAudioSpecificConfiguration() *AudioSpecificConfiguration {
 	return &AudioSpecificConfiguration{
-		AudioObjectType:      0,
-		SampleFreqIndex:      0,
-		ChannelConfiguration: 0,
-		GaFramelengthFlag:    0,
-		GaDependsOnCoreCoder: 0,
-		GaExtensionFlag:      0,
+		Audio_object_type:        0,
+		Sample_freq_index:        0,
+		Channel_configuration:    0,
+		GA_framelength_flag:      0,
+		GA_depends_on_core_coder: 0,
+		GA_extension_flag:        0,
 	}
 }
 
 func (asc *AudioSpecificConfiguration) Encode() []byte {
 	buf := make([]byte, 2)
-	buf[0] = (asc.AudioObjectType & 0x1f << 3) | (asc.SampleFreqIndex & 0x0F >> 1)
-	buf[1] = (asc.SampleFreqIndex & 0x0F << 7) | (asc.ChannelConfiguration & 0x0F << 3) | (asc.GaFramelengthFlag & 0x01 << 2) | (asc.GaDependsOnCoreCoder & 0x01 << 1) | (asc.GaExtensionFlag & 0x01)
+	buf[0] = (asc.Audio_object_type & 0x1f << 3) | (asc.Sample_freq_index & 0x0F >> 1)
+	buf[1] = (asc.Sample_freq_index & 0x0F << 7) | (asc.Channel_configuration & 0x0F << 3) | (asc.GA_framelength_flag & 0x01 << 2) | (asc.GA_depends_on_core_coder & 0x01 << 1) | (asc.GA_extension_flag & 0x01)
 	return buf
 }
 
@@ -218,12 +218,12 @@ func (asc *AudioSpecificConfiguration) Decode(buf []byte) error {
 		return errors.New("len of buf < 2 ")
 	}
 
-	asc.AudioObjectType = buf[0] >> 3
-	asc.SampleFreqIndex = (buf[0] & 0x07 << 1) | (buf[1] >> 7)
-	asc.ChannelConfiguration = buf[1] >> 3 & 0x0F
-	asc.GaFramelengthFlag = buf[1] >> 2 & 0x01
-	asc.GaDependsOnCoreCoder = buf[1] >> 1 & 0x01
-	asc.GaExtensionFlag = buf[1] & 0x01
+	asc.Audio_object_type = buf[0] >> 3
+	asc.Sample_freq_index = (buf[0] & 0x07 << 1) | (buf[1] >> 7)
+	asc.Channel_configuration = buf[1] >> 3 & 0x0F
+	asc.GA_framelength_flag = buf[1] >> 2 & 0x01
+	asc.GA_depends_on_core_coder = buf[1] >> 1 & 0x01
+	asc.GA_extension_flag = buf[1] & 0x01
 	return nil
 }
 
@@ -234,24 +234,24 @@ func ConvertADTSToASC(frame []byte) (*AudioSpecificConfiguration, error) {
 	adts := NewAdtsFrameHeader()
 	adts.Decode(frame)
 	asc := NewAudioSpecificConfiguration()
-	asc.AudioObjectType = adts.FixHeader.Profile + 1
-	asc.ChannelConfiguration = adts.FixHeader.ChannelConfiguration
-	asc.SampleFreqIndex = adts.FixHeader.SamplingFrequencyIndex
+	asc.Audio_object_type = adts.Fix_Header.Profile + 1
+	asc.Channel_configuration = adts.Fix_Header.Channel_configuration
+	asc.Sample_freq_index = adts.Fix_Header.Sampling_frequency_index
 	return asc, nil
 }
 
-func ConvertASCToADTS(asc []byte, aacbytes int) (*AdtsFrameHeader, error) {
-	aacAsc := NewAudioSpecificConfiguration()
-	err := aacAsc.Decode(asc)
+func ConvertASCToADTS(asc []byte, aacbytes int) (*ADTS_Frame_Header, error) {
+	aac_asc := NewAudioSpecificConfiguration()
+	err := aac_asc.Decode(asc)
 	if err != nil {
 		return nil, err
 	}
-	aacAdts := NewAdtsFrameHeader()
-	aacAdts.FixHeader.Profile = aacAsc.AudioObjectType - 1
-	aacAdts.FixHeader.ChannelConfiguration = aacAsc.ChannelConfiguration
-	aacAdts.FixHeader.SamplingFrequencyIndex = aacAsc.SampleFreqIndex
-	aacAdts.FixHeader.ProtectionAbsent = 1
-	aacAdts.VariableHeader.AdtsBufferFullness = 0x3F
-	aacAdts.VariableHeader.FrameLength = uint16(aacbytes)
-	return aacAdts, nil
+	aac_adts := NewAdtsFrameHeader()
+	aac_adts.Fix_Header.Profile = aac_asc.Audio_object_type - 1
+	aac_adts.Fix_Header.Channel_configuration = aac_asc.Channel_configuration
+	aac_adts.Fix_Header.Sampling_frequency_index = aac_asc.Sample_freq_index
+	aac_adts.Fix_Header.Protection_absent = 1
+	aac_adts.Variable_Header.Adts_buffer_fullness = 0x3F
+	aac_adts.Variable_Header.Frame_length = uint16(aacbytes)
+	return aac_adts, nil
 }

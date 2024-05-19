@@ -10,8 +10,8 @@ import (
 type DemuxState int
 
 const (
-	DemuxPageHead DemuxState = iota
-	DemuxPagePayload
+	DEMUX_PAGE_HEAD DemuxState = iota
+	DEMUX_PAGE_PAYLOAD
 )
 
 type VideoParam struct {
@@ -46,7 +46,7 @@ type Demuxer struct {
 func NewDemuxer() *Demuxer {
 	return &Demuxer{
 		headCache: make([]byte, 0, 282),
-		state:     DemuxPageHead,
+		state:     DEMUX_PAGE_HEAD,
 		streams:   make(map[uint32]*oggStream),
 	}
 }
@@ -59,7 +59,7 @@ func (demuxer *Demuxer) Input(buf []byte) (err error) {
 
 	for {
 		switch demuxer.state {
-		case DemuxPageHead:
+		case DEMUX_PAGE_HEAD:
 			headLen := 0
 			if len(demuxer.headCache)+len(buf) < 27 {
 				demuxer.headCache = append(demuxer.headCache, buf...)
@@ -113,18 +113,18 @@ func (demuxer *Demuxer) Input(buf []byte) (err error) {
 					currentPage: page,
 					streamId:    page.streamId,
 					cache:       make([]byte, 0, 1024),
-					cid:         codec.CodecidUnrecognized,
+					cid:         codec.CODECID_UNRECOGNIZED,
 				}
 				demuxer.streams[page.streamId] = stream
 			}
 			stream.currentPage = page
 			demuxer.currentStream = stream
-			demuxer.state = DemuxPagePayload
+			demuxer.state = DEMUX_PAGE_PAYLOAD
 			buf = buf[headLen-len(demuxer.headCache):]
 			if len(demuxer.headCache) > 0 {
 				demuxer.headCache = demuxer.headCache[:0]
 			}
-		case DemuxPagePayload:
+		case DEMUX_PAGE_PAYLOAD:
 			stream := demuxer.currentStream
 			page := stream.currentPage
 			needLen := int(page.payloadLen) - len(page.cache)
@@ -195,7 +195,7 @@ func (demuxer *Demuxer) Input(buf []byte) (err error) {
 				stream.cache = append(stream.cache, tmp[start:]...)
 			}
 			page.cache = page.cache[:0]
-			demuxer.state = DemuxPageHead
+			demuxer.state = DEMUX_PAGE_HEAD
 
 		default:
 			panic("unknow state")
@@ -212,9 +212,9 @@ func (demuxer *Demuxer) GetAudioParam() *AudioParam {
 }
 
 func (demuxer *Demuxer) findCodec(stream *oggStream, packet []byte) {
-	for _, oggCodec := range codecs {
-		if bytes.Equal(oggCodec.magic(), packet[0:oggCodec.magicSize()]) {
-			stream.cid = oggCodec.codecid()
+	for _, ogg_codec := range codecs {
+		if bytes.Equal(ogg_codec.magic(), packet[0:ogg_codec.magicSize()]) {
+			stream.cid = ogg_codec.codecid()
 			stream.parser = createParser(stream.cid)
 			return
 		}
@@ -223,17 +223,17 @@ func (demuxer *Demuxer) findCodec(stream *oggStream, packet []byte) {
 
 func (demuxer *Demuxer) readPacket(stream *oggStream, packet []byte) error {
 	if stream.currentPage.isFirstPage {
-		if stream.cid == codec.CodecidUnrecognized {
+		if stream.cid == codec.CODECID_UNRECOGNIZED {
 			demuxer.findCodec(stream, packet)
 		}
 	}
 
-	if stream.cid == codec.CodecidUnrecognized {
+	if stream.cid == codec.CODECID_UNRECOGNIZED {
 		return errors.New("not find codec id ")
 	}
 
 	switch stream.cid {
-	case codec.CodecidAudioOpus:
+	case codec.CODECID_AUDIO_OPUS:
 		if stream.currentPage.isFirstPage || stream.currentPage.granulePos == 0 {
 			err := stream.parser.header(stream, packet)
 			if err != nil {
@@ -242,7 +242,7 @@ func (demuxer *Demuxer) readPacket(stream *oggStream, packet []byte) error {
 			if demuxer.aparam == nil {
 				opus, _ := stream.parser.(*opusDemuxer)
 				demuxer.aparam = &AudioParam{
-					CodecId:        codec.CodecidAudioOpus,
+					CodecId:        codec.CODECID_AUDIO_OPUS,
 					SampleRate:     uint32(opus.ctx.SampleRate),
 					ChannelCount:   uint32(opus.ctx.ChannelCount),
 					InitialPadding: uint32(opus.ctx.Preskip),
@@ -255,7 +255,7 @@ func (demuxer *Demuxer) readPacket(stream *oggStream, packet []byte) error {
 				demuxer.OnFrame(stream.streamId, stream.cid, frame, pts, dts, stream.lost)
 			}
 		}
-	case codec.CodecidVideoVp8:
+	case codec.CODECID_VIDEO_VP8:
 		if stream.currentPage.isFirstPage || stream.currentPage.granulePos == 0 {
 			err := stream.parser.header(stream, packet)
 			if err != nil {
@@ -264,7 +264,7 @@ func (demuxer *Demuxer) readPacket(stream *oggStream, packet []byte) error {
 			if demuxer.vparam == nil {
 				vp8, _ := stream.parser.(*vp8Demuxer)
 				demuxer.vparam = &VideoParam{
-					CodecId:     codec.CodecidVideoVp8,
+					CodecId:     codec.CODECID_VIDEO_VP8,
 					Width:       uint32(vp8.width),
 					Height:      uint32(vp8.height),
 					FrameRate:   vp8.frameRate,

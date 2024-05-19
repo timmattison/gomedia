@@ -32,7 +32,7 @@ func main() {
 		tsf.Write(pkg)
 	}
 
-	pid := muxer.AddStream(mpeg2.TsStreamAac)
+	pid := muxer.AddStream(mpeg2.TS_STREAM_AAC)
 	aac, _ := ioutil.ReadAll(f)
 	var pts uint64 = 0
 	var dts uint64 = 0

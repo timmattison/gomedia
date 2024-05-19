@@ -19,7 +19,7 @@ func TestPSDemuxer_Input(t *testing.T) {
 		pkg       *PSPacket
 		cache     []byte
 		OnPacket  func(pkg Display, decodeResult error)
-		OnFrame   func(frame []byte, cid PsStreamType, pts uint64, dts uint64)
+		OnFrame   func(frame []byte, cid PS_STREAM_TYPE, pts uint64, dts uint64)
 	}
 	type args struct {
 		data []byte

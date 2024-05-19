@@ -46,10 +46,10 @@ import (
 //             SETUP            Recording (changed transport)
 
 const (
-	StateInit = iota
-	StateReady
-	StatePlaying
-	StateRecording
+	STATE_Init = iota
+	STATE_Ready
+	STATE_Playing
+	STATE_Recording
 )
 
 type OutPutCallBack func([]byte) error
@@ -89,8 +89,8 @@ func WithEnableRecord() ClientOption {
 func NewRtspClient(uri string, handle ClientHandle, opt ...ClientOption) (*RtspClient, error) {
 	cli := &RtspClient{
 		cseq:             1,
-		state:            StateInit,
-		serverCapability: []string{OPTIONS, DESCRIBE, SETUP, PLAY, TEARDOWN, ANNOUNCE, RECORD, PAUSE, SET_PARAMETER, GetParameter, REDIRECT},
+		state:            STATE_Init,
+		serverCapability: []string{OPTIONS, DESCRIBE, SETUP, PLAY, TEARDOWN, ANNOUNCE, RECORD, PAUSE, SET_PARAMETER, GET_PARAMETER, REDIRECT},
 		setupStep:        0,
 		handle:           handle,
 		sdpContext:       &sdp.Sdp{},
@@ -224,7 +224,7 @@ func (client *RtspClient) KeepAlive(method string) error {
 		req.Fileds[Session] = client.sessionId
 		client.reponseHandler = client.handleOption
 		return client.sendRtspRequest(&req)
-	case GetParameter:
+	case GET_PARAMETER:
 		req := makeGetParameter(client.uri, client.cseq)
 		req.Fileds[Session] = client.sessionId
 		client.reponseHandler = client.handleGetParameter
@@ -353,7 +353,7 @@ func (client *RtspClient) handleUnAuth(response RtspResponse) error {
 }
 
 func (client *RtspClient) handleOption(res *RtspResponse) error {
-	if client.state == StateInit {
+	if client.state == STATE_Init {
 		if res.Fileds.Has(Public) {
 			client.serverCapability = strings.Split(res.Fileds[Public], ",")
 			for i := 0; i < len(client.serverCapability); i++ {
@@ -368,7 +368,7 @@ func (client *RtspClient) handleOption(res *RtspResponse) error {
 		}
 	}
 
-	if client.state != StateInit {
+	if client.state != STATE_Init {
 		return nil
 	}
 	if client.isRecord {
@@ -506,7 +506,7 @@ func (client *RtspClient) handleSetup(res *RtspResponse) error {
 		}
 		return err
 	}
-	client.state = StateReady
+	client.state = STATE_Ready
 	if client.handle != nil {
 
 		if res.StatusCode == 200 && !res.Fileds.Has(Session) {
@@ -596,7 +596,7 @@ func (client *RtspClient) handlePlay(res *RtspResponse) (err error) {
 			return nil
 		}
 	}
-	client.state = StatePlaying
+	client.state = STATE_Playing
 	var tr *RangeTime = nil
 	var info *RtpInfo = nil
 	if res.Fileds.Has(Range) {
@@ -677,7 +677,7 @@ func (client *RtspClient) handleRecord(res *RtspResponse) error {
 			return nil
 		}
 	}
-	client.state = StateRecording
+	client.state = STATE_Recording
 	var tr *RangeTime = nil
 	var info *RtpInfo = nil
 	var err error

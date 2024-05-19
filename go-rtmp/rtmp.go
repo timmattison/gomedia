@@ -5,45 +5,45 @@ import (
 )
 
 const (
-	ChunkChannelUseCtrl   = 2
-	ChunkChannelCmd       = 3
-	ChunkChannelVideo     = 5
-	ChunkChannelAudio     = 6
-	ChunkChannelMeta      = 7
-	ChunkChannelNetStream = 8
+	CHUNK_CHANNEL_USE_CTRL   = 2
+	CHUNK_CHANNEL_CMD        = 3
+	CHUNK_CHANNEL_VIDEO      = 5
+	CHUNK_CHANNEL_AUDIO      = 6
+	CHUNK_CHANNEL_META       = 7
+	CHUNK_CHANNEL_NET_STREAM = 8
 )
 
 const (
-	FixChunkSize     = 128
-	DefaultChunkSize = 60000
-	DefaultAckSize   = 5000000
+	FIX_CHUNK_SIZE     = 128
+	DEFAULT_CHUNK_SIZE = 60000
+	DEFAULT_ACK_SIZE   = 5000000
 )
 
 const (
-	HandshakeSize          = 1536
-	HandshakeFixSize       = 8
-	HandshakeOffsetSize    = 4
-	HandshakeDigestSize    = 32
-	HandshakeSchemaSize    = 764
-	HandshakeSchema0Offset = 776 // 8 + 764 + 4
-	HandshakeSchema1Offset = 12  // 8 + 4
+	HANDSHAKE_SIZE           = 1536
+	HANDSHAKE_FIX_SIZE       = 8
+	HANDSHAKE_OFFSET_SIZE    = 4
+	HANDSHAKE_DIGEST_SIZE    = 32
+	HANDSHAKE_SCHEMA_SIZE    = 764
+	HANDSHAKE_SCHEMA0_OFFSET = 776 // 8 + 764 + 4
+	HANDSHAKE_SCHEMA1_OFFSET = 12  // 8 + 4
 )
 
 const (
-	HandshakeComplexSchema0 = 0
-	HandshakeComplexSchema1 = 1
+	HANDSHAKE_COMPLEX_SCHEMA0 = 0
+	HANDSHAKE_COMPLEX_SCHEMA1 = 1
 )
 
 const (
-	PublishingLive   = "live"
-	PublishingRecord = "record"
-	PublishingAppend = "append"
+	PUBLISHING_LIVE   = "live"
+	PUBLISHING_RECORD = "record"
+	PUBLISHING_APPEND = "append"
 )
 
 const (
-	LimittypeHard    = 0
-	LimittypeSoft    = 1
-	LimittypeDynamic = 2
+	LimitType_HARD    = 0
+	LimitType_SOFT    = 1
+	LimitType_DYNAMIC = 2
 )
 
 type RtmpParserState int
@@ -56,13 +56,13 @@ const (
 type RtmpState int
 
 const (
-	StateHandshakeing RtmpState = iota
-	StateHandshakeDone
-	StateRtmpConnecting
-	StateRtmpPlayStart
-	StateRtmpPlayFailed
-	StateRtmpPublishStart
-	StateRtmpPublishFailed
+	STATE_HANDSHAKEING RtmpState = iota
+	STATE_HANDSHAKE_DONE
+	STATE_RTMP_CONNECTING
+	STATE_RTMP_PLAY_START
+	STATE_RTMP_PLAY_FAILED
+	STATE_RTMP_PUBLISH_START
+	STATE_RTMP_PUBLISH_FAILED
 )
 
 //https://blog.csdn.net/wq892373445/article/details/118387494
@@ -70,80 +70,80 @@ const (
 type StatusLevel string
 
 const (
-	LevelStatus StatusLevel = "status"
-	LevelError  StatusLevel = "error"
-	LevelWarn   StatusLevel = "warning"
+	LEVEL_STATUS StatusLevel = "status"
+	LEVEL_ERROR  StatusLevel = "error"
+	LEVEL_WARN   StatusLevel = "warning"
 )
 
 type StatusCode string
 
 const (
-	NetstreamPublishStart     StatusCode = "NetStream.Publish.Start"
-	NetstreamPlayStart        StatusCode = "NetStream.Play.Start"
-	NetstreamPlayStop         StatusCode = "NetStream.Play.Stop"
-	NetstreamPlayFailed       StatusCode = "NetStream.Play.Failed"
-	NetstreamPlayNotfound     StatusCode = "NetStream.Play.StreamNotFound"
-	NetstreamPlayReset        StatusCode = "NetStream.Play.Reset"
-	NetstreamPauseNotify      StatusCode = "NetStream.Pause.Notify"
-	NetstreamUnpauseNotify    StatusCode = "NetStream.Unpause.Notify"
-	NetstreamRecordStart      StatusCode = "NetStream.Record.Start"
-	NetstreamRecordStop       StatusCode = "NetStream.Record.Stop"
-	NetstreamRecordFailed     StatusCode = "NetStream.Record.Failed"
-	NetstreamSeekFailed       StatusCode = "NetStream.Seek.Failed"
-	NetstreamSeekNotify       StatusCode = "NetStream.Seek.Notify"
-	NetconnectConnectClosed   StatusCode = "NetConnection.Connect.Closed"
-	NetconnectConnectFailed   StatusCode = "NetConnection.Connect.Failed"
-	NetconnectConnectSuccess  StatusCode = "NetConnection.Connect.Success"
-	NetconnectConnectRejected StatusCode = "NetConnection.Connect.Rejected"
-	NetstreamConnectClosed    StatusCode = "NetStream.Connect.Closed"
-	NetstreamConnectFailed    StatusCode = "NetStream.Connect.Failed"
-	NetstreamConnectSuccesss  StatusCode = "NetStream.Connect.Success"
-	NetstreamConnectRejected  StatusCode = "NetStream.Connect.Rejected"
+	NETSTREAM_PUBLISH_START     StatusCode = "NetStream.Publish.Start"
+	NETSTREAM_PLAY_START        StatusCode = "NetStream.Play.Start"
+	NETSTREAM_PLAY_STOP         StatusCode = "NetStream.Play.Stop"
+	NETSTREAM_PLAY_FAILED       StatusCode = "NetStream.Play.Failed"
+	NETSTREAM_PLAY_NOTFOUND     StatusCode = "NetStream.Play.StreamNotFound"
+	NETSTREAM_PLAY_RESET        StatusCode = "NetStream.Play.Reset"
+	NETSTREAM_PAUSE_NOTIFY      StatusCode = "NetStream.Pause.Notify"
+	NETSTREAM_UNPAUSE_NOTIFY    StatusCode = "NetStream.Unpause.Notify"
+	NETSTREAM_RECORD_START      StatusCode = "NetStream.Record.Start"
+	NETSTREAM_RECORD_STOP       StatusCode = "NetStream.Record.Stop"
+	NETSTREAM_RECORD_FAILED     StatusCode = "NetStream.Record.Failed"
+	NETSTREAM_SEEK_FAILED       StatusCode = "NetStream.Seek.Failed"
+	NETSTREAM_SEEK_NOTIFY       StatusCode = "NetStream.Seek.Notify"
+	NETCONNECT_CONNECT_CLOSED   StatusCode = "NetConnection.Connect.Closed"
+	NETCONNECT_CONNECT_FAILED   StatusCode = "NetConnection.Connect.Failed"
+	NETCONNECT_CONNECT_SUCCESS  StatusCode = "NetConnection.Connect.Success"
+	NETCONNECT_CONNECT_REJECTED StatusCode = "NetConnection.Connect.Rejected"
+	NETSTREAM_CONNECT_CLOSED    StatusCode = "NetStream.Connect.Closed"
+	NETSTREAM_CONNECT_FAILED    StatusCode = "NetStream.Connect.Failed"
+	NETSTREAM_CONNECT_SUCCESSS  StatusCode = "NetStream.Connect.Success"
+	NETSTREAM_CONNECT_REJECTED  StatusCode = "NetStream.Connect.Rejected"
 )
 
 func (c StatusCode) Level() StatusLevel {
 	switch c {
-	case NetstreamPublishStart:
+	case NETSTREAM_PUBLISH_START:
 		return "status"
-	case NetstreamPlayStart:
+	case NETSTREAM_PLAY_START:
 		return "status"
-	case NetstreamPlayStop:
+	case NETSTREAM_PLAY_STOP:
 		return "status"
-	case NetstreamPlayFailed:
+	case NETSTREAM_PLAY_FAILED:
 		return "error"
-	case NetstreamPlayNotfound:
+	case NETSTREAM_PLAY_NOTFOUND:
 		return "error"
-	case NetstreamPlayReset:
+	case NETSTREAM_PLAY_RESET:
 		return "status"
-	case NetstreamPauseNotify:
+	case NETSTREAM_PAUSE_NOTIFY:
 		return "status"
-	case NetstreamUnpauseNotify:
+	case NETSTREAM_UNPAUSE_NOTIFY:
 		return "status"
-	case NetstreamRecordStart:
+	case NETSTREAM_RECORD_START:
 		return "status"
-	case NetstreamRecordStop:
+	case NETSTREAM_RECORD_STOP:
 		return "status"
-	case NetstreamRecordFailed:
+	case NETSTREAM_RECORD_FAILED:
 		return "error"
-	case NetstreamSeekFailed:
+	case NETSTREAM_SEEK_FAILED:
 		return "error"
-	case NetstreamSeekNotify:
+	case NETSTREAM_SEEK_NOTIFY:
 		return "status"
-	case NetconnectConnectClosed:
+	case NETCONNECT_CONNECT_CLOSED:
 		return "status"
-	case NetconnectConnectFailed:
+	case NETCONNECT_CONNECT_FAILED:
 		return "error"
-	case NetconnectConnectSuccess:
+	case NETCONNECT_CONNECT_SUCCESS:
 		return "status"
-	case NetconnectConnectRejected:
+	case NETCONNECT_CONNECT_REJECTED:
 		return "error"
-	case NetstreamConnectClosed:
+	case NETSTREAM_CONNECT_CLOSED:
 		return "status"
-	case NetstreamConnectFailed:
+	case NETSTREAM_CONNECT_FAILED:
 		return "error"
-	case NetstreamConnectSuccesss:
+	case NETSTREAM_CONNECT_SUCCESSS:
 		return "status"
-	case NetstreamConnectRejected:
+	case NETSTREAM_CONNECT_REJECTED:
 		return "error"
 	}
 	return ""
@@ -151,47 +151,47 @@ func (c StatusCode) Level() StatusLevel {
 
 func (c StatusCode) Description() StatusLevel {
 	switch c {
-	case NetstreamPublishStart:
+	case NETSTREAM_PUBLISH_START:
 		return "Start publishing stream"
-	case NetstreamPlayStart:
+	case NETSTREAM_PLAY_START:
 		return "Start play stream "
-	case NetstreamPlayStop:
+	case NETSTREAM_PLAY_STOP:
 		return "Stop play stream"
-	case NetstreamPlayFailed:
+	case NETSTREAM_PLAY_FAILED:
 		return "Play stream failed"
-	case NetstreamPlayNotfound:
+	case NETSTREAM_PLAY_NOTFOUND:
 		return "Stream not found"
-	case NetstreamPlayReset:
+	case NETSTREAM_PLAY_RESET:
 		return "Reset stream"
-	case NetstreamPauseNotify:
+	case NETSTREAM_PAUSE_NOTIFY:
 		return "Pause stream"
-	case NetstreamUnpauseNotify:
+	case NETSTREAM_UNPAUSE_NOTIFY:
 		return "Unpause stream"
-	case NetstreamRecordStart:
+	case NETSTREAM_RECORD_START:
 		return "Start record stream"
-	case NetstreamRecordStop:
+	case NETSTREAM_RECORD_STOP:
 		return "Stop record stream"
-	case NetstreamRecordFailed:
+	case NETSTREAM_RECORD_FAILED:
 		return "Record stream failed"
-	case NetstreamSeekFailed:
+	case NETSTREAM_SEEK_FAILED:
 		return "Seek stream failed"
-	case NetstreamSeekNotify:
+	case NETSTREAM_SEEK_NOTIFY:
 		return "Seek stream"
-	case NetconnectConnectClosed:
+	case NETCONNECT_CONNECT_CLOSED:
 		return "Close connection"
-	case NetconnectConnectFailed:
+	case NETCONNECT_CONNECT_FAILED:
 		return "Connect failed"
-	case NetconnectConnectSuccess:
+	case NETCONNECT_CONNECT_SUCCESS:
 		return "Connection succeeded"
-	case NetconnectConnectRejected:
+	case NETCONNECT_CONNECT_REJECTED:
 		return "Connection rejected"
-	case NetstreamConnectClosed:
+	case NETSTREAM_CONNECT_CLOSED:
 		return "Connection closed"
-	case NetstreamConnectFailed:
+	case NETSTREAM_CONNECT_FAILED:
 		return "Connection failed"
-	case NetstreamConnectSuccesss:
+	case NETSTREAM_CONNECT_SUCCESSS:
 		return "Connect Stream suceessed"
-	case NetstreamConnectRejected:
+	case NETSTREAM_CONNECT_REJECTED:
 		return "Reject connect stram"
 	}
 	return ""

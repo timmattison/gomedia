@@ -166,13 +166,13 @@ func (sess *MediaSession) init() {
 
 	sess.handle.OnPlay(func(app, streamName string, start, duration float64, reset bool) rtmp.StatusCode {
 		if source := center.find(streamName); source == nil {
-			return rtmp.NetstreamPlayNotfound
+			return rtmp.NETSTREAM_PLAY_NOTFOUND
 		}
-		return rtmp.NetstreamPlayStart
+		return rtmp.NETSTREAM_PLAY_START
 	})
 
 	sess.handle.OnPublish(func(app, streamName string) rtmp.StatusCode {
-		return rtmp.NetstreamPublishStart
+		return rtmp.NETSTREAM_PUBLISH_START
 	})
 
 	sess.handle.SetOutput(func(b []byte) error {
@@ -181,7 +181,7 @@ func (sess *MediaSession) init() {
 	})
 
 	sess.handle.OnStateChange(func(newState rtmp.RtmpState) {
-		if newState == rtmp.StateRtmpPlayStart {
+		if newState == rtmp.STATE_RTMP_PLAY_START {
 			fmt.Println("play start")
 			name := sess.handle.GetStreamName()
 			source := center.find(name)
@@ -192,7 +192,7 @@ func (sess *MediaSession) init() {
 				sess.isReady = true
 				go sess.sendToClient()
 			}
-		} else if newState == rtmp.StateRtmpPublishStart {
+		} else if newState == rtmp.STATE_RTMP_PUBLISH_START {
 			fmt.Println("publish start")
 			sess.handle.OnFrame(func(cid codec.CodecID, pts, dts uint32, frame []byte) {
 				f := &MediaFrame{
@@ -265,9 +265,9 @@ func (sess *MediaSession) sendToClient() {
 			sess.mtx.Unlock()
 			for _, frame := range frames {
 				if firstVideo { //wait for I frame
-					if frame.cid == codec.CodecidVideoH264 && codec.IsH264IDRFrame(frame.frame) {
+					if frame.cid == codec.CODECID_VIDEO_H264 && codec.IsH264IDRFrame(frame.frame) {
 						firstVideo = false
-					} else if frame.cid == codec.CodecidVideoH265 && codec.IsH265IDRFrame(frame.frame) {
+					} else if frame.cid == codec.CODECID_VIDEO_H265 && codec.IsH265IDRFrame(frame.frame) {
 						firstVideo = false
 					} else {
 						continue

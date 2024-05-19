@@ -67,46 +67,46 @@ func init() {
 
 func getOffset(data []byte, schema int) uint32 {
 	var offset uint32 = 0
-	if schema == HandshakeComplexSchema0 {
-		offset = uint32(data[HandshakeSchema0Offset-HandshakeOffsetSize])
-		offset += uint32(data[HandshakeSchema0Offset-HandshakeOffsetSize+1])
-		offset += uint32(data[HandshakeSchema0Offset-HandshakeOffsetSize+2])
-		offset += uint32(data[HandshakeSchema0Offset-HandshakeOffsetSize+3])
-		offset = offset % (HandshakeSchemaSize - HandshakeOffsetSize - HandshakeDigestSize)
-		offset = HandshakeSchema0Offset + offset
+	if schema == HANDSHAKE_COMPLEX_SCHEMA0 {
+		offset = uint32(data[HANDSHAKE_SCHEMA0_OFFSET-HANDSHAKE_OFFSET_SIZE])
+		offset += uint32(data[HANDSHAKE_SCHEMA0_OFFSET-HANDSHAKE_OFFSET_SIZE+1])
+		offset += uint32(data[HANDSHAKE_SCHEMA0_OFFSET-HANDSHAKE_OFFSET_SIZE+2])
+		offset += uint32(data[HANDSHAKE_SCHEMA0_OFFSET-HANDSHAKE_OFFSET_SIZE+3])
+		offset = offset % (HANDSHAKE_SCHEMA_SIZE - HANDSHAKE_OFFSET_SIZE - HANDSHAKE_DIGEST_SIZE)
+		offset = HANDSHAKE_SCHEMA0_OFFSET + offset
 	} else {
-		offset = uint32(data[HandshakeFixSize])
-		offset += uint32(data[HandshakeFixSize+1])
-		offset += uint32(data[HandshakeFixSize+2])
-		offset += uint32(data[HandshakeFixSize+3])
-		offset = offset % (HandshakeSchemaSize - HandshakeOffsetSize - HandshakeDigestSize)
-		offset = HandshakeFixSize + HandshakeOffsetSize + offset
+		offset = uint32(data[HANDSHAKE_FIX_SIZE])
+		offset += uint32(data[HANDSHAKE_FIX_SIZE+1])
+		offset += uint32(data[HANDSHAKE_FIX_SIZE+2])
+		offset += uint32(data[HANDSHAKE_FIX_SIZE+3])
+		offset = offset % (HANDSHAKE_SCHEMA_SIZE - HANDSHAKE_OFFSET_SIZE - HANDSHAKE_DIGEST_SIZE)
+		offset = HANDSHAKE_FIX_SIZE + HANDSHAKE_OFFSET_SIZE + offset
 	}
 	return offset
 }
 
 func clacDigest(data []byte, key []byte, schema int) (digest [32]byte, offset uint32) {
 	ctx := hmac.New(sha256.New, key)
-	offset = rand.Uint32() % (HandshakeSchemaSize - HandshakeOffsetSize - HandshakeDigestSize)
+	offset = rand.Uint32() % (HANDSHAKE_SCHEMA_SIZE - HANDSHAKE_OFFSET_SIZE - HANDSHAKE_DIGEST_SIZE)
 
-	if schema == HandshakeComplexSchema0 {
-		data[HandshakeSchema0Offset-4] = byte(offset / 4)
-		data[HandshakeSchema0Offset-3] = byte(offset / 4)
-		data[HandshakeSchema0Offset-2] = byte(offset / 4)
-		data[HandshakeSchema0Offset-1] = byte(offset - offset/4*3)
-		ctx.Write(data[:HandshakeSchema0Offset+offset])
-		ctx.Write(data[HandshakeSchema0Offset+offset+HandshakeDigestSize : HandshakeSize])
+	if schema == HANDSHAKE_COMPLEX_SCHEMA0 {
+		data[HANDSHAKE_SCHEMA0_OFFSET-4] = byte(offset / 4)
+		data[HANDSHAKE_SCHEMA0_OFFSET-3] = byte(offset / 4)
+		data[HANDSHAKE_SCHEMA0_OFFSET-2] = byte(offset / 4)
+		data[HANDSHAKE_SCHEMA0_OFFSET-1] = byte(offset - offset/4*3)
+		ctx.Write(data[:HANDSHAKE_SCHEMA0_OFFSET+offset])
+		ctx.Write(data[HANDSHAKE_SCHEMA0_OFFSET+offset+HANDSHAKE_DIGEST_SIZE : HANDSHAKE_SIZE])
 		copy(digest[:], ctx.Sum(nil))
-		offset += HandshakeSchema0Offset
+		offset += HANDSHAKE_SCHEMA0_OFFSET
 	} else {
-		data[HandshakeFixSize] = byte(offset / 4)
-		data[HandshakeFixSize+1] = byte(offset / 4)
-		data[HandshakeFixSize+2] = byte(offset / 4)
-		data[HandshakeFixSize+3] = byte(offset - offset/4*3)
-		ctx.Write(data[:HandshakeSchema1Offset+offset])
-		ctx.Write(data[HandshakeSchema1Offset+offset+HandshakeDigestSize:])
+		data[HANDSHAKE_FIX_SIZE] = byte(offset / 4)
+		data[HANDSHAKE_FIX_SIZE+1] = byte(offset / 4)
+		data[HANDSHAKE_FIX_SIZE+2] = byte(offset / 4)
+		data[HANDSHAKE_FIX_SIZE+3] = byte(offset - offset/4*3)
+		ctx.Write(data[:HANDSHAKE_SCHEMA1_OFFSET+offset])
+		ctx.Write(data[HANDSHAKE_SCHEMA1_OFFSET+offset+HANDSHAKE_DIGEST_SIZE:])
 		copy(digest[:], ctx.Sum(nil))
-		offset += HandshakeSchema1Offset
+		offset += HANDSHAKE_SCHEMA1_OFFSET
 	}
 	return
 }
@@ -231,15 +231,15 @@ func makeComplexS2(c1 []byte, schema int) []byte {
 type HandShakeState int
 
 const (
-	ClientS0 HandShakeState = iota
-	ClientS1
-	ClientS2
+	CLIENT_S0 HandShakeState = iota
+	CLIENT_S1
+	CLIENT_S2
 
-	ServerC0 HandShakeState = iota + 10
-	ServerC1
-	ServerC2
+	SERVER_C0 HandShakeState = iota + 10
+	SERVER_C1
+	SERVER_C2
 
-	HandshakeDone HandShakeState = iota + 100
+	HANDSHAKE_DONE HandShakeState = iota + 100
 )
 
 type clientHandShake struct {
@@ -255,13 +255,13 @@ func newClientHandShake() *clientHandShake {
 	return &clientHandShake{
 		simpleHs: true,
 		cache:    make([]byte, 0, 1536),
-		state:    ClientS0,
+		state:    CLIENT_S0,
 	}
 }
 
 func (chs *clientHandShake) start() {
 	var c0c1 []byte
-	chs.state = ClientS0
+	chs.state = CLIENT_S0
 	if chs.simpleHs {
 		c0c1 = makeC0()
 		c0c1 = append(c0c1, makeC1()...)
@@ -275,11 +275,11 @@ func (chs *clientHandShake) start() {
 func (chs *clientHandShake) input(data []byte) error {
 	for len(data) > 0 {
 		switch chs.state {
-		case ClientS0:
+		case CLIENT_S0:
 			chs.version = data[0]
 			data = data[1:]
-			chs.state = ClientS1
-		case ClientS1:
+			chs.state = CLIENT_S1
+		case CLIENT_S1:
 			if len(data)+len(chs.cache) < 1536 {
 				chs.cache = append(chs.cache, data...)
 				return nil
@@ -296,8 +296,8 @@ func (chs *clientHandShake) input(data []byte) error {
 			}
 			chs.output(c2)
 			chs.cache = chs.cache[:0]
-			chs.state = ClientS2
-		case ClientS2:
+			chs.state = CLIENT_S2
+		case CLIENT_S2:
 			if len(data)+len(chs.cache) < 1536 {
 				chs.cache = append(chs.cache, data...)
 				return nil
@@ -306,7 +306,7 @@ func (chs *clientHandShake) input(data []byte) error {
 				chs.cache = append(chs.cache, data[:length]...)
 				data = data[length:]
 			}
-			chs.state = HandshakeDone
+			chs.state = HANDSHAKE_DONE
 			chs.cache = nil
 		default:
 			panic("error state")
@@ -333,19 +333,19 @@ func newServerHandShake() *serverHandShake {
 	return &serverHandShake{
 		simpleHs: true,
 		cache:    make([]byte, 0, 1536),
-		state:    ServerC0,
+		state:    SERVER_C0,
 	}
 }
 
 func (shs *serverHandShake) input(data []byte) (readBytes int) {
 	for len(data) > 0 {
 		switch shs.state {
-		case ServerC0:
+		case SERVER_C0:
 			shs.version = data[0]
 			readBytes++
 			data = data[1:]
-			shs.state = ServerC1
-		case ServerC1:
+			shs.state = SERVER_C1
+		case SERVER_C1:
 			if len(data)+len(shs.cache) < 1536 {
 				shs.cache = append(shs.cache, data...)
 				readBytes += len(data)
@@ -369,8 +369,8 @@ func (shs *serverHandShake) input(data []byte) (readBytes int) {
 			}
 			shs.output(s0s1s2)
 			shs.cache = shs.cache[:0]
-			shs.state = ServerC2
-		case ServerC2:
+			shs.state = SERVER_C2
+		case SERVER_C2:
 			if len(data)+len(shs.cache) < 1536 {
 				shs.cache = append(shs.cache, data...)
 				readBytes += len(data)
@@ -378,7 +378,7 @@ func (shs *serverHandShake) input(data []byte) (readBytes int) {
 			}
 			length := 1536 - len(shs.cache)
 			readBytes += length
-			shs.state = HandshakeDone
+			shs.state = HANDSHAKE_DONE
 			shs.cache = nil
 			return readBytes
 		default:
@@ -400,24 +400,24 @@ func (shs *serverHandShake) checkC1(c1 []byte) {
 		shs.simpleHs = true
 		return
 	}
-	digest := getDigest(c1, HandshakeComplexSchema0)
+	digest := getDigest(c1, HANDSHAKE_COMPLEX_SCHEMA0)
 	ctx := hmac.New(sha256.New, fpKey[:30])
-	offset := getOffset(c1, HandshakeComplexSchema0)
+	offset := getOffset(c1, HANDSHAKE_COMPLEX_SCHEMA0)
 	ctx.Write(c1[:offset])
-	ctx.Write(c1[offset+HandshakeDigestSize:])
+	ctx.Write(c1[offset+HANDSHAKE_DIGEST_SIZE:])
 	expectDigest := ctx.Sum(nil)
 	if bytes.Equal(digest, expectDigest[:]) {
-		shs.schema = HandshakeComplexSchema0
+		shs.schema = HANDSHAKE_COMPLEX_SCHEMA0
 		return
 	} else {
-		digest = getDigest(c1, HandshakeComplexSchema1)
+		digest = getDigest(c1, HANDSHAKE_COMPLEX_SCHEMA1)
 		ctx := hmac.New(sha256.New, fpKey[:30])
-		offset := getOffset(c1, HandshakeComplexSchema1)
+		offset := getOffset(c1, HANDSHAKE_COMPLEX_SCHEMA1)
 		ctx.Write(c1[:offset])
-		ctx.Write(c1[offset+HandshakeDigestSize:])
+		ctx.Write(c1[offset+HANDSHAKE_DIGEST_SIZE:])
 		expectDigest := ctx.Sum(nil)
 		if bytes.Equal(digest, expectDigest[:]) {
-			shs.schema = HandshakeComplexSchema1
+			shs.schema = HANDSHAKE_COMPLEX_SCHEMA1
 		} else {
 			shs.simpleHs = true
 			return

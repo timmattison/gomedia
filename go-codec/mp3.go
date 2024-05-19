@@ -161,17 +161,17 @@ var SampleRateTable = [3][4]int{
 }
 
 const (
-	VersionReserved = 0
-	VersionMpeg1    = 1
-	VersionMpeg2    = 2
-	VersionMpeg25   = 3
+	VERSION_RESERVED = 0
+	VERSION_MPEG_1   = 1
+	VERSION_MPEG_2   = 2
+	VERSION_MPEG_2_5 = 3
 )
 
 const (
-	LayerReserved = 0
-	Layer1        = 1
-	Layer2        = 2
-	Layer3        = 3
+	LAYER_RESERVED = 0
+	LAYER_1        = 1
+	LAYER_2        = 2
+	LAYER_3        = 3
 )
 
 type ID3V2 struct {
@@ -212,26 +212,26 @@ func DecodeMp3Head(data []byte) (*MP3FrameHead, error) {
 	head.Version = uint8(bs.GetBits(2))
 	switch head.Version {
 	case 0x00:
-		head.Version = VersionMpeg25
+		head.Version = VERSION_MPEG_2_5
 	case 0x01:
-		head.Version = VersionReserved
+		head.Version = VERSION_RESERVED
 	case 0x02:
-		head.Version = VersionMpeg2
+		head.Version = VERSION_MPEG_2
 	case 0x03:
-		head.Version = VersionMpeg1
+		head.Version = VERSION_MPEG_1
 	}
 
 	head.Layer = uint8(bs.GetBits(2))
 
 	switch head.Layer {
 	case 0x00:
-		head.Layer = LayerReserved
+		head.Layer = LAYER_RESERVED
 	case 0x01:
-		head.Layer = Layer3
+		head.Layer = LAYER_3
 	case 0x02:
-		head.Layer = Layer2
+		head.Layer = LAYER_2
 	case 0x03:
-		head.Layer = Layer1
+		head.Layer = LAYER_1
 	}
 
 	head.Protecttion = bs.GetBit()
@@ -245,12 +245,12 @@ func DecodeMp3Head(data []byte) (*MP3FrameHead, error) {
 	head.Original = bs.GetBit()
 	head.Emphasis = uint8(bs.GetBits(2))
 
-	if head.Layer == Layer1 {
+	if head.Layer == LAYER_1 {
 		head.SampleSize = 384
-	} else if head.Layer == Layer2 {
+	} else if head.Layer == LAYER_2 {
 		head.SampleSize = 1152
 	} else {
-		if head.Version == VersionMpeg1 {
+		if head.Version == VERSION_MPEG_1 {
 			head.SampleSize = 1152
 		} else {
 			head.SampleSize = 576
@@ -260,7 +260,7 @@ func DecodeMp3Head(data []byte) (*MP3FrameHead, error) {
 	br := head.GetBitRate()
 	head.FrameSize = head.SampleSize / 8 * br / head.GetSampleRate()
 	//layer 1 has 4 bytes padding,other has one byte
-	if head.Layer == Layer1 {
+	if head.Layer == LAYER_1 {
 		head.FrameSize += int(head.Padding) * 4
 	} else {
 		head.FrameSize += int(head.Padding)
@@ -278,14 +278,14 @@ func (mp3 *MP3FrameHead) GetChannelCount() int {
 
 func (mp3 *MP3FrameHead) GetBitRate() int {
 	var i = 0
-	if mp3.Version == VersionMpeg2 || mp3.Version == VersionMpeg25 {
+	if mp3.Version == VERSION_MPEG_2 || mp3.Version == VERSION_MPEG_2_5 {
 		i = 1
 	}
 	return BitRateTable[i][mp3.Layer-1][mp3.BitrateIndex] * 1000
 }
 
 func (mp3 *MP3FrameHead) GetSampleRate() int {
-	if mp3.Version == LayerReserved {
+	if mp3.Version == LAYER_RESERVED {
 		return 0
 	}
 	return SampleRateTable[mp3.Version-1][mp3.SampleRateIndex]

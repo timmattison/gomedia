@@ -36,10 +36,10 @@ var (
 // +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 
 const (
-	PageHeadLength = 282
+	PAGE_HEAD_LENGTH = 282
 )
 
-var crcTable = [256]uint32{
+var crc_table = [256]uint32{
 	0x00000000, 0x04c11db7, 0x09823b6e, 0x0d4326d9, 0x130476dc, 0x17c56b6b, 0x1a864db2, 0x1e475005,
 	0x2608edb8, 0x22c9f00f, 0x2f8ad6d6, 0x2b4bcb61, 0x350c9b64, 0x31cd86d3, 0x3c8ea00a, 0x384fbdbd,
 	0x4c11db70, 0x48d0c6c7, 0x4593e01e, 0x4152fda9, 0x5f15adac, 0x5bd4b01b, 0x569796c2, 0x52568b75,
@@ -77,7 +77,7 @@ var crcTable = [256]uint32{
 func makeChecksum(crc uint32, buffer []byte) uint32 {
 	var checksum uint32
 	for index := range buffer {
-		checksum = (checksum << 8) ^ crcTable[byte(checksum>>24)^buffer[index]]
+		checksum = (checksum << 8) ^ crc_table[byte(checksum>>24)^buffer[index]]
 	}
 	return checksum
 }

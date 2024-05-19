@@ -13,38 +13,38 @@ import (
 )
 
 type TimestampAdjust struct {
-	lastTimeStamp   int64
-	adjustTimestamp int64
+	lastTimeStamp    int64
+	adjust_timestamp int64
 }
 
 func newTimestampAdjust() *TimestampAdjust {
 	return &TimestampAdjust{
-		lastTimeStamp:   -1,
-		adjustTimestamp: 0,
+		lastTimeStamp:    -1,
+		adjust_timestamp: 0,
 	}
 }
 
 // timestamp in millisecond
 func (adjust *TimestampAdjust) adjust(timestamp int64) int64 {
 	if adjust.lastTimeStamp == -1 {
-		adjust.adjustTimestamp = timestamp
+		adjust.adjust_timestamp = timestamp
 		adjust.lastTimeStamp = timestamp
-		return adjust.adjustTimestamp
+		return adjust.adjust_timestamp
 	}
 
 	delta := timestamp - adjust.lastTimeStamp
 	if delta < -1000 || delta > 1000 {
-		adjust.adjustTimestamp = adjust.adjustTimestamp + 1
+		adjust.adjust_timestamp = adjust.adjust_timestamp + 1
 	} else {
-		adjust.adjustTimestamp = adjust.adjustTimestamp + delta
+		adjust.adjust_timestamp = adjust.adjust_timestamp + delta
 	}
 	adjust.lastTimeStamp = timestamp
-	return adjust.adjustTimestamp
+	return adjust.adjust_timestamp
 }
 
-var videoPtsAdjust = newTimestampAdjust()
-var videoDtsAdjust = newTimestampAdjust()
-var audioTsAdjust = newTimestampAdjust()
+var video_pts_adjust = newTimestampAdjust()
+var video_dts_adjust = newTimestampAdjust()
+var audio_ts_adjust = newTimestampAdjust()
 
 // Will push the last file under mp4sPath to the specified rtmp server
 func main() {
@@ -57,7 +57,7 @@ func main() {
 		fmt.Println(err)
 	}
 	cli := rtmp.NewRtmpClient(rtmp.WithComplexHandshake(),
-		rtmp.WithComplexHandshakeSchema(rtmp.HandshakeComplexSchema0),
+		rtmp.WithComplexHandshakeSchema(rtmp.HANDSHAKE_COMPLEX_SCHEMA0),
 		rtmp.WithEnablePublish())
 	cli.OnError(func(code, describe string) {
 		fmt.Printf("rtmp code:%s ,describe:%s\n", code, describe)
@@ -67,7 +67,7 @@ func main() {
 		fmt.Printf("rtmp onstatus code:%s ,level %s ,describe:%s\n", code, describe)
 	})
 	cli.OnStateChange(func(newState rtmp.RtmpState) {
-		if newState == rtmp.StateRtmpPublishStart {
+		if newState == rtmp.STATE_RTMP_PUBLISH_START {
 			fmt.Println("ready for publish")
 			close(isReady)
 		}
@@ -126,17 +126,17 @@ func PushRtmp(fileName string, cli *rtmp.RtmpClient) {
 			fmt.Println(err)
 			break
 		}
-		if pkg.Cid == mp4.Mp4CodecH264 {
+		if pkg.Cid == mp4.MP4_CODEC_H264 {
 			time.Sleep(20 * time.Millisecond)
-			pts := videoPtsAdjust.adjust(int64(pkg.Pts))
-			dts := videoDtsAdjust.adjust(int64(pkg.Dts))
-			cli.WriteVideo(codec.CodecidVideoH264, pkg.Data, uint32(pts), uint32(dts))
-		} else if pkg.Cid == mp4.Mp4CodecAac {
-			pts := audioTsAdjust.adjust(int64(pkg.Pts))
-			cli.WriteAudio(codec.CodecidAudioAac, pkg.Data, uint32(pts), uint32(pts))
-		} else if pkg.Cid == mp4.Mp4CodecMp3 {
-			pts := audioTsAdjust.adjust(int64(pkg.Pts))
-			cli.WriteAudio(codec.CodecidAudioMp3, pkg.Data, uint32(pts), uint32(pts))
+			pts := video_pts_adjust.adjust(int64(pkg.Pts))
+			dts := video_dts_adjust.adjust(int64(pkg.Dts))
+			cli.WriteVideo(codec.CODECID_VIDEO_H264, pkg.Data, uint32(pts), uint32(dts))
+		} else if pkg.Cid == mp4.MP4_CODEC_AAC {
+			pts := audio_ts_adjust.adjust(int64(pkg.Pts))
+			cli.WriteAudio(codec.CODECID_AUDIO_AAC, pkg.Data, uint32(pts), uint32(pts))
+		} else if pkg.Cid == mp4.MP4_CODEC_MP3 {
+			pts := audio_ts_adjust.adjust(int64(pkg.Pts))
+			cli.WriteAudio(codec.CODECID_AUDIO_MP3, pkg.Data, uint32(pts), uint32(pts))
 		}
 
 	}

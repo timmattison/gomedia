@@ -185,16 +185,16 @@ func (server *RtspServer) handleRequest(req []byte) (ret int, err error) {
 	res := RtspResponse{}
 	res.Fileds = make(HeadFiled)
 	res.StatusCode = 200
-	res.Version = Rtsp10
+	res.Version = RTSP_1_0
 	if server.sessionId != "" {
 		if !request.Fileds.Has(Session) || request.Fileds[Session] != server.sessionId {
-			res.StatusCode = SessionNotFound
+			res.StatusCode = Session_Not_Found
 			return ret, server.sendRespones(request, res)
 		}
 	}
 	switch request.Method {
 	case OPTIONS:
-		methods := []string{OPTIONS, SET_PARAMETER, GetParameter, SETUP, DESCRIBE, PLAY, ANNOUNCE, RECORD, TEARDOWN, PAUSE}
+		methods := []string{OPTIONS, SET_PARAMETER, GET_PARAMETER, SETUP, DESCRIBE, PLAY, ANNOUNCE, RECORD, TEARDOWN, PAUSE}
 		public := ""
 		for _, m := range methods {
 			public += m + ","
@@ -254,7 +254,7 @@ func (server *RtspServer) handleRequest(req []byte) (ret int, err error) {
 			break
 		}
 		if !foundTrack {
-			res.StatusCode = BadRequest
+			res.StatusCode = BAD_REQUEST
 		}
 	case ANNOUNCE:
 		if err = server.sdpContext.ParserSdp(request.Body); err != nil {
@@ -334,7 +334,7 @@ func (server *RtspServer) handleRequest(req []byte) (ret int, err error) {
 		server.handle.HandlePause(server, request, &res)
 	case SET_PARAMETER:
 		server.handle.HandleSetParameter(server, request, &res)
-	case GetParameter:
+	case GET_PARAMETER:
 		server.handle.HandleGetParameter(server, request, &res)
 	}
 	return ret, server.sendRespones(request, res)

@@ -11,7 +11,7 @@ import (
 	"github.com/timmattison/gomedia/go-mpeg2"
 )
 
-const RtpFixHeadLen = 12
+const RTP_FIX_HEAD_LEN = 12
 
 type RtpReceiver struct {
 	conn  *net.UDPConn
@@ -43,17 +43,17 @@ func (r *RtpReceiver) Read(p []byte) (n int, err error) {
 			fmt.Println(err)
 			return 0, err
 		}
-		if readBytes <= RtpFixHeadLen {
+		if readBytes <= RTP_FIX_HEAD_LEN {
 			fmt.Println("rtp payload length == 0")
 			continue
 		}
 		//filter out rtp head
-		if readBytes-RtpFixHeadLen <= len(p) {
-			n = copy(p, r.buf[RtpFixHeadLen:readBytes])
+		if readBytes-RTP_FIX_HEAD_LEN <= len(p) {
+			n = copy(p, r.buf[RTP_FIX_HEAD_LEN:readBytes])
 			return
 		}
-		n = copy(p, r.buf[RtpFixHeadLen:RtpFixHeadLen+len(p)])
-		r.cache.Write(r.buf[RtpFixHeadLen+len(p) : readBytes])
+		n = copy(p, r.buf[RTP_FIX_HEAD_LEN:RTP_FIX_HEAD_LEN+len(p)])
+		r.cache.Write(r.buf[RTP_FIX_HEAD_LEN+len(p) : readBytes])
 		return
 	}
 }
@@ -83,14 +83,14 @@ func main() {
 	localAddr, _ := net.ResolveUDPAddr("udp4", "127.0.0.1:19999")
 	c, _ := net.ListenUDP("udp4", localAddr)
 	demuxer := mpeg2.NewTSDemuxer()
-	demuxer.OnFrame = func(cid mpeg2.TsStreamType, frame []byte, pts, dts uint64) {
-		if cid == mpeg2.TsStreamH264 {
+	demuxer.OnFrame = func(cid mpeg2.TS_STREAM_TYPE, frame []byte, pts, dts uint64) {
+		if cid == mpeg2.TS_STREAM_H264 {
 			if v == nil {
 				v, _ = os.OpenFile(*videoFile, os.O_CREATE|os.O_RDWR, 0666)
 			}
 			fmt.Println("Got H264 Frame:", "pts:", pts, "dts:", dts, "Frame len:", len(frame))
 			v.Write(frame)
-		} else if cid == mpeg2.TsStreamAac {
+		} else if cid == mpeg2.TS_STREAM_AAC {
 			if a == nil {
 				a, _ = os.OpenFile(*audioFile, os.O_CREATE|os.O_RDWR, 0666)
 			}

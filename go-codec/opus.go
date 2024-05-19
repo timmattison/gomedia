@@ -276,8 +276,8 @@ func DecodeOpusPacket(packet []byte) *OpusPacket {
 }
 
 const (
-	LeftChannel  = 0
-	RightChannel = 1
+	LEFT_CHANNEL  = 0
+	RIGHT_CHANNEL = 1
 )
 
 var (
@@ -402,9 +402,9 @@ func (ctx *OpusContext) ParseExtranData(extraData []byte) error {
 		if int(index) < 2*ctx.StereoStreamCount {
 			cm.StreamIdx = int(index) / 2
 			if index&1 == 0 {
-				cm.ChannelIdx = LeftChannel
+				cm.ChannelIdx = LEFT_CHANNEL
 			} else {
-				cm.ChannelIdx = RightChannel
+				cm.ChannelIdx = RIGHT_CHANNEL
 			}
 		} else {
 			cm.StreamIdx = int(index) - ctx.StereoStreamCount

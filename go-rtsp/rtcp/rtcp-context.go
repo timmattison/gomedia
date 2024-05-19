@@ -32,17 +32,17 @@ type RtcpContext struct {
 }
 
 const (
-	MinSequential = 2
-	RtpSeqMod     = 1 << 16
-	MaxDropout    = 3000
-	MaxMisorder   = 100
+	MIN_SEQUENTIAL = 2
+	RTP_SEQ_MOD    = 1 << 16
+	MAX_DROPOUT    = 3000
+	MAX_MISORDER   = 100
 )
 
 func NewRtcpContext(ssrc uint32, seq uint16, sampleRate uint32) *RtcpContext {
 	return &RtcpContext{
 		ssrc:       ssrc,
 		maxSeq:     seq - 1,
-		probation:  MinSequential,
+		probation:  MIN_SEQUENTIAL,
 		sampleRate: sampleRate,
 	}
 }
@@ -80,13 +80,13 @@ func (ctx *RtcpContext) GenerateSDES(sdesType uint8, txt string) *SourceDescript
 }
 
 func (ctx *RtcpContext) GenerateSR() *SenderReport {
-	sr := &SenderReport{Comm: Comm{PT: RtcpSr}, RC: 0, SSRC: ctx.ssrc, RtpTimestamp: ctx.lastRtpTimestamp, SendPacketCount: uint32(ctx.sendPackets), SendOctetCount: uint32(ctx.sendBytes)}
+	sr := &SenderReport{Comm: Comm{PT: RTCP_SR}, RC: 0, SSRC: ctx.ssrc, RtpTimestamp: ctx.lastRtpTimestamp, SendPacketCount: uint32(ctx.sendPackets), SendOctetCount: uint32(ctx.sendBytes)}
 	sr.NTP = UtcClockToNTP(time.Now())
 	return sr
 }
 
 func (ctx *RtcpContext) GenerateRR() *ReceiverReport {
-	rr := &ReceiverReport{Comm: Comm{PT: RtcpRr}, RC: 1, SSRC: ctx.ssrc, Blocks: make([]ReportBlock, 1)}
+	rr := &ReceiverReport{Comm: Comm{PT: RTCP_RR}, RC: 1, SSRC: ctx.ssrc, Blocks: make([]ReportBlock, 1)}
 	rr.Blocks[0].SSRC = ctx.senderSSRC
 	block := ctx.getReportBlock()
 	rr.Blocks[0] = block
@@ -144,20 +144,20 @@ func (ctx *RtcpContext) updateSeq(seq uint16) int {
 				return 1
 			}
 		} else {
-			ctx.probation = MinSequential - 1
+			ctx.probation = MIN_SEQUENTIAL - 1
 			ctx.maxSeq = seq
 		}
 		return 0
-	} else if delta < MaxDropout {
+	} else if delta < MAX_DROPOUT {
 		if seq < ctx.maxSeq {
-			ctx.cycles += RtpSeqMod
+			ctx.cycles += RTP_SEQ_MOD
 		}
 		ctx.maxSeq = seq
-	} else if delta <= RtpSeqMod-MaxMisorder {
+	} else if delta <= RTP_SEQ_MOD-MAX_MISORDER {
 		if seq == uint16(ctx.badSeq) {
 			ctx.initSeq(seq)
 		} else {
-			ctx.badSeq = uint32((seq + 1) & (RtpSeqMod - 1))
+			ctx.badSeq = uint32((seq + 1) & (RTP_SEQ_MOD - 1))
 			return 0
 		}
 	} else {
@@ -201,7 +201,7 @@ func (ctx *RtcpContext) getReportBlock() ReportBlock {
 func (ctx *RtcpContext) initSeq(seq uint16) {
 	ctx.baseSeq = uint32(seq)
 	ctx.maxSeq = seq
-	ctx.badSeq = RtpSeqMod + 1 /* so seq == bad_seq is false */
+	ctx.badSeq = RTP_SEQ_MOD + 1 /* so seq == bad_seq is false */
 	ctx.cycles = 0
 	ctx.received = 0
 	ctx.receivedPrior = 0

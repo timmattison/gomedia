@@ -97,7 +97,7 @@ type movFragment struct {
 }
 
 type mp4track struct {
-	cid         Mp4CodecType
+	cid         MP4_CODEC_TYPE
 	trackId     uint32
 	stbltable   *movstbl
 	duration    uint32
@@ -134,7 +134,7 @@ type mp4track struct {
 	subSamples             []sencEntry
 }
 
-func newmp4track(cid Mp4CodecType, writer io.WriteSeeker) *mp4track {
+func newmp4track(cid MP4_CODEC_TYPE, writer io.WriteSeeker) *mp4track {
 	track := &mp4track{
 		cid:        cid,
 		timescale:  1000,
@@ -149,11 +149,11 @@ func newmp4track(cid Mp4CodecType, writer io.WriteSeeker) *mp4track {
 		startDts:  0,
 	}
 
-	if cid == Mp4CodecH264 {
+	if cid == MP4_CODEC_H264 {
 		track.extra = new(h264ExtraData)
-	} else if cid == Mp4CodecH265 {
+	} else if cid == MP4_CODEC_H265 {
 		track.extra = newh265ExtraData()
-	} else if cid == Mp4CodecAac {
+	} else if cid == MP4_CODEC_AAC {
 		track.extra = new(aacExtraData)
 	}
 	return track
@@ -260,7 +260,7 @@ func (track *mp4track) makeStblTable() {
 	track.stbltable.stsc = stsc
 	track.stbltable.stco = stco
 	track.stbltable.stsz = stsz
-	if track.cid == Mp4CodecH264 || track.cid == Mp4CodecH265 {
+	if track.cid == MP4_CODEC_H264 || track.cid == MP4_CODEC_H265 {
 		track.stbltable.ctts = ctts
 	}
 }
@@ -276,17 +276,17 @@ func (track *mp4track) makeEmptyStblTable() {
 
 func (track *mp4track) writeSample(sample []byte, pts, dts uint64) (err error) {
 	switch track.cid {
-	case Mp4CodecH264:
+	case MP4_CODEC_H264:
 		err = track.writeH264(sample, pts, dts)
-	case Mp4CodecH265:
+	case MP4_CODEC_H265:
 		err = track.writeH265(sample, pts, dts)
-	case Mp4CodecAac:
+	case MP4_CODEC_AAC:
 		err = track.writeAAC(sample, pts, dts)
-	case Mp4CodecG711a, Mp4CodecG711u:
+	case MP4_CODEC_G711A, MP4_CODEC_G711U:
 		err = track.writeG711(sample, pts, dts)
-	case Mp4CodecMp2, Mp4CodecMp3:
+	case MP4_CODEC_MP2, MP4_CODEC_MP3:
 		err = track.writeMP3(sample, pts, dts)
-	case Mp4CodecOpus:
+	case MP4_CODEC_OPUS:
 		err = track.writeOPUS(sample, pts, dts)
 	}
 	return err
@@ -298,9 +298,9 @@ func (track *mp4track) writeH264(h264 []byte, pts, dts uint64) (err error) {
 		panic("must init h264ExtraData first")
 	}
 	codec.SplitFrameWithStartCode(h264, func(nalu []byte) bool {
-		naluType := codec.H264NaluType(nalu)
-		switch naluType {
-		case codec.H264NalSps:
+		nalu_type := codec.H264NaluType(nalu)
+		switch nalu_type {
+		case codec.H264_NAL_SPS:
 			spsid := codec.GetSPSIdWithStartCode(nalu)
 			for _, sps := range h264extra.spss {
 				if spsid == codec.GetSPSIdWithStartCode(sps) {
@@ -319,7 +319,7 @@ func (track *mp4track) writeH264(h264 []byte, pts, dts uint64) (err error) {
 					track.height = height
 				}
 			}
-		case codec.H264NalPps:
+		case codec.H264_NAL_PPS:
 			ppsid := codec.GetPPSIdWithStartCode(nalu)
 			for _, pps := range h264extra.ppss {
 				if ppsid == codec.GetPPSIdWithStartCode(pps) {
@@ -354,12 +354,12 @@ func (track *mp4track) writeH264(h264 []byte, pts, dts uint64) (err error) {
 			track.lastSample.cache = track.lastSample.cache[:0]
 			track.lastSample.hasVcl = false
 		}
-		if codec.IsH264VCLNaluType(naluType) {
+		if codec.IsH264VCLNaluType(nalu_type) {
 			track.lastSample.pts = pts
 			track.lastSample.dts = dts
 			track.lastSample.hasVcl = true
 			track.lastSample.isKey = false
-			if naluType == codec.H264NalISlice {
+			if nalu_type == codec.H264_NAL_I_SLICE {
 				track.lastSample.isKey = true
 			}
 		}
@@ -375,9 +375,9 @@ func (track *mp4track) writeH265(h265 []byte, pts, dts uint64) (err error) {
 		panic("must init h265ExtraData first")
 	}
 	codec.SplitFrameWithStartCode(h265, func(nalu []byte) bool {
-		naluType := codec.H265NaluType(nalu)
-		switch naluType {
-		case codec.H265NalSps:
+		nalu_type := codec.H265NaluType(nalu)
+		switch nalu_type {
+		case codec.H265_NAL_SPS:
 			h265extra.hvccExtra.UpdateSPS(nalu)
 			if track.width == 0 || track.height == 0 {
 				width, height := codec.GetH265Resolution(nalu)
@@ -388,9 +388,9 @@ func (track *mp4track) writeH265(h265 []byte, pts, dts uint64) (err error) {
 					track.height = height
 				}
 			}
-		case codec.H265NalPps:
+		case codec.H265_NAL_PPS:
 			h265extra.hvccExtra.UpdatePPS(nalu)
-		case codec.H265NalVps:
+		case codec.H265_NAL_VPS:
 			h265extra.hvccExtra.UpdateVPS(nalu)
 		}
 
@@ -416,12 +416,12 @@ func (track *mp4track) writeH265(h265 []byte, pts, dts uint64) (err error) {
 			track.lastSample.cache = track.lastSample.cache[:0]
 			track.lastSample.hasVcl = false
 		}
-		if codec.IsH265VCLNaluType(naluType) {
+		if codec.IsH265VCLNaluType(nalu_type) {
 			track.lastSample.pts = pts
 			track.lastSample.dts = dts
 			track.lastSample.hasVcl = true
 			track.lastSample.isKey = false
-			if naluType >= codec.H265NalSliceBlaWLp && naluType <= codec.H265NalSliceCra {
+			if nalu_type >= codec.H265_NAL_SLICE_BLA_W_LP && nalu_type <= codec.H265_NAL_SLICE_CRA {
 				track.lastSample.isKey = true
 			}
 		}
@@ -444,10 +444,10 @@ func (track *mp4track) writeAAC(aacframes []byte, pts, dts uint64) (err error) {
 		aacextra.asc = asc.Encode()
 
 		if track.chanelCount == 0 {
-			track.chanelCount = asc.ChannelConfiguration
+			track.chanelCount = asc.Channel_configuration
 		}
 		if track.sampleRate == 0 {
-			track.sampleRate = uint32(codec.AACSampleIdxToSample(int(asc.SampleFreqIndex)))
+			track.sampleRate = uint32(codec.AACSampleIdxToSample(int(asc.Sample_freq_index)))
 		}
 		if track.sampleBits == 0 {
 			// aac has no fixed bit depth, so we just set it to the default of 16
@@ -509,9 +509,9 @@ func (track *mp4track) writeMP3(mp3 []byte, pts, dts uint64) (err error) {
 			track.sampleBits = 16
 		})
 		if track.sampleRate > 24000 {
-			track.cid = Mp4CodecMp2
+			track.cid = MP4_CODEC_MP2
 		} else {
-			track.cid = Mp4CodecMp3
+			track.cid = MP4_CODEC_MP3
 		}
 	}
 	return track.writeG711(mp3, pts, dts)

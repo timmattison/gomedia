@@ -89,7 +89,7 @@ func TestCreateMp4Muxer(t *testing.T) {
 				fmt.Println(err)
 				return
 			}
-			tid := muxer.AddVideoTrack(Mp4CodecH265)
+			tid := muxer.AddVideoTrack(MP4_CODEC_H265)
 			cache := make([]byte, 0)
 			codec.SplitFrameWithStartCode(buf, func(nalu []byte) bool {
 				ntype := codec.H265NaluType(nalu)
@@ -143,7 +143,7 @@ func TestMuxAAC(t *testing.T) {
 		return
 	}
 
-	tid := muxer.AddAudioTrack(Mp4CodecAac)
+	tid := muxer.AddAudioTrack(MP4_CODEC_AAC)
 	codec.SplitAACFrame(aac, func(aac []byte) {
 		samples += 1024
 		pts = samples * 1000 / 44100
@@ -184,8 +184,8 @@ func TestMuxMp4(t *testing.T) {
 		fmt.Println(err)
 		return
 	}
-	vtid := muxer.AddVideoTrack(Mp4CodecH264)
-	atid := muxer.AddAudioTrack(Mp4CodecAac)
+	vtid := muxer.AddVideoTrack(MP4_CODEC_H264)
+	atid := muxer.AddAudioTrack(MP4_CODEC_AAC)
 
 	afile, err := os.OpenFile("r.aac", os.O_CREATE|os.O_RDWR, 0666)
 	if err != nil {
@@ -194,14 +194,14 @@ func TestMuxMp4(t *testing.T) {
 	}
 	defer afile.Close()
 	demuxer := mpeg2.NewTSDemuxer()
-	demuxer.OnFrame = func(cid mpeg2.TsStreamType, frame []byte, pts uint64, dts uint64) {
+	demuxer.OnFrame = func(cid mpeg2.TS_STREAM_TYPE, frame []byte, pts uint64, dts uint64) {
 
-		if cid == mpeg2.TsStreamAac {
+		if cid == mpeg2.TS_STREAM_AAC {
 			err = muxer.Write(atid, frame, uint64(pts), uint64(dts))
 			if err != nil {
 				panic(err)
 			}
-		} else if cid == mpeg2.TsStreamH264 {
+		} else if cid == mpeg2.TS_STREAM_H264 {
 			fmt.Println("pts,dts,len", pts, dts, len(frame))
 			err = muxer.Write(vtid, frame, uint64(pts), uint64(dts))
 			if err != nil {

@@ -24,9 +24,9 @@ func onHttpFlv(w http.ResponseWriter, r *http.Request) {
 	writer := flv.CreateFlvWriter(w)
 	writer.WriteFlvHeader()
 	reader.OnFrame = func(cid codec.CodecID, frame []byte, pts, dts uint32) {
-		if cid == codec.CodecidAudioAac {
+		if cid == codec.CODECID_AUDIO_AAC {
 			writer.WriteAAC(frame, pts, dts)
-		} else if cid == codec.CodecidVideoH264 {
+		} else if cid == codec.CODECID_VIDEO_H264 {
 			fmt.Println(len(frame))
 			if codec.IsH264VCLNaluType(codec.H264NaluType(frame)) {
 				time.Sleep(time.Millisecond * 40)

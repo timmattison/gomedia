@@ -31,7 +31,7 @@ func main() {
 		tsf.Write(pkg)
 	}
 
-	pid := muxer.AddStream(mpeg2.TsStreamAudioMpeg1)
+	pid := muxer.AddStream(mpeg2.TS_STREAM_AUDIO_MPEG1)
 	mp3, _ := ioutil.ReadAll(f)
 	var pts uint64 = 0
 	var dts uint64 = 0

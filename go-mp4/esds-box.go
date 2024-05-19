@@ -59,7 +59,7 @@ func makeBaseDescriptor(tag uint8, size uint32) []byte {
 	return base.Encode()
 }
 
-func makeESDescriptor(trackid uint16, cid Mp4CodecType, vosData []byte) []byte {
+func makeESDescriptor(trackid uint16, cid MP4_CODEC_TYPE, vosData []byte) []byte {
 	dcd := makeDecoderConfigDescriptor(cid, vosData)
 	sld := makeSLDescriptor()
 	esd := makeBaseDescriptor(0x03, uint32(len(dcd)+len(sld)+3))
@@ -70,17 +70,17 @@ func makeESDescriptor(trackid uint16, cid Mp4CodecType, vosData []byte) []byte {
 	return esd
 }
 
-func makeDecoderConfigDescriptor(cid Mp4CodecType, vosData []byte) []byte {
+func makeDecoderConfigDescriptor(cid MP4_CODEC_TYPE, vosData []byte) []byte {
 
-	decoderSpecificInfoLen := uint32(0)
+	decoder_specific_info_len := uint32(0)
 	if len(vosData) > 0 {
-		decoderSpecificInfoLen = uint32(len(vosData)) + 5
+		decoder_specific_info_len = uint32(len(vosData)) + 5
 	}
-	dcd := makeBaseDescriptor(0x04, 13+decoderSpecificInfoLen)
+	dcd := makeBaseDescriptor(0x04, 13+decoder_specific_info_len)
 	dcd[5] = getBojecttypeWithCodecId(cid)
-	if cid == Mp4CodecH264 || cid == Mp4CodecH265 {
+	if cid == MP4_CODEC_H264 || cid == MP4_CODEC_H265 {
 		dcd[6] = 0x11
-	} else if cid == Mp4CodecG711a || cid == Mp4CodecG711u || cid == Mp4CodecAac {
+	} else if cid == MP4_CODEC_G711A || cid == MP4_CODEC_G711U || cid == MP4_CODEC_AAC {
 		dcd[6] = 0x15
 	} else {
 		dcd[6] = (0x38 << 2) | 1
@@ -90,7 +90,7 @@ func makeDecoderConfigDescriptor(cid Mp4CodecType, vosData []byte) []byte {
 	dcd[9] = 0
 	binary.BigEndian.PutUint32(dcd[10:], 88360)
 	binary.BigEndian.PutUint32(dcd[14:], 88360)
-	if decoderSpecificInfoLen > 0 {
+	if decoder_specific_info_len > 0 {
 		dsd := makeDecoderSpecificInfoDescriptor(vosData)
 		copy(dcd[18:], dsd)
 	}
@@ -143,10 +143,10 @@ func decodeESDescriptor(esd []byte, track *mp4track) (vosData []byte) {
 			esd = bs.RemainData()
 		}
 	}
-	if track.cid == Mp4CodecAac && len(vosData) == 0 {
+	if track.cid == MP4_CODEC_AAC && len(vosData) == 0 {
 		panic("no vosdata")
 	}
-	if track.cid == Mp4CodecAac {
+	if track.cid == MP4_CODEC_AAC {
 		track.extra = new(aacExtraData)
 	}
 	return

@@ -53,14 +53,14 @@ func (stss *SyncSampleBox) Decode(r io.Reader) (offset int, err error) {
 		return
 	}
 	offset = 8
-	entryCount := binary.BigEndian.Uint32(tmp[:])
-	stss.entrys = make([]uint32, entryCount)
-	buf := make([]byte, entryCount*4)
+	entry_count := binary.BigEndian.Uint32(tmp[:])
+	stss.entrys = make([]uint32, entry_count)
+	buf := make([]byte, entry_count*4)
 	if _, err = io.ReadFull(r, buf); err != nil {
 		return
 	}
 	idx := 0
-	for i := 0; i < int(entryCount); i++ {
+	for i := 0; i < int(entry_count); i++ {
 		stss.entrys[i] = binary.BigEndian.Uint32(buf[idx:])
 		idx += 4
 	}

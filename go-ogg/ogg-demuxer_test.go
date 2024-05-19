@@ -18,14 +18,14 @@ func TestDemuxer_Input(t *testing.T) {
 		getAudioParam := false
 		getVideoParam := false
 		demuxer.OnFrame = func(streamId uint32, cid codec.CodecID, frame []byte, pts, dts uint64, lost int) {
-			if cid == codec.CodecidAudioOpus {
+			if cid == codec.CODECID_AUDIO_OPUS {
 				param := demuxer.GetAudioParam()
 				if param != nil && !getAudioParam {
 					fmt.Println(param)
 					getAudioParam = true
 				}
 				fmt.Printf("opus frame:sid[%d] frame len:[%d] pts:[%d] dts:[%d] lost:%d\n", streamId, len(frame), pts, dts, lost)
-			} else if cid == codec.CodecidVideoVp8 {
+			} else if cid == codec.CODECID_VIDEO_VP8 {
 				param := demuxer.GetVideoParam()
 				if param != nil && !getVideoParam {
 					fmt.Println(param)

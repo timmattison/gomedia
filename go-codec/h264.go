@@ -12,145 +12,145 @@ import (
 // }
 
 type H264NaluHdr struct {
-	ForbiddenZeroBit uint8
-	NalRefIdc        uint8
-	NalUnitType      uint8
+	Forbidden_zero_bit uint8
+	Nal_ref_idc        uint8
+	Nal_unit_type      uint8
 }
 
 func (hdr *H264NaluHdr) Decode(bs *BitStream) {
-	hdr.ForbiddenZeroBit = bs.GetBit()
-	hdr.NalRefIdc = bs.Uint8(2)
-	hdr.NalUnitType = bs.Uint8(5)
+	hdr.Forbidden_zero_bit = bs.GetBit()
+	hdr.Nal_ref_idc = bs.Uint8(2)
+	hdr.Nal_unit_type = bs.Uint8(5)
 }
 
 type SliceHeader struct {
-	FirstMbInSlice    uint64
-	SliceType         uint64
-	PicParameterSetId uint64
-	FrameNum          uint64
+	First_mb_in_slice    uint64
+	Slice_type           uint64
+	Pic_parameter_set_id uint64
+	Frame_num            uint64
 }
 
 // 调用方根据sps中的log2_max_frame_num_minus4的值来解析Frame_num
 func (sh *SliceHeader) Decode(bs *BitStream) {
-	sh.FirstMbInSlice = bs.ReadUE()
-	sh.SliceType = bs.ReadUE()
-	sh.PicParameterSetId = bs.ReadUE()
+	sh.First_mb_in_slice = bs.ReadUE()
+	sh.Slice_type = bs.ReadUE()
+	sh.Pic_parameter_set_id = bs.ReadUE()
 }
 
 type SPS struct {
-	ProfileIdc                     uint8
-	ConstraintSet0Flag             uint8
-	ConstraintSet1Flag             uint8
-	ConstraintSet2Flag             uint8
-	ConstraintSet3Flag             uint8
-	ConstraintSet4Flag             uint8
-	ConstraintSet5Flag             uint8
-	ReservedZero2bits              uint8
-	LevelIdc                       uint8
-	SeqParameterSetId              uint64
-	ChromaFormatIdc                uint64
-	SeparateColourPlaneFlag        uint8
-	BitDepthLumaMinus8             uint64
-	BitDepthChromaMinus8           uint64
-	Log2MaxFrameNumMinus4          uint64
-	PicOrderCntType                uint64
-	MaxNumRefFrames                uint64
-	GapsInFrameNumValueAllowedFlag uint8
-	PicWidthInMbsMinus1            uint64
-	PicHeightInMapUnitsMinus1      uint64
-	FrameMbsOnlyFlag               uint8
-	Direct8x8InferenceFlag         uint8
-	FrameCroppingFlag              uint8
-	FrameCropLeftOffset            uint64
-	FrameCropRightOffset           uint64
-	FrameCropTopOffset             uint64
-	FrameCropBottomOffset          uint64
-	VuiParametersPresentFlag       uint8
-	VuiParameters                  H264VuiParameters
+	Profile_idc                          uint8
+	Constraint_set0_flag                 uint8
+	Constraint_set1_flag                 uint8
+	Constraint_set2_flag                 uint8
+	Constraint_set3_flag                 uint8
+	Constraint_set4_flag                 uint8
+	Constraint_set5_flag                 uint8
+	Reserved_zero_2bits                  uint8
+	Level_idc                            uint8
+	Seq_parameter_set_id                 uint64
+	Chroma_format_idc                    uint64
+	Separate_colour_plane_flag           uint8
+	Bit_depth_luma_minus8                uint64
+	Bit_depth_chroma_minus8              uint64
+	Log2_max_frame_num_minus4            uint64
+	Pic_order_cnt_type                   uint64
+	Max_num_ref_frames                   uint64
+	Gaps_in_frame_num_value_allowed_flag uint8
+	Pic_width_in_mbs_minus1              uint64
+	Pic_height_in_map_units_minus1       uint64
+	Frame_mbs_only_flag                  uint8
+	Direct_8x8_inference_flag            uint8
+	Frame_cropping_flag                  uint8
+	Frame_crop_left_offset               uint64
+	Frame_crop_right_offset              uint64
+	Frame_crop_top_offset                uint64
+	Frame_crop_bottom_offset             uint64
+	Vui_parameters_present_flag          uint8
+	VuiParameters                        H264VuiParameters
 }
 
 func (sps *SPS) Decode(bs *BitStream) {
-	sps.ProfileIdc = bs.Uint8(8)
-	sps.ConstraintSet0Flag = bs.GetBit()
-	sps.ConstraintSet1Flag = bs.GetBit()
-	sps.ConstraintSet2Flag = bs.GetBit()
-	sps.ConstraintSet3Flag = bs.GetBit()
-	sps.ConstraintSet4Flag = bs.GetBit()
-	sps.ConstraintSet5Flag = bs.GetBit()
-	sps.ReservedZero2bits = bs.Uint8(2)
-	sps.LevelIdc = bs.Uint8(8)
-	sps.SeqParameterSetId = bs.ReadUE()
-	if sps.ProfileIdc == 100 || sps.ProfileIdc == 110 ||
-		sps.ProfileIdc == 122 || sps.ProfileIdc == 244 ||
-		sps.ProfileIdc == 44 || sps.ProfileIdc == 83 ||
-		sps.ProfileIdc == 86 || sps.ProfileIdc == 118 || sps.ProfileIdc == 128 {
-		sps.ChromaFormatIdc = bs.ReadUE()
-		if sps.ChromaFormatIdc == 3 {
-			sps.SeparateColourPlaneFlag = bs.Uint8(1) //separate_colour_plane_flag
+	sps.Profile_idc = bs.Uint8(8)
+	sps.Constraint_set0_flag = bs.GetBit()
+	sps.Constraint_set1_flag = bs.GetBit()
+	sps.Constraint_set2_flag = bs.GetBit()
+	sps.Constraint_set3_flag = bs.GetBit()
+	sps.Constraint_set4_flag = bs.GetBit()
+	sps.Constraint_set5_flag = bs.GetBit()
+	sps.Reserved_zero_2bits = bs.Uint8(2)
+	sps.Level_idc = bs.Uint8(8)
+	sps.Seq_parameter_set_id = bs.ReadUE()
+	if sps.Profile_idc == 100 || sps.Profile_idc == 110 ||
+		sps.Profile_idc == 122 || sps.Profile_idc == 244 ||
+		sps.Profile_idc == 44 || sps.Profile_idc == 83 ||
+		sps.Profile_idc == 86 || sps.Profile_idc == 118 || sps.Profile_idc == 128 {
+		sps.Chroma_format_idc = bs.ReadUE()
+		if sps.Chroma_format_idc == 3 {
+			sps.Separate_colour_plane_flag = bs.Uint8(1) //separate_colour_plane_flag
 		}
-		sps.BitDepthLumaMinus8 = bs.ReadUE()   //bit_depth_luma_minus8
-		sps.BitDepthChromaMinus8 = bs.ReadUE() //bit_depth_chroma_minus8
-		bs.SkipBits(1)                         //qpprime_y_zero_transform_bypass_flag
-		seqScalingMatrixPresentFlag := bs.GetBit()
-		if seqScalingMatrixPresentFlag == 1 {
+		sps.Bit_depth_luma_minus8 = bs.ReadUE()   //bit_depth_luma_minus8
+		sps.Bit_depth_chroma_minus8 = bs.ReadUE() //bit_depth_chroma_minus8
+		bs.SkipBits(1)                            //qpprime_y_zero_transform_bypass_flag
+		seq_scaling_matrix_present_flag := bs.GetBit()
+		if seq_scaling_matrix_present_flag == 1 {
 			//seq_scaling_list_present_flag[i]
-			if sps.ChromaFormatIdc == 3 {
+			if sps.Chroma_format_idc == 3 {
 				bs.SkipBits(12)
 			} else {
 				bs.SkipBits(8)
 			}
 		}
 	}
-	sps.Log2MaxFrameNumMinus4 = bs.ReadUE()
-	sps.PicOrderCntType = bs.ReadUE()
-	if sps.PicOrderCntType == 0 {
+	sps.Log2_max_frame_num_minus4 = bs.ReadUE()
+	sps.Pic_order_cnt_type = bs.ReadUE()
+	if sps.Pic_order_cnt_type == 0 {
 		bs.ReadUE() // log2_max_pic_order_cnt_lsb_minus4
-	} else if sps.PicOrderCntType == 1 {
+	} else if sps.Pic_order_cnt_type == 1 {
 		bs.SkipBits(1) //delta_pic_order_always_zero_flag
 		bs.ReadSE()    //offset_for_non_ref_pic
 		bs.ReadSE()    //offset_for_top_to_bottom_field
-		numRefFramesInPicOrderCntCycle := bs.ReadUE()
-		for i := 0; i < int(numRefFramesInPicOrderCntCycle); i++ {
+		num_ref_frames_in_pic_order_cnt_cycle := bs.ReadUE()
+		for i := 0; i < int(num_ref_frames_in_pic_order_cnt_cycle); i++ {
 			bs.ReadSE() //offset_for_ref_frame
 		}
 	}
-	sps.MaxNumRefFrames = bs.ReadUE()
-	sps.GapsInFrameNumValueAllowedFlag = bs.GetBit()
-	sps.PicWidthInMbsMinus1 = bs.ReadUE()
-	sps.PicHeightInMapUnitsMinus1 = bs.ReadUE()
-	sps.FrameMbsOnlyFlag = bs.GetBit()
-	if sps.FrameMbsOnlyFlag == 0 {
+	sps.Max_num_ref_frames = bs.ReadUE()
+	sps.Gaps_in_frame_num_value_allowed_flag = bs.GetBit()
+	sps.Pic_width_in_mbs_minus1 = bs.ReadUE()
+	sps.Pic_height_in_map_units_minus1 = bs.ReadUE()
+	sps.Frame_mbs_only_flag = bs.GetBit()
+	if sps.Frame_mbs_only_flag == 0 {
 		bs.SkipBits(1) // mb_adaptive_frame_field_flag
 	}
-	sps.Direct8x8InferenceFlag = bs.GetBit()
-	sps.FrameCroppingFlag = bs.GetBit()
-	if sps.FrameCroppingFlag == 1 {
-		sps.FrameCropLeftOffset = bs.ReadUE()   //frame_crop_left_offset
-		sps.FrameCropRightOffset = bs.ReadUE()  //frame_crop_right_offset
-		sps.FrameCropTopOffset = bs.ReadUE()    //frame_crop_top_offset
-		sps.FrameCropBottomOffset = bs.ReadUE() //frame_crop_bottom_offset
+	sps.Direct_8x8_inference_flag = bs.GetBit()
+	sps.Frame_cropping_flag = bs.GetBit()
+	if sps.Frame_cropping_flag == 1 {
+		sps.Frame_crop_left_offset = bs.ReadUE()   //frame_crop_left_offset
+		sps.Frame_crop_right_offset = bs.ReadUE()  //frame_crop_right_offset
+		sps.Frame_crop_top_offset = bs.ReadUE()    //frame_crop_top_offset
+		sps.Frame_crop_bottom_offset = bs.ReadUE() //frame_crop_bottom_offset
 	}
-	sps.VuiParametersPresentFlag = bs.GetBit()
+	sps.Vui_parameters_present_flag = bs.GetBit()
 
-	if sps.VuiParametersPresentFlag == 1 {
+	if sps.Vui_parameters_present_flag == 1 {
 		sps.VuiParameters.Decode(bs)
 	}
 }
 
 type PPS struct {
-	PicParameterSetId                     uint64
-	SeqParameterSetId                     uint64
-	EntropyCodingModeFlag                 uint8
-	BottomFieldPicOrderInFramePresentFlag uint8
-	NumSliceGroupsMinus1                  uint64
+	Pic_parameter_set_id                         uint64
+	Seq_parameter_set_id                         uint64
+	Entropy_coding_mode_flag                     uint8
+	Bottom_field_pic_order_in_frame_present_flag uint8
+	Num_slice_groups_minus1                      uint64
 }
 
 func (pps *PPS) Decode(bs *BitStream) {
-	pps.PicParameterSetId = bs.ReadUE()
-	pps.SeqParameterSetId = bs.ReadUE()
-	pps.EntropyCodingModeFlag = bs.GetBit()
-	pps.BottomFieldPicOrderInFramePresentFlag = bs.GetBit()
-	pps.NumSliceGroupsMinus1 = bs.ReadUE()
+	pps.Pic_parameter_set_id = bs.ReadUE()
+	pps.Seq_parameter_set_id = bs.ReadUE()
+	pps.Entropy_coding_mode_flag = bs.GetBit()
+	pps.Bottom_field_pic_order_in_frame_present_flag = bs.GetBit()
+	pps.Num_slice_groups_minus1 = bs.ReadUE()
 }
 
 type SEIReaderWriter interface {
@@ -176,7 +176,7 @@ func (udu *UserDataUnregistered) Write(bsw *BitStreamWriter) {
 type SEI struct {
 	PayloadType uint16
 	PayloadSize uint16
-	SeiPayload  SEIReaderWriter
+	Sei_payload SEIReaderWriter
 }
 
 func (sei *SEI) Decode(bs *BitStream) {
@@ -189,8 +189,8 @@ func (sei *SEI) Decode(bs *BitStream) {
 	}
 	sei.PayloadSize += uint16(bs.Uint8(8))
 	if sei.PayloadType == 5 {
-		sei.SeiPayload = new(UserDataUnregistered)
-		sei.SeiPayload.Read(sei.PayloadSize, bs)
+		sei.Sei_payload = new(UserDataUnregistered)
+		sei.Sei_payload.Read(sei.PayloadSize, bs)
 	}
 }
 
@@ -207,7 +207,7 @@ func (sei *SEI) Encode(bsw *BitStreamWriter) []byte {
 		payloadSize -= 255
 	}
 	bsw.PutByte(uint8(payloadSize))
-	sei.SeiPayload.Write(bsw)
+	sei.Sei_payload.Write(bsw)
 	return bsw.Bits()
 }
 
@@ -243,12 +243,12 @@ func GetH264Resolution(sps []byte) (width uint32, height uint32) {
 	var s SPS
 	s.Decode(bs)
 
-	widthInSample := (uint32(s.PicWidthInMbsMinus1) + 1) * 16
-	widthCrop := uint32(s.FrameCropLeftOffset)*2 + uint32(s.FrameCropRightOffset)*2
+	widthInSample := (uint32(s.Pic_width_in_mbs_minus1) + 1) * 16
+	widthCrop := uint32(s.Frame_crop_left_offset)*2 + uint32(s.Frame_crop_right_offset)*2
 	width = widthInSample - widthCrop
 
-	heightInSample := (2 - uint32(s.FrameMbsOnlyFlag)) * (uint32(s.PicHeightInMapUnitsMinus1) + 1) * 16
-	heightCrop := uint32(s.FrameCropBottomOffset)*2 - uint32(s.FrameCropTopOffset)*2
+	heightInSample := (2 - uint32(s.Frame_mbs_only_flag)) * (uint32(s.Pic_height_in_map_units_minus1) + 1) * 16
+	heightCrop := uint32(s.Frame_crop_bottom_offset)*2 - uint32(s.Frame_crop_top_offset)*2
 	height = heightInSample - heightCrop
 
 	return
@@ -347,14 +347,14 @@ func CreateH264AVCCExtradata(spss [][]byte, ppss [][]byte) ([]byte, error) {
 	}
 	var h264sps SPS
 	h264sps.Decode(NewBitStream(spss[0][1:]))
-	if h264sps.ProfileIdc == 100 ||
-		h264sps.ProfileIdc == 110 ||
-		h264sps.ProfileIdc == 122 ||
-		h264sps.ProfileIdc == 144 {
+	if h264sps.Profile_idc == 100 ||
+		h264sps.Profile_idc == 110 ||
+		h264sps.Profile_idc == 122 ||
+		h264sps.Profile_idc == 144 {
 		tmp := make([]byte, 4)
-		tmp[0] = 0xFC | uint8(h264sps.ChromaFormatIdc&0x03)
-		tmp[1] = 0xF8 | uint8(h264sps.BitDepthLumaMinus8&0x07)
-		tmp[2] = 0xF8 | uint8(h264sps.BitDepthChromaMinus8&0x07)
+		tmp[0] = 0xFC | uint8(h264sps.Chroma_format_idc&0x03)
+		tmp[1] = 0xF8 | uint8(h264sps.Bit_depth_luma_minus8&0x07)
+		tmp[2] = 0xF8 | uint8(h264sps.Bit_depth_chroma_minus8&0x07)
 		tmp[3] = 0
 		extradata = append(extradata, tmp...)
 	}
@@ -390,7 +390,7 @@ func CovertExtradata(extraData []byte) ([][]byte, [][]byte) {
 
 func ConvertAnnexBToAVCC(annexb []byte) []byte {
 	start, sc := FindStartCode(annexb, 0)
-	if sc == StartCode4 {
+	if sc == START_CODE_4 {
 		binary.BigEndian.PutUint32(annexb[start:], uint32(len(annexb)-4))
 		return annexb
 	} else {

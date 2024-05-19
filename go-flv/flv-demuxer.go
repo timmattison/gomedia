@@ -40,7 +40,7 @@ func (demuxer *AVCTagDemuxer) Decode(data []byte) error {
 	vtag := VideoTag{}
 	vtag.Decode(data[0:5])
 	data = data[5:]
-	if vtag.AVCPacketType == AvcSequenceHeader {
+	if vtag.AVCPacketType == AVC_SEQUENCE_HEADER {
 		tmpspss, tmpppss := codec.CovertExtradata(data)
 		for _, sps := range tmpspss {
 			spsid := codec.GetSPSId(sps)
@@ -63,16 +63,16 @@ func (demuxer *AVCTagDemuxer) Decode(data []byte) error {
 			naluSize := binary.BigEndian.Uint32(tmpdata)
 			codec.CovertAVCCToAnnexB(tmpdata)
 			naluType := codec.H264NaluType(tmpdata)
-			if naluType == codec.H264NalISlice {
+			if naluType == codec.H264_NAL_I_SLICE {
 				idr = true
-			} else if naluType == codec.H264NalSps {
+			} else if naluType == codec.H264_NAL_SPS {
 				hassps = true
-			} else if naluType == codec.H264NalPps {
+			} else if naluType == codec.H264_NAL_PPS {
 				haspps = true
-			} else if naluType < codec.H264NalISlice {
+			} else if naluType < codec.H264_NAL_I_SLICE {
 				sh := codec.SliceHeader{}
 				sh.Decode(codec.NewBitStream(tmpdata[5:]))
-				if sh.SliceType == 2 || sh.SliceType == 7 {
+				if sh.Slice_type == 2 || sh.Slice_type == 7 {
 					idr = true
 				}
 			}
@@ -89,11 +89,11 @@ func (demuxer *AVCTagDemuxer) Decode(data []byte) error {
 			}
 			nalus = append(nalus, data...)
 			if demuxer.onframe != nil {
-				demuxer.onframe(codec.CodecidVideoH264, nalus, int(vtag.CompositionTime))
+				demuxer.onframe(codec.CODECID_VIDEO_H264, nalus, int(vtag.CompositionTime))
 			}
 		} else {
 			if demuxer.onframe != nil && len(data) > 0 {
-				demuxer.onframe(codec.CodecidVideoH264, data, int(vtag.CompositionTime))
+				demuxer.onframe(codec.CODECID_VIDEO_H264, data, int(vtag.CompositionTime))
 			}
 		}
 	}
@@ -143,7 +143,7 @@ func (demuxer *HevcTagDemuxer) Decode(data []byte) error {
 	} else {
 		vtag.Decode(data[0:5])
 		data = data[5:]
-		if vtag.AVCPacketType == AvcSequenceHeader {
+		if vtag.AVCPacketType == AVC_SEQUENCE_HEADER {
 			hvcc := codec.NewHEVCRecordConfiguration()
 			hvcc.Decode(data)
 			demuxer.SpsPpsVps = hvcc.ToNalus()
@@ -167,11 +167,11 @@ func (demuxer *HevcTagDemuxer) decodeNalus(data []byte, CompositionTime int32) e
 		naluType := codec.H265NaluType(tmpdata)
 		if naluType >= 16 && naluType <= 21 {
 			idr = true
-		} else if naluType == codec.H265NalSps {
+		} else if naluType == codec.H265_NAL_SPS {
 			hassps = true
-		} else if naluType == codec.H265NalPps {
+		} else if naluType == codec.H265_NAL_PPS {
 			haspps = true
-		} else if naluType == codec.H265NalVps {
+		} else if naluType == codec.H265_NAL_VPS {
 			hasvps = true
 		}
 		tmpdata = tmpdata[4+naluSize:]
@@ -181,11 +181,11 @@ func (demuxer *HevcTagDemuxer) decodeNalus(data []byte, CompositionTime int32) e
 		var nalus = make([]byte, 0, 2048)
 		nalus = append(demuxer.SpsPpsVps, data...)
 		if demuxer.onframe != nil {
-			demuxer.onframe(codec.CodecidVideoH265, nalus, int(CompositionTime))
+			demuxer.onframe(codec.CODECID_VIDEO_H265, nalus, int(CompositionTime))
 		}
 	} else {
 		if demuxer.onframe != nil {
-			demuxer.onframe(codec.CodecidVideoH265, data, int(CompositionTime))
+			demuxer.onframe(codec.CODECID_VIDEO_H265, data, int(CompositionTime))
 		}
 	}
 
@@ -227,7 +227,7 @@ func (demuxer *AACTagDemuxer) Decode(data []byte) error {
 		return err
 	}
 	data = data[2:]
-	if atag.AACPacketType == AacSequenceHeader {
+	if atag.AACPacketType == AAC_SEQUENCE_HEADER {
 		demuxer.asc = make([]byte, len(data))
 		copy(demuxer.asc, data)
 	} else {
@@ -235,20 +235,20 @@ func (demuxer *AACTagDemuxer) Decode(data []byte) error {
 		if err != nil {
 			return err
 		}
-		adtsFrame := append(adts.Encode(), data...)
+		adts_frame := append(adts.Encode(), data...)
 		if demuxer.onframe != nil {
-			demuxer.onframe(codec.CodecidAudioAac, adtsFrame)
+			demuxer.onframe(codec.CODECID_AUDIO_AAC, adts_frame)
 		}
 	}
 	return nil
 }
 
 type G711Demuxer struct {
-	format  FlvSoundFormat
+	format  FLV_SOUND_FORMAT
 	onframe OnAudioFrameCallBack
 }
 
-func NewG711Demuxer(format FlvSoundFormat) *G711Demuxer {
+func NewG711Demuxer(format FLV_SOUND_FORMAT) *G711Demuxer {
 	return &G711Demuxer{
 		format:  format,
 		onframe: nil,
@@ -278,11 +278,11 @@ func (demuxer *G711Demuxer) Decode(data []byte) error {
 	return nil
 }
 
-func CreateAudioTagDemuxer(formats FlvSoundFormat) (demuxer AudioTagDemuxer) {
+func CreateAudioTagDemuxer(formats FLV_SOUND_FORMAT) (demuxer AudioTagDemuxer) {
 	switch formats {
-	case FlvG711a, FlvG711u, FlvMp3:
+	case FLV_G711A, FLV_G711U, FLV_MP3:
 		demuxer = NewG711Demuxer(formats)
-	case FlvAac:
+	case FLV_AAC:
 		demuxer = NewAACTagDemuxer()
 	default:
 		panic("unsupport audio codec id")
@@ -290,11 +290,11 @@ func CreateAudioTagDemuxer(formats FlvSoundFormat) (demuxer AudioTagDemuxer) {
 	return
 }
 
-func CreateFlvVideoTagHandle(cid FlvVideoCodecId) (demuxer VideoTagDemuxer) {
+func CreateFlvVideoTagHandle(cid FLV_VIDEO_CODEC_ID) (demuxer VideoTagDemuxer) {
 	switch cid {
-	case FlvAvc:
+	case FLV_AVC:
 		demuxer = NewAVCTagDemuxer()
-	case FlvHevc:
+	case FLV_HEVC:
 		demuxer = NewHevcTagDemuxer()
 	default:
 		panic("unsupport audio codec id")

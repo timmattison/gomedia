@@ -57,8 +57,8 @@ func main() {
 
 	foundAudio := false
 	demuxer := mpeg2.NewTSDemuxer()
-	demuxer.OnFrame = func(cid mpeg2.TsStreamType, frame []byte, pts uint64, dts uint64) {
-		if cid == mpeg2.TsStreamH264 {
+	demuxer.OnFrame = func(cid mpeg2.TS_STREAM_TYPE, frame []byte, pts uint64, dts uint64) {
+		if cid == mpeg2.TS_STREAM_H264 {
 			codec.SplitFrameWithStartCode(frame, func(nalu []byte) bool {
 				naluType := codec.H264NaluType(nalu)
 				fmt.Println("naluType", naluType, "pts:", pts, "dts:", dts, "size:", len(nalu))
@@ -68,7 +68,7 @@ func main() {
 			if err != nil || n != len(frame) {
 				fmt.Println(err)
 			}
-		} else if cid == mpeg2.TsStreamH265 {
+		} else if cid == mpeg2.TS_STREAM_H265 {
 			codec.SplitFrameWithStartCode(frame, func(nalu []byte) bool {
 				naluType := codec.H265NaluType(nalu)
 				fmt.Println("naluType", naluType, "pts:", pts, "dts:", dts, "size:", len(nalu))
@@ -79,7 +79,7 @@ func main() {
 			if err != nil || n != len(frame) {
 				fmt.Println(err)
 			}
-		} else if cid == mpeg2.TsStreamAac {
+		} else if cid == mpeg2.TS_STREAM_AAC {
 			if !foundAudio {
 				foundAudio = true
 			}
@@ -87,7 +87,7 @@ func main() {
 			if err != nil || n != len(frame) {
 				fmt.Println(err)
 			}
-		} else if cid == mpeg2.TsStreamAudioMpeg1 || cid == mpeg2.TsStreamAudioMpeg2 {
+		} else if cid == mpeg2.TS_STREAM_AUDIO_MPEG1 || cid == mpeg2.TS_STREAM_AUDIO_MPEG2 {
 			if !foundAudio {
 				foundAudio = true
 			}

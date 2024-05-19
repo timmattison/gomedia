@@ -77,11 +77,11 @@ func (cli *RtspUdpPlaySession) HandleDescribe(client *rtsp.RtspClient, res rtsp.
 			continue
 		}
 		fmt.Println("Got ", k, " track")
-		transport := rtsp.NewRtspTransport(rtsp.WithEnableUdp(), rtsp.WithClientUdpPort(cli.udpport, cli.udpport+1), rtsp.WithMode(rtsp.ModePlay))
+		transport := rtsp.NewRtspTransport(rtsp.WithEnableUdp(), rtsp.WithClientUdpPort(cli.udpport, cli.udpport+1), rtsp.WithMode(rtsp.MODE_PLAY))
 		t.SetTransport(transport)
 		t.OpenTrack()
 		cli.udpport += 2
-		if t.Codec.Cid == rtsp.RtspCodecH264 {
+		if t.Codec.Cid == rtsp.RTSP_CODEC_H264 {
 			if cli.videoFile == nil {
 				cli.videoFile, _ = os.OpenFile("video.h264", os.O_CREATE|os.O_RDWR, 0666)
 			}
@@ -89,7 +89,7 @@ func (cli *RtspUdpPlaySession) HandleDescribe(client *rtsp.RtspClient, res rtsp.
 				fmt.Println("Got H264 Frame size:", len(sample.Sample), " timestamp:", sample.Timestamp)
 				cli.videoFile.Write(sample.Sample)
 			})
-		} else if t.Codec.Cid == rtsp.RtspCodecAac {
+		} else if t.Codec.Cid == rtsp.RTSP_CODEC_AAC {
 			if cli.audioFile == nil {
 				cli.audioFile, _ = os.OpenFile("audio.aac", os.O_CREATE|os.O_RDWR, 0666)
 			}
@@ -97,7 +97,7 @@ func (cli *RtspUdpPlaySession) HandleDescribe(client *rtsp.RtspClient, res rtsp.
 				fmt.Println("Got AAC Frame size:", len(sample.Sample), " timestamp:", sample.Timestamp)
 				cli.audioFile.Write(sample.Sample)
 			})
-		} else if t.Codec.Cid == rtsp.RtspCodecTs {
+		} else if t.Codec.Cid == rtsp.RTSP_CODEC_TS {
 			if cli.tsFile == nil {
 				cli.tsFile, _ = os.OpenFile("mp2t.ts", os.O_CREATE|os.O_RDWR, 0666)
 			}
@@ -111,11 +111,11 @@ func (cli *RtspUdpPlaySession) HandleDescribe(client *rtsp.RtspClient, res rtsp.
 
 func (cli *RtspUdpPlaySession) HandleSetup(client *rtsp.RtspClient, res rtsp.RtspResponse, track *rtsp.RtspTrack, tracks map[string]*rtsp.RtspTrack, sessionId string, timeout int) error {
 	fmt.Println("HandleSetup sessionid:", sessionId, " timeout:", timeout)
-	if res.StatusCode == rtsp.UnsupportedTransport {
+	if res.StatusCode == rtsp.Unsupported_Transport {
 		return errors.New("unsupport udp transport")
 	}
 	ip, _, _ := net.SplitHostPort(cli.c.RemoteAddr().String())
-	cli.sesss[track.TrackName] = makeUdpPairSession(track.GetTransport().ClientPorts[0], track.GetTransport().ClientPorts[1], ip, track.GetTransport().ServerPorts[0], track.GetTransport().ServerPorts[1])
+	cli.sesss[track.TrackName] = makeUdpPairSession(track.GetTransport().Client_ports[0], track.GetTransport().Client_ports[1], ip, track.GetTransport().Server_ports[0], track.GetTransport().Server_ports[1])
 	track.OnPacket(func(b []byte, isRtcp bool) (err error) {
 		if isRtcp {
 			_, err = cli.sesss[track.TrackName].rtcpSess.Write(b)

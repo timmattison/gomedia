@@ -113,7 +113,7 @@ func onM3U8(w http.ResponseWriter, r *http.Request) {
 	vid := 0
 	var endTs uint64 = 0
 	for _, info := range headInfo {
-		if info.Cid == mp4.Mp4CodecH264 || info.Cid == mp4.Mp4CodecH265 {
+		if info.Cid == mp4.MP4_CODEC_H264 || info.Cid == mp4.MP4_CODEC_H265 {
 			vid = info.TrackId
 			endTs = info.EndDts
 		}
@@ -161,8 +161,8 @@ func onTs(w http.ResponseWriter, r *http.Request) {
 		buf.Write(pkg)
 	}
 
-	vid := muxer.AddStream(mpeg2.TsStreamH264)
-	aid := muxer.AddStream(mpeg2.TsStreamAac)
+	vid := muxer.AddStream(mpeg2.TS_STREAM_H264)
+	aid := muxer.AddStream(mpeg2.TS_STREAM_AAC)
 	first := true
 	for {
 		pkg, err := demuxer.ReadPacket()
@@ -170,7 +170,7 @@ func onTs(w http.ResponseWriter, r *http.Request) {
 			w.Write([]byte(err.Error()))
 			return
 		}
-		if first && pkg.Cid == mp4.Mp4CodecH264 {
+		if first && pkg.Cid == mp4.MP4_CODEC_H264 {
 			fmt.Println("Go pkg:", pkg.Pts, " ", pkg.Dts)
 			first = false
 		}
@@ -178,9 +178,9 @@ func onTs(w http.ResponseWriter, r *http.Request) {
 		if pkg.Dts >= uint64(end) {
 			break
 		}
-		if pkg.Cid == mp4.Mp4CodecH264 {
+		if pkg.Cid == mp4.MP4_CODEC_H264 {
 			muxer.Write(vid, pkg.Data, pkg.Pts, pkg.Dts)
-		} else if pkg.Cid == mp4.Mp4CodecAac {
+		} else if pkg.Cid == mp4.MP4_CODEC_AAC {
 			muxer.Write(aid, pkg.Data, pkg.Pts, pkg.Dts)
 		}
 	}

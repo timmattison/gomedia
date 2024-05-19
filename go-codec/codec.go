@@ -3,86 +3,86 @@ package codec
 type CodecID int
 
 const (
-	CodecidVideoH264 CodecID = iota
-	CodecidVideoH265
-	CodecidVideoVp8
+    CODECID_VIDEO_H264 CodecID = iota
+    CODECID_VIDEO_H265
+    CODECID_VIDEO_VP8
 
-	CodecidAudioAac CodecID = iota + 98
-	CodecidAudioG711a
-	CodecidAudioG711u
-	CodecidAudioOpus
-	CodecidAudioMp3
+    CODECID_AUDIO_AAC CodecID = iota + 98
+    CODECID_AUDIO_G711A
+    CODECID_AUDIO_G711U
+    CODECID_AUDIO_OPUS
+    CODECID_AUDIO_MP3
 
-	CodecidUnrecognized = 999
+    CODECID_UNRECOGNIZED = 999
 )
 
-type H264NalType int
+type H264_NAL_TYPE int
 
 const (
-	H264NalReserved H264NalType = iota
-	H264NalPSlice
-	H264NalSliceA
-	H264NalSliceB
-	H264NalSliceC
-	H264NalISlice
-	H264NalSei
-	H264NalSps
-	H264NalPps
-	H264NalAud
+    H264_NAL_RESERVED H264_NAL_TYPE = iota
+    H264_NAL_P_SLICE
+    H264_NAL_SLICE_A
+    H264_NAL_SLICE_B
+    H264_NAL_SLICE_C
+    H264_NAL_I_SLICE
+    H264_NAL_SEI
+    H264_NAL_SPS
+    H264_NAL_PPS
+    H264_NAL_AUD
 )
 
-type H265NalType int
+type H265_NAL_TYPE int
 
 const (
-	H265NalSliceTrailN H265NalType = iota
-	H265NalLiceTrailR
-	H265NalSliceTsaN
-	H265NalSliceTsaR
-	H265NalSliceStsaN
-	H265NalSliceStsaR
-	H265NalSliceRadlN
-	H265NalSliceRadlR
-	H265NalSliceRaslN
-	H265NalSliceRaslR
+    H265_NAL_Slice_TRAIL_N H265_NAL_TYPE = iota
+    H265_NAL_LICE_TRAIL_R
+    H265_NAL_SLICE_TSA_N
+    H265_NAL_SLICE_TSA_R
+    H265_NAL_SLICE_STSA_N
+    H265_NAL_SLICE_STSA_R
+    H265_NAL_SLICE_RADL_N
+    H265_NAL_SLICE_RADL_R
+    H265_NAL_SLICE_RASL_N
+    H265_NAL_SLICE_RASL_R
 
-	//IDR
-	H265NalSliceBlaWLp H265NalType = iota + 6
-	H265NalSliceBlaWRadl
-	H265NalSliceBlaNLp
-	H265NalSliceIdrWRadl
-	H265NalSliceIdrNLp
-	H265NalSliceCra
+    //IDR
+    H265_NAL_SLICE_BLA_W_LP H265_NAL_TYPE = iota + 6
+    H265_NAL_SLICE_BLA_W_RADL
+    H265_NAL_SLICE_BLA_N_LP
+    H265_NAL_SLICE_IDR_W_RADL
+    H265_NAL_SLICE_IDR_N_LP
+    H265_NAL_SLICE_CRA
 
-	//vps pps sps
-	H265NalVps H265NalType = iota + 16
-	H265NalSps
-	H265NalPps
-	H265NalAud
+    //vps pps sps
+    H265_NAL_VPS H265_NAL_TYPE = iota + 16
+    H265_NAL_SPS
+    H265_NAL_PPS
+    H265_NAL_AUD
 
-	//SEI
-	H265NalSei H265NalType = iota + 19
-	H265NalSeiSuffix
+    //SEI
+    H265_NAL_SEI H265_NAL_TYPE = iota + 19
+    H265_NAL_SEI_SUFFIX
 )
 
 func CodecString(codecid CodecID) string {
-	switch codecid {
-	case CodecidVideoH264:
-		return "H264"
-	case CodecidVideoH265:
-		return "H265"
-	case CodecidVideoVp8:
-		return "VP8"
-	case CodecidAudioAac:
-		return "AAC"
-	case CodecidAudioG711a:
-		return "G711A"
-	case CodecidAudioG711u:
-		return "G711U"
-	case CodecidAudioOpus:
-		return "OPUS"
-	case CodecidAudioMp3:
-		return "MP3"
-	default:
-		return "UNRECOGNIZED"
-	}
+    switch codecid {
+    case CODECID_VIDEO_H264:
+        return "H264"
+    case CODECID_VIDEO_H265:
+        return "H265"
+    case CODECID_VIDEO_VP8:
+        return "VP8"
+    case CODECID_AUDIO_AAC:
+        return "AAC"
+    case CODECID_AUDIO_G711A:
+        return "G711A"
+    case CODECID_AUDIO_G711U:
+        return "G711U"
+    case CODECID_AUDIO_OPUS:
+        return "OPUS"
+    case CODECID_AUDIO_MP3:
+        return "MP3"
+    default:
+        return "UNRECOGNIZED"
+   }
 }

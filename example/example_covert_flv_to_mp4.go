@@ -33,18 +33,18 @@ func main() {
 	fr := flv.CreateFlvReader()
 
 	fr.OnFrame = func(ci codec.CodecID, b []byte, pts, dts uint32) {
-		if ci == codec.CodecidAudioAac {
+		if ci == codec.CODECID_AUDIO_AAC {
 			if !hasAudio {
-				atid = muxer.AddAudioTrack(mp4.Mp4CodecAac)
+				atid = muxer.AddAudioTrack(mp4.MP4_CODEC_AAC)
 				hasAudio = true
 			}
 			err := muxer.Write(atid, b, uint64(pts), uint64(dts))
 			if err != nil {
 				fmt.Println(err)
 			}
-		} else if ci == codec.CodecidVideoH264 {
+		} else if ci == codec.CODECID_VIDEO_H264 {
 			if !hasVideo {
-				vtid = muxer.AddVideoTrack(mp4.Mp4CodecH264)
+				vtid = muxer.AddVideoTrack(mp4.MP4_CODEC_H264)
 				hasVideo = true
 			}
 			err := muxer.Write(vtid, b, uint64(pts), uint64(dts))

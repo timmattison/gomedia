@@ -4,42 +4,42 @@ import (
 	"github.com/timmattison/gomedia/go-codec"
 )
 
-type Mp4CodecType int
+type MP4_CODEC_TYPE int
 
 const (
-	Mp4CodecH264 Mp4CodecType = iota + 1
-	Mp4CodecH265
+	MP4_CODEC_H264 MP4_CODEC_TYPE = iota + 1
+	MP4_CODEC_H265
 
-	Mp4CodecAac Mp4CodecType = iota + 100
-	Mp4CodecG711a
-	Mp4CodecG711u
-	Mp4CodecMp2
-	Mp4CodecMp3
-	Mp4CodecOpus
+	MP4_CODEC_AAC MP4_CODEC_TYPE = iota + 100
+	MP4_CODEC_G711A
+	MP4_CODEC_G711U
+	MP4_CODEC_MP2
+	MP4_CODEC_MP3
+	MP4_CODEC_OPUS
 )
 
-func isVideo(cid Mp4CodecType) bool {
-	return cid == Mp4CodecH264 || cid == Mp4CodecH265
+func isVideo(cid MP4_CODEC_TYPE) bool {
+	return cid == MP4_CODEC_H264 || cid == MP4_CODEC_H265
 }
 
-func isAudio(cid Mp4CodecType) bool {
-	return cid == Mp4CodecAac || cid == Mp4CodecG711a || cid == Mp4CodecG711u ||
-		cid == Mp4CodecMp2 || cid == Mp4CodecMp3 || cid == Mp4CodecOpus
+func isAudio(cid MP4_CODEC_TYPE) bool {
+	return cid == MP4_CODEC_AAC || cid == MP4_CODEC_G711A || cid == MP4_CODEC_G711U ||
+		cid == MP4_CODEC_MP2 || cid == MP4_CODEC_MP3 || cid == MP4_CODEC_OPUS
 }
 
-func getCodecNameWithCodecId(cid Mp4CodecType) [4]byte {
+func getCodecNameWithCodecId(cid MP4_CODEC_TYPE) [4]byte {
 	switch cid {
-	case Mp4CodecH264:
+	case MP4_CODEC_H264:
 		return [4]byte{'a', 'v', 'c', '1'}
-	case Mp4CodecH265:
+	case MP4_CODEC_H265:
 		return [4]byte{'h', 'v', 'c', '1'}
-	case Mp4CodecAac, Mp4CodecMp2, Mp4CodecMp3:
+	case MP4_CODEC_AAC, MP4_CODEC_MP2, MP4_CODEC_MP3:
 		return [4]byte{'m', 'p', '4', 'a'}
-	case Mp4CodecG711a:
+	case MP4_CODEC_G711A:
 		return [4]byte{'a', 'l', 'a', 'w'}
-	case Mp4CodecG711u:
+	case MP4_CODEC_G711U:
 		return [4]byte{'u', 'l', 'a', 'w'}
-	case Mp4CodecOpus:
+	case MP4_CODEC_OPUS:
 		return [4]byte{'o', 'p', 'u', 's'}
 	default:
 		panic("unsupport codec id")
@@ -47,54 +47,54 @@ func getCodecNameWithCodecId(cid Mp4CodecType) [4]byte {
 }
 
 // ffmpeg isom.c const AVCodecTag ff_mp4_obj_type[]
-func getBojecttypeWithCodecId(cid Mp4CodecType) uint8 {
+func getBojecttypeWithCodecId(cid MP4_CODEC_TYPE) uint8 {
 	switch cid {
-	case Mp4CodecH264:
+	case MP4_CODEC_H264:
 		return 0x21
-	case Mp4CodecH265:
+	case MP4_CODEC_H265:
 		return 0x23
-	case Mp4CodecAac:
+	case MP4_CODEC_AAC:
 		return 0x40
-	case Mp4CodecG711a:
+	case MP4_CODEC_G711A:
 		return 0xfd
-	case Mp4CodecG711u:
+	case MP4_CODEC_G711U:
 		return 0xfe
-	case Mp4CodecMp2:
+	case MP4_CODEC_MP2:
 		return 0x6b
-	case Mp4CodecMp3:
+	case MP4_CODEC_MP3:
 		return 0x69
 	default:
 		panic("unsupport codec id")
 	}
 }
 
-func getCodecIdByObjectType(objType uint8) Mp4CodecType {
+func getCodecIdByObjectType(objType uint8) MP4_CODEC_TYPE {
 	switch objType {
 	case 0x21:
-		return Mp4CodecH264
+		return MP4_CODEC_H264
 	case 0x23:
-		return Mp4CodecH265
+		return MP4_CODEC_H265
 	case 0x40:
-		return Mp4CodecAac
+		return MP4_CODEC_AAC
 	case 0xfd:
-		return Mp4CodecG711a
+		return MP4_CODEC_G711A
 	case 0xfe:
-		return Mp4CodecG711u
+		return MP4_CODEC_G711U
 	case 0x6b, 0x69:
-		return Mp4CodecMp3
+		return MP4_CODEC_MP3
 	default:
 		panic("unsupport object type")
 	}
 }
 
 func isH264NewAccessUnit(nalu []byte) bool {
-	naluType := codec.H264NaluType(nalu)
-	switch naluType {
-	case codec.H264NalAud, codec.H264NalSps,
-		codec.H264NalPps, codec.H264NalSei:
+	nalu_type := codec.H264NaluType(nalu)
+	switch nalu_type {
+	case codec.H264_NAL_AUD, codec.H264_NAL_SPS,
+		codec.H264_NAL_PPS, codec.H264_NAL_SEI:
 		return true
-	case codec.H264NalISlice, codec.H264NalPSlice,
-		codec.H264NalSliceA, codec.H264NalSliceB, codec.H264NalSliceC:
+	case codec.H264_NAL_I_SLICE, codec.H264_NAL_P_SLICE,
+		codec.H264_NAL_SLICE_A, codec.H264_NAL_SLICE_B, codec.H264_NAL_SLICE_C:
 		firstMbInSlice := codec.GetH264FirstMbInSlice(nalu)
 		if firstMbInSlice == 0 {
 			return true
@@ -104,19 +104,19 @@ func isH264NewAccessUnit(nalu []byte) bool {
 }
 
 func isH265NewAccessUnit(nalu []byte) bool {
-	naluType := codec.H265NaluType(nalu)
-	switch naluType {
-	case codec.H265NalAud, codec.H265NalSps,
-		codec.H265NalPps, codec.H265NalSei, codec.H265NalVps:
+	nalu_type := codec.H265NaluType(nalu)
+	switch nalu_type {
+	case codec.H265_NAL_AUD, codec.H265_NAL_SPS,
+		codec.H265_NAL_PPS, codec.H265_NAL_SEI, codec.H265_NAL_VPS:
 		return true
-	case codec.H265NalSliceTrailN, codec.H265NalLiceTrailR,
-		codec.H265NalSliceTsaN, codec.H265NalSliceTsaR,
-		codec.H265NalSliceStsaN, codec.H265NalSliceStsaR,
-		codec.H265NalSliceRadlN, codec.H265NalSliceRadlR,
-		codec.H265NalSliceRaslN, codec.H265NalSliceRaslR,
-		codec.H265NalSliceBlaWLp, codec.H265NalSliceBlaWRadl,
-		codec.H265NalSliceBlaNLp, codec.H265NalSliceIdrWRadl,
-		codec.H265NalSliceIdrNLp, codec.H265NalSliceCra:
+	case codec.H265_NAL_Slice_TRAIL_N, codec.H265_NAL_LICE_TRAIL_R,
+		codec.H265_NAL_SLICE_TSA_N, codec.H265_NAL_SLICE_TSA_R,
+		codec.H265_NAL_SLICE_STSA_N, codec.H265_NAL_SLICE_STSA_R,
+		codec.H265_NAL_SLICE_RADL_N, codec.H265_NAL_SLICE_RADL_R,
+		codec.H265_NAL_SLICE_RASL_N, codec.H265_NAL_SLICE_RASL_R,
+		codec.H265_NAL_SLICE_BLA_W_LP, codec.H265_NAL_SLICE_BLA_W_RADL,
+		codec.H265_NAL_SLICE_BLA_N_LP, codec.H265_NAL_SLICE_IDR_W_RADL,
+		codec.H265_NAL_SLICE_IDR_N_LP, codec.H265_NAL_SLICE_CRA:
 		firstMbInSlice := codec.GetH265FirstMbInSlice(nalu)
 		if firstMbInSlice == 0 {
 			return true

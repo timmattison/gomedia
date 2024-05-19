@@ -1,5 +1,4 @@
 package mp4
-
 import "io"
 
 func decodeFrmaBox(demuxer *MovDemuxer, size uint32) (err error) {
@@ -11,20 +10,20 @@ func decodeFrmaBox(demuxer *MovDemuxer, size uint32) (err error) {
 	copy(format[:], buf)
 
 	track := demuxer.tracks[len(demuxer.tracks)-1]
-	switch movTag(format) {
-	case movTag([4]byte{'a', 'v', 'c', '1'}):
-		track.cid = Mp4CodecH264
+	switch mov_tag(format) {
+	case mov_tag([4]byte{'a', 'v', 'c', '1'}):
+	 	track.cid = MP4_CODEC_H264
 		if track.extra == nil {
 			track.extra = new(h264ExtraData)
 		}
 		return
-	case movTag([4]byte{'m', 'p', '4', 'a'}):
-		track.cid = Mp4CodecAac
+	case mov_tag([4]byte{'m', 'p', '4', 'a'}):
+		track.cid = MP4_CODEC_AAC
 		if track.extra == nil {
 			track.extra = new(aacExtraData)
 		}
 		return
 	}
 
-	return
+    return
 }

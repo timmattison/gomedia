@@ -36,11 +36,11 @@ func main() {
 			break
 		}
 		fmt.Printf("track:%d,cid:%+v,pts:%d dts:%d\n", pkg.TrackId, pkg.Cid, pkg.Pts, pkg.Dts)
-		if pkg.Cid == mp4.Mp4CodecH264 {
+		if pkg.Cid == mp4.MP4_CODEC_H264 {
 			fw.WriteH264(pkg.Data, uint32(pkg.Pts), uint32(pkg.Dts))
-		} else if pkg.Cid == mp4.Mp4CodecAac {
+		} else if pkg.Cid == mp4.MP4_CODEC_AAC {
 			fw.WriteAAC(pkg.Data, uint32(pkg.Pts), uint32(pkg.Dts))
-		} else if pkg.Cid == mp4.Mp4CodecH265 {
+		} else if pkg.Cid == mp4.MP4_CODEC_H265 {
 			fw.WriteH265(pkg.Data, uint32(pkg.Pts), uint32(pkg.Dts))
 		}
 	}

@@ -158,10 +158,10 @@ func (chk *chunkPacket) encode() []byte {
 type ParserState int
 
 const (
-	SBasicHead ParserState = iota
-	SMsgHead
-	SExtendTs
-	SPayload
+	S_BASIC_HEAD ParserState = iota
+	S_MSG_HEAD
+	S_EXTEND_TS
+	S_PAYLOAD
 )
 
 type chunkStreamWriter struct {
@@ -174,7 +174,7 @@ type chunkStreamWriter struct {
 func newChunkStreamWriter(csid uint32) *chunkStreamWriter {
 	return &chunkStreamWriter{
 		csid:      csid,
-		chunkSize: FixChunkSize,
+		chunkSize: FIX_CHUNK_SIZE,
 	}
 }
 
@@ -244,7 +244,7 @@ func newChunkStream() *chunkStream {
 		timestamp: 0,
 		pkt:       &chunkPacket{},
 		hdr:       make([]byte, 0, 14),
-		message:   make([]byte, 0, FixChunkSize),
+		message:   make([]byte, 0, FIX_CHUNK_SIZE),
 	}
 }
 
@@ -260,7 +260,7 @@ func newChunkStreamReader(chunkSize uint32) *chunkStreamReader {
 	return &chunkStreamReader{
 		current:   &chunkStream{},
 		cks:       make(map[uint32]*chunkStream),
-		state:     SBasicHead,
+		state:     S_BASIC_HEAD,
 		chunkSize: chunkSize,
 		headCache: make([]byte, 0, 14),
 	}
@@ -269,7 +269,7 @@ func newChunkStreamReader(chunkSize uint32) *chunkStreamReader {
 func (reader *chunkStreamReader) readRtmpMessage(data []byte, onMsg func(*rtmpMessage) error) error {
 	for len(data) > 0 {
 		switch reader.state {
-		case SBasicHead:
+		case S_BASIC_HEAD:
 			length := 0
 			if len(reader.headCache) > 0 {
 				length = clacBasicHeadLen(reader.headCache)
@@ -295,18 +295,18 @@ func (reader *chunkStreamReader) readRtmpMessage(data []byte, onMsg func(*rtmpMe
 			}
 			reader.current.pkt.basic = basic
 			reader.headCache = reader.headCache[:0]
-			reader.state = SMsgHead
+			reader.state = S_MSG_HEAD
 			if len(reader.current.message) == 0 {
 				reader.current.firstChunkFmt = reader.current.pkt.basic.fmt
 			}
 			if basic.fmt == 3 {
 				if reader.current.pkt.msgHdr.timestamp == 0x00ffffff {
-					reader.state = SExtendTs
+					reader.state = S_EXTEND_TS
 				} else {
-					reader.state = SPayload
+					reader.state = S_PAYLOAD
 				}
 			}
-		case SMsgHead:
+		case S_MSG_HEAD:
 			length := int(ChunkType[reader.current.pkt.basic.fmt])
 			if len(data)+len(reader.current.hdr) < length {
 				reader.current.hdr = append(reader.current.hdr, data...)
@@ -318,12 +318,12 @@ func (reader *chunkStreamReader) readRtmpMessage(data []byte, onMsg func(*rtmpMe
 			}
 			reader.current.pkt.msgHdr.decode(reader.current.pkt.basic.fmt, reader.current.hdr)
 			if reader.current.pkt.msgHdr.timestamp == 0x00ffffff {
-				reader.state = SExtendTs
+				reader.state = S_EXTEND_TS
 			} else {
-				reader.state = SPayload
+				reader.state = S_PAYLOAD
 			}
 			reader.current.hdr = reader.current.hdr[:0]
-		case SExtendTs:
+		case S_EXTEND_TS:
 			if len(data)+len(reader.current.hdr) < 4 {
 				reader.current.hdr = append(reader.current.hdr, data...)
 				return nil
@@ -334,8 +334,8 @@ func (reader *chunkStreamReader) readRtmpMessage(data []byte, onMsg func(*rtmpMe
 			}
 			reader.current.pkt.msgHdr.timestamp = binary.BigEndian.Uint32(reader.current.hdr)
 			reader.current.hdr = reader.current.hdr[:0]
-			reader.state = SPayload
-		case SPayload:
+			reader.state = S_PAYLOAD
+		case S_PAYLOAD:
 			needLen := 0
 			if int(reader.current.pkt.msgHdr.msgLen)-len(reader.current.message) < int(reader.chunkSize) {
 				needLen = int(reader.current.pkt.msgHdr.msgLen) - len(reader.current.message)
@@ -349,7 +349,7 @@ func (reader *chunkStreamReader) readRtmpMessage(data []byte, onMsg func(*rtmpMe
 					reader.current.message = append(reader.current.message, data[:addlen]...)
 					data = data[addlen:]
 					reader.current.pkt.data = reader.current.pkt.data[:0]
-					reader.state = SBasicHead
+					reader.state = S_BASIC_HEAD
 				} else {
 					reader.current.pkt.data = append(reader.current.pkt.data, data...)
 					data = data[:0]

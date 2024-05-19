@@ -24,7 +24,7 @@ type Bye struct {
 
 func NewBye() *Bye {
 	return &Bye{
-		Comm: Comm{PT: RtcpBye},
+		Comm: Comm{PT: RTCP_BYE},
 	}
 }
 

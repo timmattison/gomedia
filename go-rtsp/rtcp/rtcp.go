@@ -1,9 +1,9 @@
 package rtcp
 
 const (
-	RtcpSr   = 200
-	RtcpRr   = 201
-	RtcpSdes = 202
-	RtcpBye  = 203
-	RtcpApp  = 204
+    RTCP_SR   = 200
+    RTCP_RR   = 201
+    RTCP_SDES = 202
+    RTCP_BYE  = 203
+    RTCP_APP  = 204
 )

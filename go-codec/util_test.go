@@ -45,28 +45,28 @@ func TestFindStartCode(t *testing.T) {
 		name  string
 		args  args
 		want  int
-		want1 StartCodeType
+		want1 START_CODE_TYPE
 	}{
 		{name: "test1", args: args{
 			nalu:   []byte{0x00, 0x00, 0x00, 0x01, 0x67},
 			offset: 0,
-		}, want: 0, want1: StartCode4},
+		}, want: 0, want1: START_CODE_4},
 		{name: "test2", args: args{
 			nalu:   []byte{0x00, 0x00, 0x01, 0x67},
 			offset: 0,
-		}, want: 0, want1: StartCode3},
+		}, want: 0, want1: START_CODE_3},
 		{name: "test3", args: args{
 			nalu:   []byte{0x99, 0x00, 0x00, 0x01, 0x67},
 			offset: 0,
-		}, want: 1, want1: StartCode3},
+		}, want: 1, want1: START_CODE_3},
 		{name: "test4", args: args{
 			nalu:   []byte{0x99, 0x00, 0x00, 0x00, 0x01, 0x67},
 			offset: 0,
-		}, want: 1, want1: StartCode4},
+		}, want: 1, want1: START_CODE_4},
 		{name: "test5", args: args{
 			nalu:   []byte{0x99, 0x88, 0x77, 0x00, 0x01, 0x67},
 			offset: 0,
-		}, want: -1, want1: StartCode3},
+		}, want: -1, want1: START_CODE_3},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

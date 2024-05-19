@@ -79,7 +79,7 @@ func (server *RtspPlaySeverSession) HandleDescribe(svr *rtsp.RtspServer, req rts
 	fmt.Println("handle describe")
 	fmt.Println("add video track")
 	//rfc1890 MP2T payload type is 33
-	videoTrack := rtsp.NewVideoTrack(rtsp.RtspCodec{Cid: rtsp.RtspCodecTs, PayloadType: 33, SampleRate: 90000})
+	videoTrack := rtsp.NewVideoTrack(rtsp.RtspCodec{Cid: rtsp.RTSP_CODEC_TS, PayloadType: 33, SampleRate: 90000})
 	svr.AddTrack(videoTrack)
 	server.tracks["video"] = videoTrack
 	server.senders["video"] = &RtspUdpSender{rtpPort: server.startUdpPort, rtcpPort: server.startUdpPort + 1}
@@ -89,10 +89,10 @@ func (server *RtspPlaySeverSession) HandleDescribe(svr *rtsp.RtspServer, req rts
 func (server *RtspPlaySeverSession) HandleSetup(svr *rtsp.RtspServer, req rtsp.RtspRequest, res *rtsp.RtspResponse, transport *rtsp.RtspTransport, track *rtsp.RtspTrack) {
 	fmt.Println("handle setup", *transport)
 	if transport.Proto == rtsp.UDP {
-		transport.ServerPorts[0] = uint16(server.senders[track.TrackName].rtpPort)
-		transport.ServerPorts[1] = uint16(server.senders[track.TrackName].rtcpPort)
-		server.senders[track.TrackName].remoteRtpPort = int(transport.ClientPorts[0])
-		server.senders[track.TrackName].remoteRtcpPort = int(transport.ClientPorts[1])
+		transport.Server_ports[0] = uint16(server.senders[track.TrackName].rtpPort)
+		transport.Server_ports[1] = uint16(server.senders[track.TrackName].rtcpPort)
+		server.senders[track.TrackName].remoteRtpPort = int(transport.Client_ports[0])
+		server.senders[track.TrackName].remoteRtcpPort = int(transport.Client_ports[1])
 
 		srcAddr := net.UDPAddr{IP: net.IPv4zero, Port: server.senders[track.TrackName].rtpPort}
 		srcAddr2 := net.UDPAddr{IP: net.IPv4zero, Port: server.senders[track.TrackName].rtcpPort}
@@ -113,7 +113,7 @@ func (server *RtspPlaySeverSession) HandleSetup(svr *rtsp.RtspServer, req rtsp.R
 		server.senders[track.TrackName].track = track
 		return
 	} else {
-		res.StatusCode = rtsp.UnsupportedTransport
+		res.StatusCode = rtsp.Unsupported_Transport
 	}
 }
 
@@ -147,10 +147,10 @@ func (server *RtspPlaySeverSession) HandlePlay(svr *rtsp.RtspServer, req rtsp.Rt
 					}
 					rtpPkgs = append(rtpPkgs, pkg...)
 				}
-				pid = muxer.AddStream(mpeg2.TsStreamH264)
+				pid = muxer.AddStream(mpeg2.TS_STREAM_H264)
 			}
 
-			if ci == codec.CodecidVideoH264 {
+			if ci == codec.CODECID_VIDEO_H264 {
 				newFrame = true
 				currentTs = dts
 				muxer.Write(pid, b, uint64(pts), uint64(dts))

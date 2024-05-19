@@ -3,8 +3,8 @@ package mpeg2
 import "github.com/timmattison/gomedia/go-codec"
 
 type PSMuxer struct {
-	system     *SystemHeader
-	psm        *ProgramStreamMap
+	system     *System_header
+	psm        *Program_stream_map
 	OnPacket   func(pkg []byte)
 	firstframe bool
 }
@@ -12,41 +12,41 @@ type PSMuxer struct {
 func NewPsMuxer() *PSMuxer {
 	muxer := new(PSMuxer)
 	muxer.firstframe = true
-	muxer.system = new(SystemHeader)
-	muxer.system.RateBound = 26234
-	muxer.psm = new(ProgramStreamMap)
-	muxer.psm.CurrentNextIndicator = 1
-	muxer.psm.ProgramStreamMapVersion = 1
+	muxer.system = new(System_header)
+	muxer.system.Rate_bound = 26234
+	muxer.psm = new(Program_stream_map)
+	muxer.psm.Current_next_indicator = 1
+	muxer.psm.Program_stream_map_version = 1
 	muxer.OnPacket = nil
 	return muxer
 }
 
-func (muxer *PSMuxer) AddStream(cid PsStreamType) uint8 {
-	if cid == PsStreamH265 || cid == PsStreamH264 {
-		es := NewelementaryStream(uint8(PesStreamVideo) + muxer.system.VideoBound)
-		es.PStdBufferBoundScale = 1
-		es.PStdBufferSizeBound = 400
+func (muxer *PSMuxer) AddStream(cid PS_STREAM_TYPE) uint8 {
+	if cid == PS_STREAM_H265 || cid == PS_STREAM_H264 {
+		es := NewElementary_Stream(uint8(PES_STREAM_VIDEO) + muxer.system.Video_bound)
+		es.P_STD_buffer_bound_scale = 1
+		es.P_STD_buffer_size_bound = 400
 		muxer.system.Streams = append(muxer.system.Streams, es)
-		muxer.system.VideoBound++
-		muxer.psm.StreamMap = append(muxer.psm.StreamMap, NewelementaryStreamElem(uint8(cid), es.StreamId))
-		muxer.psm.ProgramStreamMapVersion++
-		return es.StreamId
+		muxer.system.Video_bound++
+		muxer.psm.Stream_map = append(muxer.psm.Stream_map, NewElementary_stream_elem(uint8(cid), es.Stream_id))
+		muxer.psm.Program_stream_map_version++
+		return es.Stream_id
 	} else {
-		es := NewelementaryStream(uint8(PesStreamAudio) + muxer.system.AudioBound)
-		es.PStdBufferBoundScale = 0
-		es.PStdBufferSizeBound = 32
+		es := NewElementary_Stream(uint8(PES_STREAM_AUDIO) + muxer.system.Audio_bound)
+		es.P_STD_buffer_bound_scale = 0
+		es.P_STD_buffer_size_bound = 32
 		muxer.system.Streams = append(muxer.system.Streams, es)
-		muxer.system.AudioBound++
-		muxer.psm.StreamMap = append(muxer.psm.StreamMap, NewelementaryStreamElem(uint8(cid), es.StreamId))
-		muxer.psm.ProgramStreamMapVersion++
-		return es.StreamId
+		muxer.system.Audio_bound++
+		muxer.psm.Stream_map = append(muxer.psm.Stream_map, NewElementary_stream_elem(uint8(cid), es.Stream_id))
+		muxer.psm.Program_stream_map_version++
+		return es.Stream_id
 	}
 }
 
 func (muxer *PSMuxer) Write(sid uint8, frame []byte, pts uint64, dts uint64) error {
-	var stream *ElementaryStreamElem = nil
-	for _, es := range muxer.psm.StreamMap {
-		if es.ElementaryStreamId == sid {
+	var stream *Elementary_stream_elem = nil
+	for _, es := range muxer.psm.Stream_map {
+		if es.Elementary_stream_id == sid {
 			stream = es
 			break
 		}
@@ -58,32 +58,32 @@ func (muxer *PSMuxer) Write(sid uint8, frame []byte, pts uint64, dts uint64) err
 		return nil
 	}
 	var withaud = false
-	var idrFlag = false
+	var idr_flag = false
 	var first = true
 	var vcl = false
-	if stream.StreamType == uint8(PsStreamH264) || stream.StreamType == uint8(PsStreamH265) {
+	if stream.Stream_type == uint8(PS_STREAM_H264) || stream.Stream_type == uint8(PS_STREAM_H265) {
 		codec.SplitFrame(frame, func(nalu []byte) bool {
-			if stream.StreamType == uint8(PsStreamH264) {
-				naluType := codec.H264NaluTypeWithoutStartCode(nalu)
-				if naluType == codec.H264NalAud {
+			if stream.Stream_type == uint8(PS_STREAM_H264) {
+				nalu_type := codec.H264NaluTypeWithoutStartCode(nalu)
+				if nalu_type == codec.H264_NAL_AUD {
 					withaud = true
 					return false
-				} else if codec.IsH264VCLNaluType(naluType) {
-					if naluType == codec.H264NalISlice {
-						idrFlag = true
+				} else if codec.IsH264VCLNaluType(nalu_type) {
+					if nalu_type == codec.H264_NAL_I_SLICE {
+						idr_flag = true
 					}
 					vcl = true
 					return false
 				}
 				return true
 			} else {
-				naluType := codec.H265NaluTypeWithoutStartCode(nalu)
-				if naluType == codec.H265NalAud {
+				nalu_type := codec.H265NaluTypeWithoutStartCode(nalu)
+				if nalu_type == codec.H265_NAL_AUD {
 					withaud = true
 					return false
-				} else if codec.IsH265VCLNaluType(naluType) {
-					if naluType >= codec.H265NalSliceBlaWLp && naluType <= codec.H265NalSliceCra {
-						idrFlag = true
+				} else if codec.IsH265VCLNaluType(nalu_type) {
+					if nalu_type >= codec.H265_NAL_SLICE_BLA_W_LP && nalu_type <= codec.H265_NAL_SLICE_CRA {
+						idr_flag = true
 					}
 					vcl = true
 					return false
@@ -97,11 +97,11 @@ func (muxer *PSMuxer) Write(sid uint8, frame []byte, pts uint64, dts uint64) err
 	pts = pts * 90
 	bsw := codec.NewBitStreamWriter(1024)
 	var pack PSPackHeader
-	pack.SystemClockReferenceBase = dts - 3600
-	pack.SystemClockReferenceExtension = 0
-	pack.ProgramMuxRate = 6106
+	pack.System_clock_reference_base = dts - 3600
+	pack.System_clock_reference_extension = 0
+	pack.Program_mux_rate = 6106
 	pack.Encode(bsw)
-	if muxer.firstframe || idrFlag {
+	if muxer.firstframe || idr_flag {
 		muxer.system.Encode(bsw)
 		muxer.psm.Encode(bsw)
 		muxer.firstframe = false
@@ -109,34 +109,34 @@ func (muxer *PSMuxer) Write(sid uint8, frame []byte, pts uint64, dts uint64) err
 	pespkg := NewPesPacket()
 	for len(frame) > 0 {
 		peshdrlen := 13
-		pespkg.StreamId = sid
-		pespkg.PtsDtsFlags = 0x03
-		pespkg.PesHeaderDataLength = 10
+		pespkg.Stream_id = sid
+		pespkg.PTS_DTS_flags = 0x03
+		pespkg.PES_header_data_length = 10
 		pespkg.Pts = pts
 		pespkg.Dts = dts
-		if idrFlag {
-			pespkg.DataAlignmentIndicator = 1
+		if idr_flag {
+			pespkg.Data_alignment_indicator = 1
 		}
 		if first && !withaud && vcl {
-			if stream.StreamType == uint8(PsStreamH264) {
-				pespkg.PesPayload = append(pespkg.PesPayload, H264AudNalu...)
+			if stream.Stream_type == uint8(PS_STREAM_H264) {
+				pespkg.Pes_payload = append(pespkg.Pes_payload, H264_AUD_NALU...)
 				peshdrlen += 6
-			} else if stream.StreamType == uint8(PsStreamH265) {
-				pespkg.PesPayload = append(pespkg.PesPayload, H265AudNalu...)
+			} else if stream.Stream_type == uint8(PS_STREAM_H265) {
+				pespkg.Pes_payload = append(pespkg.Pes_payload, H265_AUD_NALU...)
 				peshdrlen += 7
 			}
 		}
 		if peshdrlen+len(frame) >= 0xFFFF {
-			pespkg.PesPacketLength = 0xFFFF
-			pespkg.PesPayload = append(pespkg.PesPayload, frame[0:0xFFFF-peshdrlen]...)
+			pespkg.PES_packet_length = 0xFFFF
+			pespkg.Pes_payload = append(pespkg.Pes_payload, frame[0:0xFFFF-peshdrlen]...)
 			frame = frame[0xFFFF-peshdrlen:]
 		} else {
-			pespkg.PesPacketLength = uint16(peshdrlen + len(frame))
-			pespkg.PesPayload = append(pespkg.PesPayload, frame[0:]...)
+			pespkg.PES_packet_length = uint16(peshdrlen + len(frame))
+			pespkg.Pes_payload = append(pespkg.Pes_payload, frame[0:]...)
 			frame = frame[:0]
 		}
 		pespkg.Encode(bsw)
-		pespkg.PesPayload = pespkg.PesPayload[:0]
+		pespkg.Pes_payload = pespkg.Pes_payload[:0]
 		if muxer.OnPacket != nil {
 			muxer.OnPacket(bsw.Bits())
 		}
