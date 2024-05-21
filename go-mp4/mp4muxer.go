@@ -100,6 +100,18 @@ func CreateMp4Muxer(w io.WriteSeeker, options ...MuxerOption) (*Movmuxer, error)
 
 type TrackOption func(track *mp4track)
 
+func WithVideoDuration(duration uint32) TrackOption {
+	return func(track *mp4track) {
+		track.duration = duration
+	}
+}
+
+func WithVideoTimescale(timescale uint32) TrackOption {
+	return func(track *mp4track) {
+		track.timescale = timescale
+	}
+}
+
 func WithVideoWidth(width uint32) TrackOption {
 	return func(track *mp4track) {
 		track.width = width
