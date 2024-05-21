@@ -165,7 +165,7 @@ func (track *mp4track) addSampleEntry(entry sampleEntry) {
 	} else {
 		delta := int64(entry.dts - track.samplelist[len(track.samplelist)-1].dts)
 		if delta < 0 {
-			track.duration += 1
+			track.duration -= uint32(-delta)
 		} else {
 			track.duration += uint32(delta)
 		}
