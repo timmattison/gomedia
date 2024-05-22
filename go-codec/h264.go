@@ -568,5 +568,5 @@ func (h264Hrd *H264HrdParameters) Decode(bs *BitStream) {
 	h264Hrd.InitialCpbRemovalDelayLengthMinus1 = bs.Uint8(5)
 	h264Hrd.CpbRemovalDelayLengthMinus1 = bs.Uint8(5)
 	h264Hrd.DpbOutputDelayLengthMinus1 = bs.Uint8(5)
-	h264Hrd.TimeOffsetLength = bs.Uint8(5)
+	//h264Hrd.TimeOffsetLength = bs.Uint8(5)
 }
