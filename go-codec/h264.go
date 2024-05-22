@@ -93,7 +93,7 @@ func (sps *SPS) Decode(bs *BitStream) {
 		sps.Profile_idc == 134 || sps.Profile_idc == 135 {
 		sps.Chroma_format_idc = bs.ReadUE()
 		if sps.Chroma_format_idc == 3 {
-			sps.Separate_colour_plane_flag = bs.Uint8(1) // separate_colour_plane_flag
+			sps.Separate_colour_plane_flag = bs.GetBit()
 		}
 		sps.Bit_depth_luma_minus8 = bs.ReadUE()   // bit_depth_luma_minus8
 		sps.Bit_depth_chroma_minus8 = bs.ReadUE() // bit_depth_chroma_minus8
@@ -507,14 +507,14 @@ func (h264Vui *H264VuiParameters) Decode(bs *BitStream) {
 		}
 	}
 
-	h264Vui.ChromaLocInfoPresentFlag = bs.Uint8(1)
+	h264Vui.ChromaLocInfoPresentFlag = bs.GetBit()
 
 	if h264Vui.ChromaLocInfoPresentFlag == 1 {
 		h264Vui.ChromaSampleLocTypeTopField = bs.ReadUE()
 		h264Vui.ChromaSampleLocTypeBottomField = bs.ReadUE()
 	}
 
-	h264Vui.TimingInfoPresentFlag = bs.Uint8(1)
+	h264Vui.TimingInfoPresentFlag = bs.GetBit()
 
 	if h264Vui.TimingInfoPresentFlag == 1 {
 		h264Vui.NumUnitsInTick = bs.Uint32(32)
