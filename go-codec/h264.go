@@ -538,18 +538,20 @@ func (h264Vui *H264VuiParameters) Decode(bs *BitStream) {
 		h264Vui.LowDelayHrdFlag = bs.GetBit()
 	}
 
-	h264Vui.PicStructPresentFlag = bs.GetBit()
-	h264Vui.BitstreamRestrictionFlag = bs.GetBit()
+	/*
+		h264Vui.PicStructPresentFlag = bs.GetBit()
+		h264Vui.BitstreamRestrictionFlag = bs.GetBit()
 
-	if h264Vui.BitstreamRestrictionFlag == 1 {
-		h264Vui.MotionVectorsOverPicBoundaries = bs.GetBit()
-		h264Vui.MaxBytesPerPicDenom = bs.ReadUE()
-		h264Vui.MaxBitsPerMbDenom = bs.ReadUE()
-		h264Vui.Log2MaxMvLengthHorizontal = bs.ReadUE()
-		h264Vui.Log2MaxMvLengthVertical = bs.ReadUE()
-		h264Vui.NumReorderFrames = bs.ReadUE()
-		h264Vui.MaxDecFrameBuffering = bs.ReadUE()
-	}
+		if h264Vui.BitstreamRestrictionFlag == 1 {
+			h264Vui.MotionVectorsOverPicBoundaries = bs.GetBit()
+			h264Vui.MaxBytesPerPicDenom = bs.ReadUE()
+			h264Vui.MaxBitsPerMbDenom = bs.ReadUE()
+			h264Vui.Log2MaxMvLengthHorizontal = bs.ReadUE()
+			h264Vui.Log2MaxMvLengthVertical = bs.ReadUE()
+			h264Vui.NumReorderFrames = bs.ReadUE()
+			h264Vui.MaxDecFrameBuffering = bs.ReadUE()
+		}
+	*/
 }
 
 func (h264Hrd *H264HrdParameters) Decode(bs *BitStream) {
