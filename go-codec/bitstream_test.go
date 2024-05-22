@@ -1,6 +1,7 @@
 package codec
 
 import (
+	"strconv"
 	"testing"
 )
 
@@ -136,6 +137,33 @@ func TestBitStream_ReadUE(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			if got := tt.bs.ReadUE(); got != tt.want {
 				t.Errorf("BitStream.ReadUE() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestBitStringToCodeNum(t *testing.T) {
+	tests := []struct {
+		bitstring uint64
+		codenum   uint64
+	}{
+		{0b10000000, 0},
+		{0b01000000, 1},
+		{0b01100000, 2},
+		{0b00100000, 3},
+		{0b00101000, 4},
+		{0b00110000, 5},
+		{0b00111000, 6},
+		{0b00010000, 7},
+		{0b00010010, 8},
+		{0b00010100, 9},
+	}
+
+	for _, tt := range tests {
+		t.Run(strconv.FormatInt(int64(tt.codenum), 10), func(t *testing.T) {
+			bitstream := NewBitStream([]byte{byte(tt.bitstring)})
+			if got := bitstream.ReadUE(); got != tt.codenum {
+				t.Errorf("ReadUE(%b) = %d; want %d", tt.bitstring, got, tt.codenum)
 			}
 		})
 	}
