@@ -54,6 +54,11 @@ type SPS struct {
 	Bit_depth_chroma_minus8              uint64
 	Log2_max_frame_num_minus4            uint64
 	Pic_order_cnt_type                   uint64
+	Log2_max_pic_order_cnt_lsb_minus4    uint64
+	Delta_pic_order_always_zero_flag     uint8
+	Offset_for_non_ref_pic               int64
+	Offset_for_top_to_bottom_field       int64
+	Offset_for_ref_frame                 []int64
 	Max_num_ref_frames                   uint64
 	Gaps_in_frame_num_value_allowed_flag uint8
 	Pic_width_in_mbs_minus1              uint64
@@ -106,14 +111,14 @@ func (sps *SPS) Decode(bs *BitStream) {
 	sps.Log2_max_frame_num_minus4 = bs.ReadUE()
 	sps.Pic_order_cnt_type = bs.ReadUE()
 	if sps.Pic_order_cnt_type == 0 {
-		bs.ReadUE() // log2_max_pic_order_cnt_lsb_minus4
+		sps.Log2_max_pic_order_cnt_lsb_minus4 = bs.ReadUE()
 	} else if sps.Pic_order_cnt_type == 1 {
-		bs.SkipBits(1) // delta_pic_order_always_zero_flag
-		bs.ReadSE()    // offset_for_non_ref_pic
-		bs.ReadSE()    // offset_for_top_to_bottom_field
+		sps.Delta_pic_order_always_zero_flag = bs.GetBit()
+		sps.Offset_for_non_ref_pic = bs.ReadSE()         // offset_for_non_ref_pic
+		sps.Offset_for_top_to_bottom_field = bs.ReadSE() // offset_for_top_to_bottom_field
 		num_ref_frames_in_pic_order_cnt_cycle := bs.ReadUE()
 		for i := 0; i < int(num_ref_frames_in_pic_order_cnt_cycle); i++ {
-			bs.ReadSE() // offset_for_ref_frame
+			sps.Offset_for_ref_frame[i] = bs.ReadSE() // offset_for_ref_frame
 		}
 	}
 	sps.Max_num_ref_frames = bs.ReadUE()
