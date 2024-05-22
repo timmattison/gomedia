@@ -59,6 +59,7 @@ type SPS struct {
 	Pic_width_in_mbs_minus1              uint64
 	Pic_height_in_map_units_minus1       uint64
 	Frame_mbs_only_flag                  uint8
+	Mb_adaptive_frame_field_flag         uint8
 	Direct_8x8_inference_flag            uint8
 	Frame_cropping_flag                  uint8
 	Frame_crop_left_offset               uint64
@@ -120,7 +121,7 @@ func (sps *SPS) Decode(bs *BitStream) {
 	sps.Pic_height_in_map_units_minus1 = bs.ReadUE()
 	sps.Frame_mbs_only_flag = bs.GetBit()
 	if sps.Frame_mbs_only_flag == 0 {
-		bs.SkipBits(1) // mb_adaptive_frame_field_flag
+		sps.Mb_adaptive_frame_field_flag = bs.GetBit()
 	}
 	sps.Direct_8x8_inference_flag = bs.GetBit()
 	sps.Frame_cropping_flag = bs.GetBit()
