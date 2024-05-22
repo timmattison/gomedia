@@ -552,7 +552,7 @@ func (h264Hrd *H264HrdParameters) Decode(bs *BitStream) {
 
 	h264Hrd.H264BitRateCpbSizeCbrFlag = make([]H264BitRateCpbSizeCbrFlag, h264Hrd.CpbCntMinus1+1)
 
-	for i := 0; i < int(h264Hrd.CpbCntMinus1+1); i++ {
+	for i := 0; i < int(h264Hrd.CpbCntMinus1); i++ {
 		h264Hrd.H264BitRateCpbSizeCbrFlag[i].BitRateValueMinus1 = bs.ReadUE()
 		h264Hrd.H264BitRateCpbSizeCbrFlag[i].CpbSizeValueMinus1 = bs.ReadUE()
 		h264Hrd.H264BitRateCpbSizeCbrFlag[i].CbrFlag = bs.Uint8(1)
