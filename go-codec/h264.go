@@ -82,9 +82,10 @@ func (sps *SPS) Decode(bs *BitStream) {
 	sps.Level_idc = bs.Uint8(8)
 	sps.Seq_parameter_set_id = bs.ReadUE()
 	if sps.Profile_idc == 100 || sps.Profile_idc == 110 ||
-		sps.Profile_idc == 122 || sps.Profile_idc == 244 ||
-		sps.Profile_idc == 44 || sps.Profile_idc == 83 ||
-		sps.Profile_idc == 86 || sps.Profile_idc == 118 || sps.Profile_idc == 128 {
+		sps.Profile_idc == 122 || sps.Profile_idc == 244 || sps.Profile_idc == 44 ||
+		sps.Profile_idc == 83 || sps.Profile_idc == 86 || sps.Profile_idc == 118 ||
+		sps.Profile_idc == 128 || sps.Profile_idc == 138 || sps.Profile_idc == 139 ||
+		sps.Profile_idc == 134 || sps.Profile_idc == 135 {
 		sps.Chroma_format_idc = bs.ReadUE()
 		if sps.Chroma_format_idc == 3 {
 			sps.Separate_colour_plane_flag = bs.Uint8(1) // separate_colour_plane_flag
