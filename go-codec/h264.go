@@ -470,7 +470,7 @@ type H264BitRateCpbSizeCbrFlag struct {
 const ExtendedSar = 255
 
 func (h264Vui *H264VuiParameters) Decode(bs *BitStream) {
-	h264Vui.AspectRatioInfoPresentFlag = bs.Uint8(1)
+	h264Vui.AspectRatioInfoPresentFlag = bs.GetBit()
 
 	if h264Vui.AspectRatioInfoPresentFlag == 1 {
 		h264Vui.AspectRatioIdc = bs.Uint8(8)
@@ -481,18 +481,18 @@ func (h264Vui *H264VuiParameters) Decode(bs *BitStream) {
 		}
 	}
 
-	h264Vui.OverscanInfoPresentFlag = bs.Uint8(1)
+	h264Vui.OverscanInfoPresentFlag = bs.GetBit()
 
 	if h264Vui.OverscanInfoPresentFlag == 1 {
-		h264Vui.OverscanAppropriateFlag = bs.Uint8(1)
+		h264Vui.OverscanAppropriateFlag = bs.GetBit()
 	}
 
-	h264Vui.VideoSignalTypePresentFlag = bs.Uint8(1)
+	h264Vui.VideoSignalTypePresentFlag = bs.GetBit()
 
 	if h264Vui.VideoSignalTypePresentFlag == 1 {
 		h264Vui.VideoFormat = bs.Uint8(3)
-		h264Vui.VideoFullRangeFlag = bs.Uint8(1)
-		h264Vui.ColourDescriptionPresentFlag = bs.Uint8(1)
+		h264Vui.VideoFullRangeFlag = bs.GetBit()
+		h264Vui.ColourDescriptionPresentFlag = bs.GetBit()
 
 		if h264Vui.ColourDescriptionPresentFlag == 1 {
 			h264Vui.ColourPrimaries = bs.Uint8(8)
@@ -513,30 +513,30 @@ func (h264Vui *H264VuiParameters) Decode(bs *BitStream) {
 	if h264Vui.TimingInfoPresentFlag == 1 {
 		h264Vui.NumUnitsInTick = bs.Uint32(32)
 		h264Vui.TimeScale = bs.Uint32(32)
-		h264Vui.FixedFrameRateFlag = bs.Uint8(1)
+		h264Vui.FixedFrameRateFlag = bs.GetBit()
 	}
 
-	h264Vui.NalHrdParametersPresentFlag = bs.Uint8(1)
+	h264Vui.NalHrdParametersPresentFlag = bs.GetBit()
 
 	if h264Vui.NalHrdParametersPresentFlag == 1 {
 		h264Vui.NalHrdParameters.Decode(bs)
 	}
 
-	h264Vui.VclHrdParametersPresentFlag = bs.Uint8(1)
+	h264Vui.VclHrdParametersPresentFlag = bs.GetBit()
 
 	if h264Vui.VclHrdParametersPresentFlag == 1 {
 		h264Vui.VclHrdParameters.Decode(bs)
 	}
 
 	if h264Vui.NalHrdParametersPresentFlag == 1 || h264Vui.VclHrdParametersPresentFlag == 1 {
-		h264Vui.LowDelayHrdFlag = bs.Uint8(1)
+		h264Vui.LowDelayHrdFlag = bs.GetBit()
 	}
 
-	h264Vui.PicStructPresentFlag = bs.Uint8(1)
-	h264Vui.BitstreamRestrictionFlag = bs.Uint8(1)
+	h264Vui.PicStructPresentFlag = bs.GetBit()
+	h264Vui.BitstreamRestrictionFlag = bs.GetBit()
 
 	if h264Vui.BitstreamRestrictionFlag == 1 {
-		h264Vui.MotionVectorsOverPicBoundaries = bs.Uint8(1)
+		h264Vui.MotionVectorsOverPicBoundaries = bs.GetBit()
 		h264Vui.MaxBytesPerPicDenom = bs.ReadUE()
 		h264Vui.MaxBitsPerMbDenom = bs.ReadUE()
 		h264Vui.Log2MaxMvLengthHorizontal = bs.ReadUE()
@@ -556,7 +556,7 @@ func (h264Hrd *H264HrdParameters) Decode(bs *BitStream) {
 	for i := 0; i <= int(h264Hrd.CpbCntMinus1); i++ {
 		h264Hrd.H264BitRateCpbSizeCbrFlag[i].BitRateValueMinus1 = bs.ReadUE()
 		h264Hrd.H264BitRateCpbSizeCbrFlag[i].CpbSizeValueMinus1 = bs.ReadUE()
-		h264Hrd.H264BitRateCpbSizeCbrFlag[i].CbrFlag = bs.Uint8(1)
+		h264Hrd.H264BitRateCpbSizeCbrFlag[i].CbrFlag = bs.GetBit()
 	}
 
 	h264Hrd.InitialCpbRemovalDelayLengthMinus1 = bs.Uint8(5)
