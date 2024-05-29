@@ -323,13 +323,6 @@ func (muxer *Movmuxer) writeMoov(w io.Writer) (err error) {
 		offset += len(trak)
 	}
 	copy(moovBox[offset:], mvex)
-	var currentOffset int64
-	if currentOffset, err = muxer.writer.Seek(0, io.SeekCurrent); err != nil {
-		return err
-	}
-	if currentOffset%8 != 0 {
-		_, err = w.Write(make([]byte, 8-currentOffset%8))
-	}
 	_, err = w.Write(moovBox)
 	return
 }
