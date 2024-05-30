@@ -234,20 +234,6 @@ func (muxer *Movmuxer) WriteTrailer() (err error) {
 		if err = muxer.reWriteMdatSize(); err != nil {
 			return err
 		}
-		var currentOffset int64
-
-		if currentOffset, err = muxer.writer.Seek(0, io.SeekCurrent); err != nil {
-			return err
-		}
-
-		datalen := currentOffset - int64(muxer.mdatOffset)
-
-		if datalen%8 != 0 {
-			if currentOffset, err = muxer.writer.Seek(8-datalen%8, io.SeekCurrent); err != nil {
-				return err
-			}
-		}
-
 		return muxer.writeMoov(muxer.writer)
 	}
 	return
@@ -294,9 +280,6 @@ func (muxer *Movmuxer) reWriteMdatSize() (err error) {
 			return
 		}
 		tmpdata := make([]byte, 4)
-		if datalen%8 != 0 {
-			datalen += 8 - datalen%8
-		}
 		binary.BigEndian.PutUint32(tmpdata, uint32(datalen))
 		if _, err = muxer.writer.Write(tmpdata); err != nil {
 			return
