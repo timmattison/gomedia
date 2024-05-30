@@ -307,15 +307,10 @@ func (muxer *Movmuxer) writeMoov(w io.Writer) (err error) {
 		mvhd = makeMvhdBox(muxer.nextTrackId, maxdurtaion)
 	}
 	moovsize := len(mvhd) + len(mvex)
-
 	traks := make([][]byte, len(muxer.tracks))
 	for i := uint32(1); i < muxer.nextTrackId; i++ {
 		traks[i-1] = makeTrak(muxer.tracks[i], muxer.movFlag)
 		moovsize += len(traks[i-1])
-	}
-
-	if moovsize%8 != 0 {
-		moovsize += 8 - moovsize%8
 	}
 
 	moov := BasicBox{Type: [4]byte{'m', 'o', 'o', 'v'}}
