@@ -323,21 +323,6 @@ func (muxer *Movmuxer) writeMoov(w io.Writer) (err error) {
 		offset += len(trak)
 	}
 	copy(moovBox[offset:], mvex)
-	var currentOffset int64
-	if currentOffset, err = muxer.writer.Seek(0, io.SeekCurrent); err != nil {
-		return err
-	}
-	if currentOffset%8 != 0 {
-		free := NewFreeBox()
-		paddingSize := 8 - currentOffset%8
-		free.Data = append(free.Data, make([]byte, paddingSize)...)
-		free.Size()
-		freelen, freeboxdata := free.Encode()
-		_, err = muxer.writer.Write(freeboxdata[0:freelen])
-		if err != nil {
-			return err
-		}
-	}
 	_, err = w.Write(moovBox)
 	return
 }
